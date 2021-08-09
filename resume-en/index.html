@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"nekodaemon.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeIn","post_body":"fadeIn","coll_header":"slideLeftIn","sidebar":"slideRightIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Work Email: gutz2018 [AT] mail.sustech.edu.cn  Personal Email: gutongzhou [AT] gmail.com  GitHub: Tonny-Gu  Blog: NekoDaemon’s Blog  注：本页面有中文版本  Research Interest High-Performance Computing, Heterog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="顾同舟 (Tongzhou Gu)">
+<meta property="og:url" content="https://nekodaemon.com/resume-en/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Work Email: gutz2018 [AT] mail.sustech.edu.cn  Personal Email: gutongzhou [AT] gmail.com  GitHub: Tonny-Gu  Blog: NekoDaemon’s Blog  注：本页面有中文版本  Research Interest High-Performance Computing, Heterog">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-03-14T13:29:32.000Z">
+<meta property="article:modified_time" content="2021-07-26T06:30:41.000Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://nekodaemon.com/resume-en/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : false,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>顾同舟 (Tongzhou Gu) | NekoDaemon's Blog
+</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+    <script data-pjax>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-LD3Y9EEN0K');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">NekoDaemon's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a>
+
+  </li>
+        <li class="menu-item menu-item-more">
+
+    <a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+  
+  
+
+          <div class="content page posts-expand">
+            
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN">
+      <header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">顾同舟 (Tongzhou Gu)
+</h1>
+
+<div class="post-meta">
+  
+
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <ul>
+<li><i class="fa fa-envelope fa-fw"></i> Work Email: gutz2018 [AT] mail.sustech.edu.cn</li>
+<li><i class="fa fa-envelope fa-fw"></i> Personal Email: gutongzhou [AT] gmail.com</li>
+<li><i class="fab fa-github fa-fw"></i> GitHub: <a target="_blank" rel="noopener" href="https://github.com/Tonny-Gu/">Tonny-Gu</a></li>
+<li><i class="fas fa-blog fa-fw"></i> Blog: <a href="https://nekodaemon.com/">NekoDaemon’s Blog</a></li>
+</ul>
+<p>注：本页面有<a href="https://nekodaemon.com/resume-zh/">中文版本</a></p>
+<hr>
+<h2 id="Research-Interest"><a href="#Research-Interest" class="headerlink" title="Research Interest"></a>Research Interest</h2><ul>
+<li>High-Performance Computing, Heterogeneous Computing, Embedded System</li>
+</ul>
+<h2 id="Education"><a href="#Education" class="headerlink" title="Education"></a>Education</h2><ul>
+<li>(Sep. 2018 - Present) Southern University of Science and Technology, China<ul>
+<li><em>B.Eng in Computer Science and Engineering</em></li>
+<li><em>GPA per year：3.82/4.0 (3rd Year), 3.69 (2nd Year), 3.38 (1st Year)</em><ul>
+<li><em>Overall GPA: 3.60/4.0</em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="Skills"><a href="#Skills" class="headerlink" title="Skills"></a>Skills</h2><ul>
+<li>Programming Language: C/C++, Python, Java, MATLAB</li>
+<li>Framework: CUDA, OpenACC, OpenMP, MPI</li>
+<li>English: IELTS 6.5pts, CET4 491pts, CET6 458pts</li>
+<li>Others: Linux Operations and Maintenance</li>
+</ul>
+<h2 id="Intenship-Experience"><a href="#Intenship-Experience" class="headerlink" title="Intenship Experience"></a>Intenship Experience</h2><ul>
+<li>(Jul. 2021 - Present) <strong>AI Lab Intern</strong>, Amazon Web Services Shanghai AI Lab<ul>
+<li><em>Implementing distributed sharding system on a next generation deep learning framework based on TVM machine learning compiler</em></li>
+<li><em>Other received offer: Client Developer Intern, Tencent Meeting</em></li>
+</ul>
+</li>
+</ul>
+<h2 id="Awards-and-Honors"><a href="#Awards-and-Honors" class="headerlink" title="Awards and Honors"></a>Awards and Honors</h2><h3 id="Student-Cluster-Competition"><a href="#Student-Cluster-Competition" class="headerlink" title="Student Cluster Competition"></a>Student Cluster Competition</h3><ul>
+<li>(May. 2021) ASC20-21 Student Supercomputer Challenge, Shenzhen, <strong>1st Prize, 5th Place</strong> (Team Member)<ul>
+<li><em>Responsible for HPC Cluster Design, Deployment and Maintenance</em></li>
+<li><em>Porting Quantum Exact Simulation Toolkit (QuEST) to multi-GPU platform</em> </li>
+</ul>
+</li>
+<li>(Nov. 2020) SC20 Student Cluster Competition, Online, <strong>2nd miniVite, 3rd HPL</strong> (Team Member)<ul>
+<li><em>Optimizing Memory-centric X-ray CT Reconstruction (MemXCT) on both CPU and GPU platforms</em></li>
+</ul>
+</li>
+<li>(Nov. 2020) 2020 APAC HPC-AI Competition, Online, <strong>3rd Place</strong> (Team Member)<ul>
+<li><em>Maintaining the development environment</em></li>
+</ul>
+</li>
+<li>(Mar. 2019) ASC19 Student Supercomputer Challenge, Online, <strong>2nd Prize</strong> (Team Captain)<ul>
+<li><em>Responsible for the application, the global climate model CESM</em></li>
+</ul>
+</li>
+<li><em>Mentor:</em><ul>
+<li><em>Wang Lianping, Chair Professor, Director of Center for Computational Science and Engineering, Dept. of Mechanics and Aerospace Engineering</em></li>
+<li><em>Chen Xiaofei, Chair Professor, Academician of CAS, Departmental Head, Dept. of Earth and Space Sciences</em></li>
+</ul>
+</li>
+</ul>
+<h3 id="Scholarships"><a href="#Scholarships" class="headerlink" title="Scholarships"></a>Scholarships</h3><ul>
+<li>(Sep. 2018) SUSTech Freshman Scholarship</li>
+</ul>
+<h2 id="Projects"><a href="#Projects" class="headerlink" title="Projects"></a>Projects</h2><h3 id="Research-Projects"><a href="#Research-Projects" class="headerlink" title="Research Projects"></a>Research Projects</h3><ul>
+<li>(Sep. 2020 - Present) Runtime Characterization of Distributed Graph Machine Learning System<ul>
+<li><em>Have submitted a patch to <a target="_blank" rel="noopener" href="https://github.com/dmlc/dgl">DGL</a>, which improves communication performance in specific scenarios</em></li>
+<li><em>Mentor: Georgios Theodoropoulos, Chair Professor, Dept. of Computer Science and Engineering</em></li>
+</ul>
+</li>
+</ul>
+<h3 id="Course-Projects"><a href="#Course-Projects" class="headerlink" title="Course Projects"></a>Course Projects</h3><ul>
+<li>(May. 2021) MALLOC<ul>
+<li><em>Memory Allocation Leakage Live Observer and Capturer, based on Memory Page-Level Protection and Dynamic Binary Instrumentation</em></li>
+</ul>
+</li>
+<li>(Dec. 2020) SQLitz<ul>
+<li><em>Distributed SQL Online Judge System, based on Docker, KVM Virtualization, and LSF job scheduler</em></li>
+</ul>
+</li>
+<li>(Dec. 2019) Data in Naked DNS<ul>
+<li><em>Virtual Private Network exploiting public DNS servers to forward data packets</em></li>
+</ul>
+</li>
+</ul>
+<h3 id="Individual-Projects"><a href="#Individual-Projects" class="headerlink" title="Individual Projects"></a>Individual Projects</h3><ul>
+<li>(Jun. 2019 - Present) NekoDaemon’s Blog<ul>
+<li><em>This blog, powered by Hexo Nginx, Amazon Lightsail CDN Distributions</em></li>
+</ul>
+</li>
+</ul>
+<h2 id="Practical-Experience"><a href="#Practical-Experience" class="headerlink" title="Practical Experience"></a>Practical Experience</h2><ul>
+<li>(Jan. 2021 - Jun. 2021) <strong>Student Assistant</strong>, Dept. of Computer Science and Engineering, SUSTech<ul>
+<li><em>Assisting the teaching for course CS328 Distributed and Cloud Computing</em></li>
+</ul>
+</li>
+<li>(Jul. 2020 - Present) <strong>Student Assistant</strong>, Center for Computational Science and Engineering, SUSTech<ul>
+<li><em>Participating in the maintenance of clusters and management of SUSTech Supercomputing Club</em></li>
+</ul>
+</li>
+<li>(Oct. 2019 - Dec. 2019) <strong>Peer Tutor</strong>, Learning Center, SUSTech<ul>
+<li><em>Teaching fundamentals of Java for 24 class hours</em></li>
+</ul>
+</li>
+</ul>
+<h2 id="Other-Experience"><a href="#Other-Experience" class="headerlink" title="Other Experience"></a>Other Experience</h2><h3 id="Ongoing"><a href="#Ongoing" class="headerlink" title="Ongoing"></a>Ongoing</h3><ul>
+<li>(Nov. 2021) SC21 Student Cluster Competition, Online, <strong>Proposal is Accepted</strong> (Team Captain)</li>
+<li>(Nov. 2021) 2020 APAC HPC-AI Competition, Online (Team Member)</li>
+</ul>
+<h3 id="Finished"><a href="#Finished" class="headerlink" title="Finished"></a>Finished</h3><ul>
+<li>(Aug. 2019) Participant of OpenACC GPU Application Hackathon 2019, National Supercomputing Center in Shenzhen</li>
+<li>(Jul. 2019 - Aug. 2019) Participant of NUS SOC Summer Workshop 2019, National University of Singapore</li>
+<li>(Jan. 2019, Nov. 2020) Participant of NVIDIA DLI Courses, Beijing / Shenzhen / Online</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+    
+
+    
+    
+    
+
+
+          </div>
+          
+    <div class="comments" id="utterances-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Research-Interest"><span class="nav-number">1.</span> <span class="nav-text">Research Interest</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Education"><span class="nav-number">2.</span> <span class="nav-text">Education</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Skills"><span class="nav-number">3.</span> <span class="nav-text">Skills</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Intenship-Experience"><span class="nav-number">4.</span> <span class="nav-text">Intenship Experience</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Awards-and-Honors"><span class="nav-number">5.</span> <span class="nav-text">Awards and Honors</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Student-Cluster-Competition"><span class="nav-number">5.1.</span> <span class="nav-text">Student Cluster Competition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Scholarships"><span class="nav-number">5.2.</span> <span class="nav-text">Scholarships</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Projects"><span class="nav-number">6.</span> <span class="nav-text">Projects</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Research-Projects"><span class="nav-number">6.1.</span> <span class="nav-text">Research Projects</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Course-Projects"><span class="nav-number">6.2.</span> <span class="nav-text">Course Projects</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Individual-Projects"><span class="nav-number">6.3.</span> <span class="nav-text">Individual Projects</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Practical-Experience"><span class="nav-number">7.</span> <span class="nav-text">Practical Experience</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Experience"><span class="nav-number">8.</span> <span class="nav-text">Other Experience</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Ongoing"><span class="nav-number">8.1.</span> <span class="nav-text">Ongoing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finished"><span class="nav-number">8.2.</span> <span class="nav-text">Finished</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-theme-next" class="theme-link" rel="noopener" target="_blank">NexT.Gemini (NekoDaemon Remix)</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax.min.js"></script>
+  <script src="/lib/medium-zoom.min.js"></script>
+  <script src="/lib/lozad.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#utterances-container'), () => {
+    // if (typeof parcelRequire === 'function') { return; }
+    var js = document.createElement('script');
+    js.type = 'text/javascript';
+    js.src = 'https://utteranc.es/client.js';
+    js.async = true;
+    js.crossorigin = 'anonymous';
+    js.setAttribute('repo', 'Tonny-Gu/blog_comments');
+    js.setAttribute('issue-term', 'pathname');
+    js.setAttribute('theme', 'github-light');
+    document.getElementById('utterances-container').appendChild(js);
+});
+</script>
+    </div>
+</body>
+</html>
