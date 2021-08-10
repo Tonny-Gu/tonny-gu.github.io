@@ -3,8 +3,5 @@ Allow: /
 Allow: /about/
 Allow: /categories/
 Allow: /tags/
-Disallow: /js/
-Disallow: /css/
-Disallow: /fonts/
 Sitemap: http://nekodaemon.com/sitemap.xml
 Sitemap: http://nekodaemon.com/baidusitemap.xml
