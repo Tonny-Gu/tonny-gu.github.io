@@ -192,6 +192,73 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/" class="post-title-link" itemprop="url">修复错误version GLIBCXX_3.4.20 not found的思路</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-22 21:08:39" itemprop="dateCreated datePublished" datetime="2021-01-22T21:08:39+08:00">2021-01-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-23 14:23:18" itemprop="dateModified" datetime="2021-01-23T14:23:18+08:00">2021-01-23</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>实际上这次的情况有一些复杂，首先这个集群上跑的是<strong>活化石</strong>Cent OS，也就是说环境非常的古老（硬件倒是最新的），GCC还是4.8.5，甚至编译不了最新的DGL库。更悲伤的是我并没有这个公用集群的管理员权限，只能想方设法去绕开权限去安装软件，因此我用<strong>Conda</strong>装了CMake，GCC和G++。所以解决<code>version GLIBCXX_3.4.20 not found</code>这个问题就更加麻烦了，因此这篇文章的解决方法并不适用所有的情况，但可以作为一个参考。</p>
+          <!--noindex-->
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/01/21/WSL%E5%85%B1%E4%BA%ABWindows%E7%9A%84SSH%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -749,73 +816,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="NekoDaemon">
-      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NekoDaemon's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/" class="post-title-link" itemprop="url">神威太湖之光上机摸索记录</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-25 18:24:09" itemprop="dateCreated datePublished" datetime="2020-05-25T18:24:09+08:00">2020-05-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-05-30 23:02:40" itemprop="dateModified" datetime="2020-05-30T23:02:40+08:00">2020-05-30</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="CPU端序"><a href="#CPU端序" class="headerlink" title="CPU端序"></a>CPU端序</h2>
-          <!--noindex-->
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -886,7 +886,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
           <a href="/archives">
-          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-count">39</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
