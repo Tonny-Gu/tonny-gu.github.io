@@ -2245,7 +2245,7 @@
 <li><code>--gpus all</code> 使用所有可用的GPU</li>
 </ul>
 </blockquote>
-<p>所有黄家容器列表：[<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated%5D%5Bhttps://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated%5D">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated][https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated]</a></p>
+<p>所有黄家容器列表：<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
 <h2 id="进入容器（交互式bash）"><a href="#进入容器（交互式bash）" class="headerlink" title="进入容器（交互式bash）"></a>进入容器（交互式bash）</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>参数含义：</p>
