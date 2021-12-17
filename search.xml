@@ -2289,7 +2289,7 @@
 <li>Each unique ID should only be used once.</li>
 <li><code>ncclGetUniqueId</code> can be invoked multiple times, and it will return a different unique ID each time. Meanwhile, the unique ID generated before is still working. </li>
 <li>It is safe to communicate within disjoint subsets of nodes simultaneously.</li>
-<li>Using NCCL to perform inter-GPU communication concurrently with CUDA-aware MPI may create deadlocks. [Reference: NVIDIA Docs](<a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/mpi.html#inter-gpu-communication-with-cuda-aware-mpi">NCCL and MPI — NCCL 2.11.4 documentation (nvidia.com)</a>)</li>
+<li>Using NCCL to perform inter-GPU communication concurrently with CUDA-aware MPI may create deadlocks. </li>
 </ul>
 <h2 id="Performance"><a href="#Performance" class="headerlink" title="Performance"></a>Performance</h2><p>Moreover, I also evaluate the influence on performance bring by sub-grouping.</p>
 <p>The testbed is,</p>
@@ -2328,6 +2328,10 @@
 </li>
 <li>The interference between two concurrent communicators is not quite noticeable.</li>
 <li>UPI bus is not a bottleneck when two PCIe Gen3 x16 devices (PCIe Switches) transmit a large data chunk over UPI bus.</li>
+</ul>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/mpi.html#inter-gpu-communication-with-cuda-aware-mpi">NCCL and MPI — NCCL 2.11.4 documentation (nvidia.com)</a></li>
+<li><a href="https://developer.nvidia.com/blog/fast-multi-gpu-collectives-nccl/">Fast Multi-GPU collectives with NCCL</a></li>
 </ul>
 ]]></content>
   </entry>
