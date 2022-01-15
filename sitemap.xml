@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/</loc>
+    
+    <lastmod>2022-01-15</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://nekodaemon.com/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/</loc>
+    
+    <lastmod>2022-01-15</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://nekodaemon.com/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</loc>
     
     <lastmod>2021-12-31</lastmod>
@@ -89,13 +103,6 @@
     <loc>https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/</loc>
     
     <lastmod>2021-05-13</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/</loc>
-    
-    <lastmod>2021-04-27</lastmod>
     
   </url>
   
@@ -303,14 +310,14 @@
   </url>
   
   <url>
-    <loc>https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/</loc>
+    <loc>https://nekodaemon.com/2019/08/18/%E6%9F%90%E7%A5%9E%E5%BF%85%E7%9A%84-Bash-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/</loc>
     
     <lastmod>2020-01-08</lastmod>
     
   </url>
   
   <url>
-    <loc>https://nekodaemon.com/2019/06/07/Markdown-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
+    <loc>https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/</loc>
     
     <lastmod>2020-01-08</lastmod>
     
@@ -324,7 +331,7 @@
   </url>
   
   <url>
-    <loc>https://nekodaemon.com/2019/08/18/%E6%9F%90%E7%A5%9E%E5%BF%85%E7%9A%84-Bash-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/</loc>
+    <loc>https://nekodaemon.com/2019/06/07/Markdown-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
     
     <lastmod>2020-01-08</lastmod>
     
@@ -333,7 +340,7 @@
 
   <url>
     <loc>https://nekodaemon.com/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -341,77 +348,77 @@
   
   <url>
     <loc>https://nekodaemon.com/tags/GPU/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/HPC/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Docker/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/ESXi/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Server/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Jetson/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Markdown/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/NUS/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Hexo/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Pug/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Ubuntu/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -420,21 +427,21 @@
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%90%B9%E6%B0%B4%E6%97%A5%E8%AE%B0/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99/</loc>
-    <lastmod>2022-01-04</lastmod>
+    <lastmod>2022-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>

@@ -834,7 +834,8 @@
   <entry>
     <title>How to make an unattended Ubuntu Server Installation ISO with cloud-init</title>
     <url>/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/</url>
-    <content><![CDATA[<p>It will be convenient if the installation is fully automated when configuring multiple nodes at the same time. However, I believe Ubuntu doesn’t care about unattended installation via the CD image. Its developers seem to be unwilling to write a detailed tutorial about that, even some changes they made make trouble unintentionally. Note that installing via PXE Network Boot is a good alternative. </p>
+    <content><![CDATA[<p><em>Updated on 16 Jan, 2022</em>. I worte <a href="/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/">a post for Ubuntu 20.04 Server</a>.</p>
+<p>It will be convenient if the installation is fully automated when configuring multiple nodes at the same time. However, I believe Ubuntu doesn’t care about unattended installation via the CD image. Its developers seem to be unwilling to write a detailed tutorial about that, even some changes they made make trouble unintentionally. Note that installing via PXE Network Boot is a good alternative. </p>
 <h2 id="Before-getting-hands-dirty"><a href="#Before-getting-hands-dirty" class="headerlink" title="Before getting hands dirty"></a>Before getting hands dirty</h2><p>An unnoticeable fact is that Ubuntu Server replaced its installer silently, which means some tutorials are actually not applicable for specific versions of Ubuntu. According to my observation, we have two installers so far, </p>
 <ul>
 <li>Before Ubuntu 18.04.3: <code>Debian-Installer</code>, a non-live installer</li>
@@ -844,7 +845,7 @@
 </li>
 <li>Ubuntu 20.04: <code>subiquity</code>, a live installer, with unattended installation support</li>
 </ul>
-<p>Consider that Ubuntu 18.04 has excellent compatibility, this tutorial aims at <strong>making Ubuntu 18.04.5 Installation ISO</strong>. As for Ubuntu 20.04 users, please refer to this tutorial <a href="https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e">https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e</a> for your information, and you can still read this tutorial because some approaches mentioned in this article also work.</p>
+<p>Consider that Ubuntu 18.04 has excellent compatibility, this tutorial aims at <strong>making Ubuntu 18.04.5 Installation ISO</strong>. As for Ubuntu 20.04 users, please refer to this tutorial <a href="https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e">https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e</a> or <a href="/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/">my newer blog post</a> for your information, and you can still read this tutorial because some approaches mentioned in this article also work.</p>
 <h2 id="Download-ISO-and-Tools"><a href="#Download-ISO-and-Tools" class="headerlink" title="Download ISO and Tools"></a>Download ISO and Tools</h2><p>Since Ubuntu 18.04.4~18.04.5 doesn’t support unattended installation, we have to use Ubuntu 18.04.3 as the original version. Note that this version is deprecated. Thus it can only be downloaded from <code>old-releases</code> site. </p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">http:&#x2F;&#x2F;old-releases.ubuntu.com&#x2F;releases&#x2F;18.04.3&#x2F;ubuntu-18.04.3-server-amd64.iso</span><br></pre></td></tr></table></figure>
 <p>There is an excellent tool called <code>cubic</code>, which helps us decompress and repack the ISO file and <code>rootfs</code> image. Also, it will automatically set up the virtual environment (<code>chroot</code>), where modifying the root filesystem is quite easy, just like operating a regular Ubuntu.</p>
@@ -2515,6 +2516,51 @@
 </li>
 </ul>
 <h2 id="Ending"><a href="#Ending" class="headerlink" title="Ending"></a>Ending</h2><p>其实这1w字的流水账早就在10月的时候写完了，只不过拖到了第二年才发出来，欸嘿。说起来这也是我最后一次以正式队员/队长的身份打SC比赛了，想想好气啊，因为这破疫情，痛失2x美帝 2x新加坡 2x北京 1x厦门免费旅游机会，没能帮学校花钱，我感到非常的愧疚。果然还是想续一续我的学生身份，继续努力的帮学校花钱。希望今年能以Year 0 PhD Student的身份打ASC22（<del>offer不会下不来了吧</del>），然后在未来某一年以Presenter的身份回到SC的会场，并成为目击证人，亲眼见证在nike的successor在SC SCC把其他队锤爆的那一刻。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Unattended Ubuntu 20.04 Server Offline Installation</title>
+    <url>/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/</url>
+    <content><![CDATA[<p>Last year, I wrote <a href="/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">a post</a> about how to install Ubuntu 18.04 Server automatically. The major reason why I choose to install the older version is I failed to make Ubuntu 20.04 install without pressing any key at that time while the approach for the offline installation recommended by the official is not working. </p>
+<p>There is <a href="https://www.pugetsystems.com/labs/hpc/How-To-Make-Ubuntu-Autoinstall-ISO-with-Cloud-init-2213/">an article</a> already described the detailed steps about the automatic installation of Ubuntu 20.04 Server, but according what its author said, their blog system ripped out some important characters. So, by checking with <a href="https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e">this script</a>, I figured out the correct way to achieve our goal.</p>
+<h2 id="Download-the-image"><a href="#Download-the-image" class="headerlink" title="Download the image"></a>Download the image</h2><p>Download the live CD image in whichever way you prefer. For the user locates in China, I would suggest you download from <a href="https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso">https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso</a>. </p>
+<h2 id="Update-some-files-in-ISO-image"><a href="#Update-some-files-in-ISO-image" class="headerlink" title="Update some files in ISO image"></a>Update some files in ISO image</h2><p>Only thing we need to do is updating several files. And here are some recommended editors.</p>
+<ul>
+<li>For Windows user, I strongly recommend you use <code>Ultraiso</code> to edit the ISO file.</li>
+<li>For Linux user, <code>ISO Master</code> should work. (I didn’t try it before.)</li>
+<li>For the user who wants to deeply customize the ISO file, including unpacking <code>rootfs</code> image, <code>cubic</code> is everything you need. You can refer to <a href="(/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/)">my previous post</a> and learn how it works.</li>
+</ul>
+<h3 id="Add-Kernel-Arguments"><a href="#Add-Kernel-Arguments" class="headerlink" title="Add Kernel Arguments"></a>Add Kernel Arguments</h3><p>Assume the root directory of ISO image is <code>/cdrom</code>. There are two bootloader configuration files need to modify, one for UEFI system, one for the legacy one.</p>
+<ul>
+<li><code>/cdrom/isolinux/txt.cfg</code></li>
+</ul>
+<p>Append the kernel arguments like this,</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel &#x2F;casper&#x2F;vmlinuz</span><br><span class="line">  append   initrd&#x3D;&#x2F;casper&#x2F;initrd quiet autoinstall ds&#x3D;nocloud;s&#x3D;&#x2F;cdrom&#x2F;  ---</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: HWE Kernel is a higher version of Linux kernel compared to the default one, which is shipped with the newer drivers. Theoretically, it has a better support for the latest hardware.</p>
+</blockquote>
+<ul>
+<li><code>/cdrom/grub.cfg</code></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel &#x2F;casper&#x2F;vmlinuz</span><br><span class="line">  append   initrd&#x3D;&#x2F;casper&#x2F;initrd quiet autoinstall ds&#x3D;nocloud;s&#x3D;&#x2F;cdrom&#x2F;  ---</span><br></pre></td></tr></table></figure>
+<h3 id="Add-Auto-install-Configurations"><a href="#Add-Auto-install-Configurations" class="headerlink" title="Add Auto-install Configurations"></a>Add Auto-install Configurations</h3><p>Two new files are also required for automatic answering.</p>
+<ul>
+<li><code>/cdrom/user-data</code></li>
+</ul>
+<p>This configuration is what I am using now, and it is for the machine without Internet. I have verified that it can make the installation procedure fully automatic.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment">#cloud-config</span></span><br><span class="line"><span class="attr">autoinstall:</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">storage:</span>  <span class="comment"># should set the interactive default but doesn&#x27;t seem to work??</span></span><br><span class="line">    <span class="attr">layout:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">direct</span></span><br><span class="line">  <span class="attr">locale:</span> <span class="string">en_US.UTF-8</span></span><br><span class="line">  <span class="attr">keyboard:</span></span><br><span class="line">    <span class="attr">layout:</span> <span class="string">us</span></span><br><span class="line">  <span class="attr">identity:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">ubuntu-server</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">&quot;$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0&quot;</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">tonny</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">allow-pw:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">install-server:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">package_update:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">package_upgrade:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: </p>
+<ul>
+<li><code>direct</code> storage layout means using and erasing the whole disk. (The default option provided by the interactive installer.)</li>
+<li>The password is <code>ubuntu</code>. This can be generated by <code>mkpasswd</code>.</li>
+</ul>
+</blockquote>
+<p>For more usages, check <a href="https://gist.github.com/dbkinghorn/c236aea31d76028b2b6ccdf6d3c6f07e">this example</a>.</p>
+<ul>
+<li><code>/cdrom/meta-data</code></li>
+</ul>
+<p>Just create an empty file and put it there.</p>
 ]]></content>
   </entry>
 </search>
