@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -240,6 +240,7 @@
 <p>安装好以后，打开桌面上的<code>XLaunch</code>，然后选择<code>Multiple windows</code>-&gt;<code>Start no client</code>-&gt;勾选<code>Disable access control</code>-&gt;<code>Save Configuration</code>保存一下设置，方便以后使用-&gt;<code>Finish</code>。</p>
 <h2 id="配置WSL的环境变量"><a href="#配置WSL的环境变量" class="headerlink" title="配置WSL的环境变量"></a>配置WSL的环境变量</h2><p>编辑WSL的<code>~/.bashrc</code>文件，在文件末尾写入以下内容，注意仅仅<code>export DISPLAY=0.0</code>是不行的。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DISPLAY=localhost:0.0</span><br></pre></td></tr></table></figure>
+
 <p>然后通过<code>source ~/.bashrc</code>，或者打开新终端载入新配置。enjoy it！</p>
 <p><img data-src="/images/pasted-62.png" alt="upload successful"></p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>

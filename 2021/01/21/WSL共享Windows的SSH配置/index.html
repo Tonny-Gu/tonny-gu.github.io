@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -237,14 +237,19 @@
 <h2 id="Windows下生成SSH密钥"><a href="#Windows下生成SSH密钥" class="headerlink" title="Windows下生成SSH密钥"></a>Windows下生成SSH密钥</h2><p>老掉牙的问题了，在Powershell下执行<code>ssh-keygen.exe</code>，然后狂按回车（如果不想每次SSH公钥登录都输一次密码的话）。公钥就会生成在Windows用户目录下的<code>.ssh</code>文件夹里。</p>
 <h2 id="WSL下软连接-ssh文件夹"><a href="#WSL下软连接-ssh文件夹" class="headerlink" title="WSL下软连接.ssh文件夹"></a>WSL下软连接<code>.ssh</code>文件夹</h2><p>这一步也很正常。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># WSL Environment</span></span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line">ln -s /mnt/c/Users/&lt;Your Name&gt;/.ssh .</span><br></pre></td></tr></table></figure>
+
 <h2 id="配置-ssh文件夹权限"><a href="#配置-ssh文件夹权限" class="headerlink" title="配置~/.ssh文件夹权限"></a>配置<code>~/.ssh</code>文件夹权限</h2><p>这一步有点坑，默认情况下在WSL下修改Windows文件夹权限是不会生效的，所以需要稍加配置。编辑<code>/etc/wsl.conf</code>（没有就创建一个），建议使用nano编辑。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/wsl.conf</span><br></pre></td></tr></table></figure>
+
 <p>并写入以下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[automount]</span><br><span class="line">options &#x3D; &quot;metadata&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[automount]</span><br><span class="line">options = &quot;metadata&quot;</span><br></pre></td></tr></table></figure>
+
 <p>保存并通过Powershell重启WSL。</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Powershell Environment</span></span><br><span class="line">wsl.exe -<span class="literal">-shutdown</span></span><br></pre></td></tr></table></figure>
+
 <p>最后给<code>~/.ssh</code>文件夹配置权限</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># WSL Environment</span></span><br><span class="line"><span class="built_in">cd</span> ~/.ssh</span><br><span class="line">chmod 644 config</span><br><span class="line">chmod 400 id_rsa</span><br></pre></td></tr></table></figure>
+
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1323645/unable-to-change-file-permissions-on-ubuntu-bash-for-windows-10">https://superuser.com/questions/1323645/unable-to-change-file-permissions-on-ubuntu-bash-for-windows-10</a></li>
 <li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1126721/rebooting-ubuntu-on-windows-without-rebooting-windows">https://superuser.com/questions/1126721/rebooting-ubuntu-on-windows-without-rebooting-windows</a></li>

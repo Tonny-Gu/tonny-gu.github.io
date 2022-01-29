@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -248,12 +248,15 @@
 <h3 id="移回desktop文件"><a href="#移回desktop文件" class="headerlink" title="移回desktop文件"></a>移回<code>desktop</code>文件</h3><p>把之前的<code>desktop</code>文件，如<code>debian-xterm.desktop</code>移回<code>application</code>文件夹。一段时间后软件图标会重新出现在Chrome OS的软件列表里。</p>
 <h2 id="转换图标格式"><a href="#转换图标格式" class="headerlink" title="转换图标格式"></a>转换图标格式</h2><p>截至Version 87，Chrome OS都不支持<code>xpm</code>格式的图标，所以有时候需要手动转换图标的格式。</p>
 <h3 id="安装imagemagick"><a href="#安装imagemagick" class="headerlink" title="安装imagemagick"></a>安装imagemagick</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install imagemagick</span><br></pre></td></tr></table></figure>
+
 <h3 id="找到图标的名字"><a href="#找到图标的名字" class="headerlink" title="找到图标的名字"></a>找到图标的名字</h3><p>以<code>xterm</code>为例，打开<code>/usr/share/applications</code>下的<code>debian-xterm.desktop</code>文件。发现<code>Icon=mini.xterm</code>，所以图标的文件必须叫<code>mini.xterm.png</code>。</p>
 <h3 id="进入存储图标的文件夹"><a href="#进入存储图标的文件夹" class="headerlink" title="进入存储图标的文件夹"></a>进入存储图标的文件夹</h3><p><code>xterm</code>将图标保存在<code>/usr/share/pixmaps</code>里，发现两个图标文件<code>mini.xterm_32x32.xpm</code>, <code>mini.xterm_48x48.xpm</code>。把分辨率高的<code>mini.xterm_48x48.xpm</code>转换为<code>mini.xterm.png</code>。注意不同的程序会把图标存在不同的地方。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo convert mini.xterm_48x48.xpm mini.xterm.png</span><br></pre></td></tr></table></figure>
+
 <h3 id="刷新图标缓存-1"><a href="#刷新图标缓存-1" class="headerlink" title="刷新图标缓存"></a>刷新图标缓存</h3><p>参考上一章节刷新图标的缓存。</p>
 <h2 id="查看错误日志"><a href="#查看错误日志" class="headerlink" title="查看错误日志"></a>查看错误日志</h2><p>如果以上两个章节不能解决问题，试着查看错误报告来定位问题。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo journalctl -b -t garcon</span><br></pre></td></tr></table></figure>
+
 <p>有一些错误应该不会产生什么影响，比如<code>[540]: MIME types file does not exist at: /home/user/.mime.types</code>。</p>
 
     </div>

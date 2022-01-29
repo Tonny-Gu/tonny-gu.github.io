@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -251,6 +251,7 @@
       
         <h2 id="Docker-自启动"><a href="#Docker-自启动" class="headerlink" title="Docker 自启动"></a>Docker 自启动</h2><p>Debian系的系统下</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <h2 id="Docker-Container-自启动"><a href="#Docker-Container-自启动" class="headerlink" title="Docker Container 自启动"></a>Docker Container 自启动</h2><h4 id="Container-Restart-Policy"><a href="#Container-Restart-Policy" class="headerlink" title="Container Restart Policy"></a>Container Restart Policy</h4><blockquote>
 <p>–restart的可选参数：</p>
@@ -263,11 +264,14 @@
 </blockquote>
 <p>未创建Container时</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
+
 <p>已创建Container时</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <h2 id="Docker-Container-自启动脚本"><a href="#Docker-Container-自启动脚本" class="headerlink" title="Docker Container 自启动脚本"></a>Docker Container 自启动脚本</h2><p>在Container下创建/startup.sh (别忘了执行权限)</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
+
 <p>创建Container</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>
     </div>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -251,34 +251,40 @@
       
         <h1 id="ESXi-镜像添加网卡驱动程序"><a href="#ESXi-镜像添加网卡驱动程序" class="headerlink" title="ESXi 镜像添加网卡驱动程序"></a>ESXi 镜像添加网卡驱动程序</h1><p><a target="_blank" rel="noopener" href="https://www.sysadminstories.com/2018/08/adding-realtek-8111-driver-to-vsphere.html">参考文章</a></p>
 <h2 id="1-安装PowerCLI"><a href="#1-安装PowerCLI" class="headerlink" title="1. 安装PowerCLI"></a>1. 安装PowerCLI</h2><p>下面的Powershell命令可以直接安装最新版PowerCLI</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Install-Module -Name VMware.PowerCLI</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Install-Module -Name VMware.PowerCLI</span><br></pre></td></tr></table></figure>
+
 <h2 id="2-下载ESXi驱动包"><a href="#2-下载ESXi驱动包" class="headerlink" title="2. 下载ESXi驱动包"></a>2. 下载ESXi驱动包</h2><p><a target="_blank" rel="noopener" href="https://vibsdepot.v-front.de/wiki/index.php/Welcome">下载链接</a></p>
 <p>在List of EXSi packages中寻找自己网卡的驱动，我的网卡是Realtek 8168系列的，故下载包net55-r8168</p>
 <h2 id="3-下载VMware-vSphere-Hypervisor-ESXi-Offline-Bundle"><a href="#3-下载VMware-vSphere-Hypervisor-ESXi-Offline-Bundle" class="headerlink" title="3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle"></a>3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</h2><p><a target="_blank" rel="noopener" href="https://my.vmware.com/web/vmware/details?productId=742&downloadGroup=ESXI67U2">官方下载链接</a></p>
 <p><a target="_blank" rel="noopener" href="http://ddl6.digiboy.ir/vmware/6.7/VMware-ESXi-6.7.0-8169922-depot.zip">分流下载链接</a><br><a target="_blank" rel="noopener" href="https://www.v2ex.com/t/448441">本链接来自于V2EX</a></p>
 <h2 id="4-导入Bundle到软件仓库"><a href="#4-导入Bundle到软件仓库" class="headerlink" title="4. 导入Bundle到软件仓库"></a>4. 导入Bundle到软件仓库</h2><p>假设两个Bundles的放置位置分别为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">D:\net55-r8168-8.045a-napi-offline_bundle.zip</span><br><span class="line">D:\VMware-ESXi-6.7.0-8169922-depot.zip</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">D:\net55-r8168-8.045a-napi-offline_bundle.zip</span><br><span class="line">D:\VMware-ESXi-6.7.0-8169922-depot.zip</span><br></pre></td></tr></table></figure>
+
 <p>通过以下命令导入软件仓库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwareDepot &quot;D:\net55-r8168-8.045a-napi-offline_bundle.zip&quot;, &quot;D:\VMware-ESXi-6.7.0-8169922-depot.zip&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwareDepot &quot;D:\net55-r8168-8.045a-napi-offline_bundle.zip&quot;, &quot;D:\VMware-ESXi-6.7.0-8169922-depot.zip&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <h2 id="5-创建Image-Profile"><a href="#5-创建Image-Profile" class="headerlink" title="5. 创建Image Profile"></a>5. 创建Image Profile</h2><ol>
 <li><p>获取软件仓库中可用的Image Profile</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxImageProfile</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxImageProfile</span><br></pre></td></tr></table></figure></li>
 <li><p>克隆Image Profile</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; New-EsxImageProfile -CloneProfile ESXi-6.7.0-8169922-standard -name ESXi-6.7.0-8169922-standard-RTL8111 -Vendor Tonny </span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; New-EsxImageProfile -CloneProfile ESXi-6.7.0-8169922-standard -name ESXi-6.7.0-8169922-standard-RTL8111 -Vendor Tonny </span><br></pre></td></tr></table></figure></li>
 <li><p>允许导入社区维护的Bundle</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Set-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -AcceptanceLevel CommunitySupported</span><br></pre></td></tr></table></figure>
-<h2 id="6-向Image-Profile导入驱动Bundle"><a href="#6-向Image-Profile导入驱动Bundle" class="headerlink" title="6. 向Image Profile导入驱动Bundle"></a>6. 向Image Profile导入驱动Bundle</h2></li>
-<li><p>查找某一板卡厂商的Bundle</p>
-</li>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Set-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -AcceptanceLevel CommunitySupported</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="6-向Image-Profile导入驱动Bundle"><a href="#6-向Image-Profile导入驱动Bundle" class="headerlink" title="6. 向Image Profile导入驱动Bundle"></a>6. 向Image Profile导入驱动Bundle</h2><ol>
+<li>查找某一板卡厂商的Bundle</li>
 </ol>
 <p>假定查找Realtek的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxSoftwarePackage | Where &#123;$_.Vendor -eq &quot;Realtek&quot;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxSoftwarePackage | Where &#123;$_.Vendor -eq &quot;Realtek&quot;&#125;</span><br></pre></td></tr></table></figure>
+
 <ol start="2">
 <li>导入驱动Bundle</li>
 </ol>
 <p>假定Bundle名为net55-r8168</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwarePackage -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -SoftwarePackage net55-r8168</span><br></pre></td></tr></table></figure>
-<h2 id="7-导出Image-ISO"><a href="#7-导出Image-ISO" class="headerlink" title="7. 导出Image ISO"></a>7. 导出Image ISO</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Export-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -ExportToIso -filepath D:\VMware-ESXi-6.7.0-8169922-RTL8111.iso</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwarePackage -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -SoftwarePackage net55-r8168</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-导出Image-ISO"><a href="#7-导出Image-ISO" class="headerlink" title="7. 导出Image ISO"></a>7. 导出Image ISO</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Export-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -ExportToIso -filepath D:\VMware-ESXi-6.7.0-8169922-RTL8111.iso</span><br></pre></td></tr></table></figure>
+
 <h1 id="ESXi-安装程序崩溃处理"><a href="#ESXi-安装程序崩溃处理" class="headerlink" title="ESXi 安装程序崩溃处理"></a>ESXi 安装程序崩溃处理</h1><p><a target="_blank" rel="noopener" href="https://zhidao.baidu.com/question/242122597991245964.html">参考文章</a><br>不得不说百度知道在9102年了还有人好好答题还是有点让人感动的</p>
 <p>现象：安装EXSi时提示Shutting down firmware services… Using ‘simple offset’ UEFI RTS mapping policy</p>
 <p>解决办法：显然添加<code>ignoreHeadless=TRUE</code>参数也没救回我电脑，根据评论区dalao提示</p>

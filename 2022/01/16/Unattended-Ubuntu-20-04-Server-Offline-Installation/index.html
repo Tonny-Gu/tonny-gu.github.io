@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -29,7 +29,7 @@
 <meta property="og:description" content="Last year, I wrote a post about how to install Ubuntu 18.04 Server automatically. The major reason why I choose to install the older version is I failed to make Ubuntu 20.04 install without pressing a">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-01-15T16:45:11.000Z">
-<meta property="article:modified_time" content="2022-01-15T16:45:28.646Z">
+<meta property="article:modified_time" content="2022-01-15T16:45:28.000Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 
@@ -247,20 +247,23 @@
 <li><code>/cdrom/isolinux/txt.cfg</code></li>
 </ul>
 <p>Append the kernel arguments like this,</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel &#x2F;casper&#x2F;vmlinuz</span><br><span class="line">  append   initrd&#x3D;&#x2F;casper&#x2F;initrd quiet autoinstall ds&#x3D;nocloud;s&#x3D;&#x2F;cdrom&#x2F;  ---</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>Note: HWE Kernel is a higher version of Linux kernel compared to the default one, which is shipped with the newer drivers. Theoretically, it has a better support for the latest hardware.</p>
 </blockquote>
 <ul>
 <li><code>/cdrom/grub.cfg</code></li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel &#x2F;casper&#x2F;vmlinuz</span><br><span class="line">  append   initrd&#x3D;&#x2F;casper&#x2F;initrd quiet autoinstall ds&#x3D;nocloud;s&#x3D;&#x2F;cdrom&#x2F;  ---</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
+
 <h3 id="Add-Auto-install-Configurations"><a href="#Add-Auto-install-Configurations" class="headerlink" title="Add Auto-install Configurations"></a>Add Auto-install Configurations</h3><p>Two new files are also required for automatic answering.</p>
 <ul>
 <li><code>/cdrom/user-data</code></li>
 </ul>
 <p>This configuration is what I am using now, and it is for the machine without Internet. I have verified that it can make the installation procedure fully automatic.</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cloud-config</span></span><br><span class="line"><span class="attr">autoinstall:</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">storage:</span>  <span class="comment"># should set the interactive default but doesn&#x27;t seem to work??</span></span><br><span class="line">    <span class="attr">layout:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">direct</span></span><br><span class="line">  <span class="attr">locale:</span> <span class="string">en_US.UTF-8</span></span><br><span class="line">  <span class="attr">keyboard:</span></span><br><span class="line">    <span class="attr">layout:</span> <span class="string">us</span></span><br><span class="line">  <span class="attr">identity:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">ubuntu-server</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">&quot;$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0&quot;</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">tonny</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">allow-pw:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">install-server:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">package_update:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">package_upgrade:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>Note: </p>
 <ul>

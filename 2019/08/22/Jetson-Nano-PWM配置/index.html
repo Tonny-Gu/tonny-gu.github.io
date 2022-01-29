@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -279,7 +279,8 @@
 </blockquote>
 <p>大概意思就是说，要用硬件PWM就得改Pinmux，要用软PWM，抱歉，我们没写这个代码</p>
 <h2 id="官方参考代码"><a href="#官方参考代码" class="headerlink" title="官方参考代码"></a>官方参考代码</h2><p>官方给出了PWM的Python参考代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> RPi.GPIO <span class="keyword">as</span> GPIO</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">output_pins = &#123;</span><br><span class="line">    <span class="string">&#x27;JETSON_XAVIER&#x27;</span>: <span class="number">18</span>,</span><br><span class="line">    <span class="string">&#x27;JETSON_NANO&#x27;</span>: <span class="number">33</span>,</span><br><span class="line">&#125;</span><br><span class="line">output_pin = output_pins.get(GPIO.model, <span class="literal">None</span>)</span><br><span class="line"><span class="keyword">if</span> output_pin <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> Exception(<span class="string">&#x27;PWM not supported on this board&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    <span class="comment"># Pin Setup:</span></span><br><span class="line">    <span class="comment"># Board pin-numbering scheme</span></span><br><span class="line">    GPIO.setmode(GPIO.BOARD)</span><br><span class="line">    <span class="comment"># set pin as an output pin with optional initial state of HIGH</span></span><br><span class="line">    GPIO.setup(output_pin, GPIO.OUT, initial=GPIO.HIGH)</span><br><span class="line">    p = GPIO.PWM(output_pin, <span class="number">50</span>)</span><br><span class="line">    p.start(<span class="number">25</span>)</span><br><span class="line"></span><br><span class="line">    print(<span class="string">&quot;PWM running. Press CTRL+C to exit.&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        p.stop()</span><br><span class="line">        GPIO.cleanup()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> RPi.GPIO <span class="keyword">as</span> GPIO</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">output_pins = &#123;</span><br><span class="line">    <span class="string">&#x27;JETSON_XAVIER&#x27;</span>: <span class="number">18</span>,</span><br><span class="line">    <span class="string">&#x27;JETSON_NANO&#x27;</span>: <span class="number">33</span>,</span><br><span class="line">&#125;</span><br><span class="line">output_pin = output_pins.get(GPIO.model, <span class="literal">None</span>)</span><br><span class="line"><span class="keyword">if</span> output_pin <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> Exception(<span class="string">&#x27;PWM not supported on this board&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    <span class="comment"># Pin Setup:</span></span><br><span class="line">    <span class="comment"># Board pin-numbering scheme</span></span><br><span class="line">    GPIO.setmode(GPIO.BOARD)</span><br><span class="line">    <span class="comment"># set pin as an output pin with optional initial state of HIGH</span></span><br><span class="line">    GPIO.setup(output_pin, GPIO.OUT, initial=GPIO.HIGH)</span><br><span class="line">    p = GPIO.PWM(output_pin, <span class="number">50</span>)</span><br><span class="line">    p.start(<span class="number">25</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;PWM running. Press CTRL+C to exit.&quot;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        p.stop()</span><br><span class="line">        GPIO.cleanup()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
 <p><code>GPIO.PWM</code>的50是指代PWM频率，传闻上限是50kHZ<br><code>p.start</code>的25当然是指占空比了，范围是0-100</p>
 <h2 id="导出DT文件"><a href="#导出DT文件" class="headerlink" title="导出DT文件"></a>导出DT文件</h2><p><img data-src="/images/pasted-0.png" alt="upload successful"></p>
 <p><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/jetson-gpio/blob/master/README.md">原图链接</a></p>
@@ -323,33 +324,45 @@
 <p>比如我的路径就是<code>/home/tonny/bin/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu</code></p>
 <h2 id="编译Uboot"><a href="#编译Uboot" class="headerlink" title="编译Uboot"></a>编译Uboot</h2><p>在Linux系统上下载脚本<code>tegra-pinmux-scripts</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/NVIDIA/tegra-pinmux-scripts</span><br></pre></td></tr></table></figure>
+
 <p>在<code>tegra-pinmux-scripts</code>目录下创建csv文件夹，把之前得到的csv文件复制到里面去</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd tegra-pinmux-scripts</span><br><span class="line">mkdir csv</span><br><span class="line">cp &lt;path-to-csv&gt;&#x2F;jetson-nano-sd.csv csv&#x2F;p3450-porg.csv </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd tegra-pinmux-scripts</span><br><span class="line">mkdir csv</span><br><span class="line">cp &lt;path-to-csv&gt;/jetson-nano-sd.csv csv/p3450-porg.csv </span><br></pre></td></tr></table></figure>
+
 <p>然后执行以下命令</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./csv-to-board.py p3450-porg</span><br><span class="line">./board-to-uboot.py p3450-porg &gt; pinmux-config-p3450-porg.h</span><br></pre></td></tr></table></figure>
+
 <p>用得到的<code>pinmux-config-p3450-porg.h</code>覆盖uboot目录<code>/home/tonny/nvidia/nvidia_sdk/JetPack_4.2.1_Linux_GA_P3448/Linux_for_Tegra/sources/u-boot/board/nvidia/p3450-porg</code>原来的文件</p>
 <p>再设置环境变量，导入工具链的相关信息</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CROSS_COMPILE=/home/tonny/bin/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-</span><br></pre></td></tr></table></figure>
+
 <p>安装dtc</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install device-tree-compiler</span><br></pre></td></tr></table></figure>
+
 <p>退回到uboot源码根目录<code>/home/tonny/nvidia/nvidia_sdk/JetPack_4.2.1_Linux_GA_P3448/Linux_for_Tegra/sources/u-boot</code>，编译uboot</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make distclean</span><br><span class="line">make p3450-porg_defconfig</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
 <p>最后将刚编译好的uboot导入L4T tree</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp u-boot.bin ../../bootloader/t210ref/p3450-porg/ </span><br></pre></td></tr></table></figure>
+
 <h2 id="更新CBoot"><a href="#更新CBoot" class="headerlink" title="更新CBoot"></a>更新CBoot</h2><p>首先我们要检查自己的Jetson Nano的设备树版本</p>
 <p>在nano上运行</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/device-tree/nvidia,dtsfilename</span><br></pre></td></tr></table></figure>
+
 <p>比如我的nano是<code>tegra210-p3448-0000-p3449-0000-b00.dts</code>，说明我们之后要修改b00版的文件，有的人可能拿到了a02版的nano，他们要改a02版的文件</p>
 <p><img data-src="/images/pasted-15.png" alt="upload successful"></p>
 <p>如果L4T版本为32.1，需要去参考<a target="_blank" rel="noopener" href="https://developer.nvidia.com/embedded/dlc/Jetson-Nano-40-Pin-Expansion-Header-1.2">NVIDIA Jetson Nano Pinmux官方文档</a>更新部分源码</p>
 <p>回到Linux主机上，用之前Excel表格生成的dtsi文件覆盖源码里的文件</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> Linux_for_Tegra/sources/hardware/nvidia/platform/t210/porg/kernel-dts/porg-platforms/ </span><br><span class="line"></span><br><span class="line">cp &lt;path-to-new-dt-files&gt;/tegra210-jetson-nano-sd-pinmux.dtsi tegra210-porg-pinmux-p3448-0000-&lt;nano-dt-version&gt;.dtsi </span><br><span class="line"></span><br><span class="line">cp &lt;path-to-new-dt-files&gt;/tegra210-jetson-nano-sd-gpio-default.dtsi tegra210-porg-gpio-p3448-0000-&lt;nano-dt-version&gt;.dtsi </span><br></pre></td></tr></table></figure>
+
 <p>进入<code>Linux_for_Tegra/sources/kernel/kernel-4.9/</code>文件夹构建device tree image</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> Linux_for_Tegra/sources/kernel/kernel-4.9/</span><br><span class="line">make ARCH=arm64 tegra_defconfig </span><br><span class="line">make ARCH=arm64 dtbs </span><br></pre></td></tr></table></figure>
+
 <p>最后将刚编译好的device tree image导入L4T tree</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp arch/arm64/boot/dts/tegra210-p3448-0000-p3449-0000-&lt;nano-dt-version&gt;.dtb ../../../kernel/dtb/</span><br></pre></td></tr></table></figure>
+
 <h2 id="刷机"><a href="#刷机" class="headerlink" title="刷机"></a>刷机</h2><p>在<code>Linux_for_Tegra</code>文件夹下执行</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./create-jetson-nano-sd-card-image.sh -o sd-blob.img -s &lt;sd_card_size&gt; -r &lt;nano-dt-revision&gt;</span><br></pre></td></tr></table></figure>
+
 <p>注意，sd_card_size为sd卡大小，而nano-dt-revision与nano-dt-version的对应关系如下</p>
 <table>
 <thead>
@@ -373,11 +386,14 @@
 </tbody></table>
 <p>这里我的sd卡为32g，dt-ver为b00，那么我实际执行了</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./create-jetson-nano-sd-card-image.sh -o sd-blob.img -s 32G -r 300</span><br></pre></td></tr></table></figure>
+
 <p>下一步，进入目录<code>Linux_for_Tegra/bootloader/signed</code>，将对应版本的<code>tegra210-p3448-0000-p3449-0000-&lt;nano-dt-version&gt;.dtb.encrypt</code>复制到nano上</p>
 <p>然后在nano上执行</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd <span class="keyword">if</span>=tegra210-p3448-0000-p3449-0000-&lt;nano-dt-version&gt;.dtb.encrypt of=/dev/disk/by-partlabel/DTB</span><br></pre></td></tr></table></figure>
+
 <p>当然个人建议先备份一下，万一失败了还能抢救一下</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd <span class="keyword">if</span>=/dev/disk/by-partlabel/DTB of=backup.dtb.encrypt</span><br></pre></td></tr></table></figure>
+
 <h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p>进入Force Recovery Mode的方法：<br><a target="_blank" rel="noopener" href="https://developer.nvidia.com/embedded/dlc/jetson-nano-dev-kit-user-guide">nano-dev-kit-user-guide</a></p>
 <blockquote>
 <ol>

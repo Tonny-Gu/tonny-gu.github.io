@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -234,29 +234,45 @@
 
       
         <h1 id="常用编译选项"><a href="#常用编译选项" class="headerlink" title="常用编译选项"></a>常用编译选项</h1><h2 id="ICC编译器"><a href="#ICC编译器" class="headerlink" title="ICC编译器"></a>ICC编译器</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /opt/intel/bin/compilervars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/bin/iccvars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/vtune_profiler/env/vars.sh</span><br></pre></td></tr></table></figure>
+
 <h3 id="ICC编译链接-OpenMP-OpenMPI"><a href="#ICC编译链接-OpenMP-OpenMPI" class="headerlink" title="ICC编译链接: OpenMP + OpenMPI"></a>ICC编译链接: OpenMP + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -g -fopenmp -O3 -xhost -qopt-report=5 -qopt-report-phase=vec -cxx=icc</span><br></pre></td></tr></table></figure>
+
 <h2 id="PGI-NVCC编译器"><a href="#PGI-NVCC编译器" class="headerlink" title="PGI + NVCC编译器"></a>PGI + NVCC编译器</h2><h3 id="环境准备-1"><a href="#环境准备-1" class="headerlink" title="环境准备"></a>环境准备</h3><p>向<code>~/.modulerc</code>添加以下代码给Environment Modules导入文件夹<code>/opt/pgi/modulefiles</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">module use /opt/pgi/modulefiles</span><br></pre></td></tr></table></figure>
+
 <p>启动Environment Modules</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /etc/profile.d/modules.sh</span><br></pre></td></tr></table></figure>
+
 <p>然后启动PGI环境</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">module load pgi-nollvm</span><br><span class="line">module load pgi/19.10</span><br><span class="line">module load openmpi</span><br></pre></td></tr></table></figure>
+
 <p>添加NVIDIA工具链路径</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/cuda-11.1/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="PGI编译：OpenACC-OpenMP-OpenMPI"><a href="#PGI编译：OpenACC-OpenMP-OpenMPI" class="headerlink" title="PGI编译：OpenACC + OpenMP + OpenMPI"></a>PGI编译：OpenACC + OpenMP + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast</span><br></pre></td></tr></table></figure>
+
 <h3 id="NVCC编译-CUDA-OpenMPI"><a href="#NVCC编译-CUDA-OpenMPI" class="headerlink" title="NVCC编译: CUDA + OpenMPI"></a>NVCC编译: CUDA + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -lineinfo -g -O3 -std=c++11 -gencode arch=compute_60,code=sm_60 -ccbin=mpicxx</span><br></pre></td></tr></table></figure>
+
 <h3 id="PGI链接"><a href="#PGI链接" class="headerlink" title="PGI链接"></a>PGI链接</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast -lnvToolsExt -lcudart -L/usr/<span class="built_in">local</span>/cuda-11.1/lib64</span><br></pre></td></tr></table></figure>
+
 <h1 id="性能分析方法"><a href="#性能分析方法" class="headerlink" title="性能分析方法"></a>性能分析方法</h1><h2 id="Intel-Vtune性能分析"><a href="#Intel-Vtune性能分析" class="headerlink" title="Intel Vtune性能分析"></a>Intel Vtune性能分析</h2><h3 id="环境准备-2"><a href="#环境准备-2" class="headerlink" title="环境准备"></a>环境准备</h3><p>同<code>ICC</code>环境准备</p>
 <h3 id="GUI启动分析"><a href="#GUI启动分析" class="headerlink" title="GUI启动分析"></a>GUI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vtune-gui &amp;</span><br></pre></td></tr></table></figure>
+
 <h3 id="CLI启动分析"><a href="#CLI启动分析" class="headerlink" title="CLI启动分析"></a>CLI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/intel/vtune_profiler_2020.1.0.607630/bin64/vtune -collect hpc-performance -finalization-mode=full -app-working-dir /home/tonny -- /home/tonny/myscript</span><br></pre></td></tr></table></figure>
+
 <p><code>myscript</code>是一个包含了启动环境变量，用<code>mpirun</code>启动目标程序的脚本</p>
 <h2 id="NVIDIA-Profiler性能分析"><a href="#NVIDIA-Profiler性能分析" class="headerlink" title="NVIDIA Profiler性能分析"></a>NVIDIA Profiler性能分析</h2><h3 id="环境准备-3"><a href="#环境准备-3" class="headerlink" title="环境准备"></a>环境准备</h3><p>添加NVIDIA工具链路径</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/cuda-11.1/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+
 <p>推荐使用Java 8，NVVP不兼容高版本Java</p>
 <h3 id="CLI启动分析-1"><a href="#CLI启动分析-1" class="headerlink" title="CLI启动分析"></a>CLI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 nvprof --cpu-profiling on --cpu-profiling-mode top-down --annotate-mpi openmpi  -o output.%h.%p.%q&#123;OMPI_COMM_WORLD_RANK&#125;.nvvp ./myprogram</span><br></pre></td></tr></table></figure>
+
 <h1 id="调试方法"><a href="#调试方法" class="headerlink" title="调试方法"></a>调试方法</h1><h2 id="多进程多窗口GDB调试"><a href="#多进程多窗口GDB调试" class="headerlink" title="多进程多窗口GDB调试"></a>多进程多窗口GDB调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 xterm gdb ./myprogram</span><br><span class="line">mpirun -np 4 xterm cuda-gdb ./myprogram</span><br></pre></td></tr></table></figure>
+
 <h2 id="多进程单窗口GDB调试"><a href="#多进程单窗口GDB调试" class="headerlink" title="多进程单窗口GDB调试"></a>多进程单窗口GDB调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 1 gdb ./myprogram : -np 3 ./myprogram</span><br><span class="line">mpirun -np 1 cuda-gdb ./myprogram : -np 3 ./myprogram</span><br></pre></td></tr></table></figure>
+
 <h2 id="PGI-GUI调试"><a href="#PGI-GUI调试" class="headerlink" title="PGI GUI调试"></a>PGI GUI调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pgdbg ./myprogram</span><br></pre></td></tr></table></figure>
+
 <h1 id="调试技巧"><a href="#调试技巧" class="headerlink" title="调试技巧"></a>调试技巧</h1><h2 id="CUDA-GDB查看显存上数组"><a href="#CUDA-GDB查看显存上数组" class="headerlink" title="CUDA-GDB查看显存上数组"></a>CUDA-GDB查看显存上数组</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span> ((@global double*)arr)[0]@100</span><br></pre></td></tr></table></figure>
     </div>
 

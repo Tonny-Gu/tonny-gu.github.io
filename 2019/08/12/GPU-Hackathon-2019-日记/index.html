@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -258,14 +258,17 @@
 <h3 id="Day-1-2"><a href="#Day-1-2" class="headerlink" title="Day 1-2"></a>Day 1-2</h3><p>第一天我们小组还好，还有一个经验丰富的学长坐镇，踩坑可以一起踩，摔得没有那么惨。我们遇到的第一个问题就是VPN登录不了。一般来说，超算的全部节点，包括登录节点全部隐藏在内网里，需要用一个VPN隧道访问内网，其实这就是VPN最原始的工作。NVIDIA的测试集群也是如此，需要借助一个叫NVIDIA Next Generation VPN Gateway的东西才能连接到测试集群。然而一开始我们去下载客户端Cisco Anyconnect Secure Mobility Client的时候，官网先让你注册，注册后告诉你你没资格下载。接着我们试着从第三方网站下载客户端，不是版本太老就是版本太新。最后发现NVIDIA有提供客户端下载，安装后发现连接不上深圳上海北京香港的Gateway，直到连接美国的Gateway才连接上并下载配置文件，借助配置文件才能连接其他国家的Gateway。其实最迷惑人的是，NVIDIA的工程师再次期间也不知道怎么办。</p>
 <p>解决VPN的问题花掉了上午大部分时间，接着试着编译他们课题组给的Fortran代码。首先使用Linux Environment Modules这种古老的东西配置环境。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">module load PrgEnv/PGI+OpenMPI/2018-03-19</span><br><span class="line">module load cuda</span><br><span class="line">module load pgi</span><br><span class="line">module load openmpi</span><br></pre></td></tr></table></figure>
+
 <p>CUDA是NVIDIA GPU的支持库，PGI是个编译器，OpenMPI是CPU进程间通信使用的库，Hackathon主要推广的技术是OpenACC，这个库由CUDA和PGI支持。</p>
 <p>本想一句make编译一遍过，又不是什么大工程像什么CESM这种编译起来一堆坑的，结果这份代码却依赖一个极其古老的库，FFTW2，1999年last updated，连SSE这种古老的SIMD指令都没用上的东西。与此同时在NVIDIA的测试集群只有FFTW3的库。更加坑的事情是，FFTW3的接口完全不兼容FFTW2的，这就意味着要是修改原始代码以适配FFTW3，那工作量够我们喝一壶的。学长直接按照README编译FFTW2，想编译出静态链接库，结果因为时代变迁，当时写的编译脚本已经不能在现在的系统下运行了。我一开始试着去解包CentOS的FFTW2的yum二进制包，得到了动态链接库和头文件，编译是能编译了，但是运行程序的时候动态链接库不在指定路径里，并且我们的权限不能将动态链接库复制到指定路径下。不得已，只能借助Arch Linux编译安装的脚本去编译FFTW2，才得到了静态链接库。</p>
 <h3 id="Day-2-3"><a href="#Day-2-3" class="headerlink" title="Day 2-3"></a>Day 2-3</h3><p>从第二天起，那位经验丰富的学长就跑路去准备雅思了。成功编译后，工程师发现，使用命令</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 40 ./main</span><br></pre></td></tr></table></figure>
+
 <p>可以用40个进程运行，然而在使用20个进程运行程序的时候，MPI就会引发错误。工程师让我去排查问题的原因。起初我想用GDB之类的debugger，结果我发现GDB只能trace一个进程，而且往往不是trace的进程出错。于是我想用古老的print打印日志法调试，然而40个进程同时将log连同错误信息异步打印到屏幕上，根本不知道错误信息是哪个进程引发的，好死不死因为MPI出错导致MPI_Barrier也不工作了。然后我想着用stderr重定向错误信息到文件，在C语言里用freopen轻松实现，结果Fortran里没有这种函数。最后只能一句句的修改代码，让程序运行到某个位置终止程序，从而判断哪一行代码引发MPI错误。最后发现是block分割时相关代码，将进程数除8,也就意味着进程数需要是8的整数倍。滑稽的是，相关代码附近的注释写着，慎重处理8这个数，没有文档谁知道这个事。</p>
 <h3 id="Day-3-4"><a href="#Day-3-4" class="headerlink" title="Day 3-4"></a>Day 3-4</h3><p>解决了MPI问题，random seed的相关代码引发了Runtime error，我看了一眼代码的上下文，又看了一遍上下文，还是没看懂这代码在干什么，于是我先问候了代码的作者的家人，再去问候“代码的作者”，然而“代码的作者”说这部分代码应该是十年前教授在美国的学生写的，他只是直接拿来用，但是他强调在Intel编译器下代码没有问题。一顿搜索猛如虎后发现Intel编译器的random seed的array size是2，同时PGI编译器的random seed的size是37。但是在我接触过的语言里，random seed就是个数，而不是数组，难怪我看不懂这段代码。</p>
 <h3 id="Day-4-5"><a href="#Day-4-5" class="headerlink" title="Day 4-5"></a>Day 4-5</h3><p>代码能在CPU上运行了，与此同时其他组已经开始取得数十倍甚至百倍的加速效果了，哪怕这段代码跑出来的结果未必正确，先做个性能分析再直接加上OpenACC导语先跑起来再说。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 40 nvprof --cpu-profiling on --cpu-profiling-mode top-down --annotate-mpi openmpi  -o output.%h.%p.%q&#123;OMPI_COMM_WORLD_RANK&#125; ./main</span><br><span class="line"><span class="comment"># command to get the profiling results</span></span><br></pre></td></tr></table></figure>
+
 <p>使用上面这段命令既可启动NVPROF，配合NVIDIA Visual Profiler就可以做性能分析，加上NVTX的话就可以增加tag，对自定义的代码片段进行性能分析。</p>
 <p>但是，运行nvprof的时候又引发了工程师都不知道怎么发生的错误，结果去掉<code>--annotate-mpi openmpi</code>这个开关就可以正常运行了，反正也不知道为什么就好了。</p>
 <p>加上OpenACC导语后又引发了CUDA Kernel的错误，一番排查后发现Fortran的数组支持负数的下标，然而OpenACC隐性生成copyin代码的时候对数组大小识别错误，调整了导语后可以在GPU上运行。</p>

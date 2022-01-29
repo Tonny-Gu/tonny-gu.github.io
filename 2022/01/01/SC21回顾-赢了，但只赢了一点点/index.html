@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -29,7 +29,7 @@
 <meta property="og:description" content="SC21又又又又是在线上打的。第二年痛失美帝免费旅游机会了！！！第二年了！！！没有机票，酒店，和大吃大喝的比赛能叫比赛吗！不过结果还是不错的，远远的超出我的预期（原因请看下文分解）。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-12-31T19:55:10.000Z">
-<meta property="article:modified_time" content="2021-12-31T19:56:08.730Z">
+<meta property="article:modified_time" content="2021-12-31T19:56:08.000Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 
@@ -354,8 +354,8 @@
 <blockquote>
 <p>buff组合，只能说全是魔法，只有一点代码：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-iface ens800f0 -genv UCX_TLS rc,self,sm -genv UCX_NET_DEVICES mlx5_2:1 -genv I_MPI_FABRICS shm:ofi -genv I_MPI_FALLBACK 0</span><br></pre></td></tr></table></figure>
-<p>再次重跑之前不能跑的点，诶，能跑出结果了。然而这个时候，比赛时间不太够了，之前用MVAPICH跑的结果又不能用。为了赶上进度，队友还想着一个节点同时跑两个点，然而我这个学期的project就在研究co-located programs之间相互干扰的问题，所以这个想法被我毙掉了，反正大不了就把原来的MVAPICH的数据加个说明交上去凑数，不过其实最后绝大部分结果都赶上了。此外，还有绑核的问题，MVAPICH绑核默认会绑成一个非常奇怪的姿势，但instruction又没提绑核的事情，干脆让Intel MPI自由发挥，用默认绑核的顺序就完事了。最后与MVAPICH的结果相比较，绑核和换Intel MPI都没有造成太大的影响，trend还是一致的。</p>
 </blockquote>
+<p>再次重跑之前不能跑的点，诶，能跑出结果了。然而这个时候，比赛时间不太够了，之前用MVAPICH跑的结果又不能用。为了赶上进度，队友还想着一个节点同时跑两个点，然而我这个学期的project就在研究co-located programs之间相互干扰的问题，所以这个想法被我毙掉了，反正大不了就把原来的MVAPICH的数据加个说明交上去凑数，不过其实最后绝大部分结果都赶上了。此外，还有绑核的问题，MVAPICH绑核默认会绑成一个非常奇怪的姿势，但instruction又没提绑核的事情，干脆让Intel MPI自由发挥，用默认绑核的顺序就完事了。最后与MVAPICH的结果相比较，绑核和换Intel MPI都没有造成太大的影响，trend还是一致的。</p>
 <h3 id="QE-amp-神秘应用"><a href="#QE-amp-神秘应用" class="headerlink" title="QE &amp; 神秘应用"></a>QE &amp; 神秘应用</h3><p>这两题都是要花钱跑的，作为一个常年抠门，特别是常年在云服务器上抠门的人（<del>但其实我作为AWS的Intern烧掉了AWS不少钱</del>），自然是不太舍得大手大脚的让QE和神秘应用在八CPU节点或者八卡上做测试的。抠门如我，给了他们一个有一张V100的Intel Haswell的节点，在这个便宜的节点上先测试好，再换到正式环境跑。虽然是Intel的CPU，但Haswell只支持到AVX2，它能跑的代码AMD平台应该也能跑。</p>
 <p>其实这两个才是赛前我比较担心的应用，因为这两道题目在赛前就看上去还没有另外两题准备的充分的样子，特别是神秘应用的同学人在香港，只能线上沟通，但结果是，这两道题反而没有遇到太多问题（或者说队友靠自己就闷声把问题修好了），出乎我的意料。QE的同学先开始说CPU版的单元测试跑不过，修了一下，好像是缺了什么库之类的，过了没多久，就说CPU的单元测试跑通了。开始叠优化选项，CPU版的单元测试又跑不过了，他自己鼓捣一下，又能跑过了。之后又开始折腾GPU版，这次遇到问题总算棘手了那么一点，这个问题让他修到了第二天。保险起见，就让他在Day 1到Day 2的半夜用四个节点把保底的结果跑出来，然后去思考用什么机器能刷高分数，跑完benchmarks有闲钱了就去刷高分数（然而最后是有闲钱但没时间了）。如果GPU版本能跑了，可以考虑明天和神秘应用一起时分复用GPU节点。为了省钱，还不让他开八节点来跑（不过仔细一想，其实好像花不了几个钱，但应该能提高不少分数）。</p>
 <p>神秘应用那边，Day 1，他上来就列好了用来编译安装程序的<strong>所有的</strong>命令（他是怎么把命令列的这么全的？他能预知未来？）我看了两眼，给他补充了一些东西，他就自己去折腾了。我预期他会出现各种各样的状况，然而他安静得就像跑路了一样，之间就问过一次MPI相关的（HPCX又跑不起来，换MPI重新编译就好了），Python软件包缺失，NVCC和MPI的环境变量问题，吓得我以为他跑不出来就开始摆烂了。到了Day 2，他遇到了只有在多卡节点上才能测试的东西，给他开了A100节点后没多久，他下一句话就是，</p>

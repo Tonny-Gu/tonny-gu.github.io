@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -244,9 +244,11 @@
 <h2 id="下载容器RootFS"><a href="#下载容器RootFS" class="headerlink" title="下载容器RootFS"></a>下载容器RootFS</h2><p>当然对于dalao来说，的确是可以用bootstrap或者busybox创建Linux的RootFS。显然为了省事，还是直接下载一个现成的比较方便。在<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images">http://uk.images.linuxcontainers.org/images</a>选一个合适的镜像下载，注意要下载xz压缩包。我比较喜欢Ubuntu 20.04，就下载了<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images/ubuntu/focal/amd64/default/20201114_07:42/rootfs.tar.xz">这个文件</a>。</p>
 <h2 id="解压RootFS"><a href="#解压RootFS" class="headerlink" title="解压RootFS"></a>解压RootFS</h2><p>找个合适的地方放镜像，比如<code>/data/tonny/ubuntu2004</code>，这里<code>/data</code>目录是我挂载的数据盘，然后解压<code>xz</code>文件。我的文件叫做<code>rootfs.tar.xz</code>，那么解压的命令如下。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xz -d rootfs.tar.xz</span><br><span class="line">tar -xvf rootfs.tar</span><br></pre></td></tr></table></figure>
+
 <p><img data-src="/images/pasted-55.png" alt="upload successful"></p>
 <h2 id="使用chroot修改密码"><a href="#使用chroot修改密码" class="headerlink" title="使用chroot修改密码"></a>使用chroot修改密码</h2><p>反正我查了半天都没查到Image的默认密码是啥，但知道有个<code>ubuntu</code>的账户，不如直接切进RootFS改密码。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot /data/tonny/ubuntu2004</span><br><span class="line">passwd ubuntu <span class="comment"># 或者可以直接passwd修改root密码</span></span><br></pre></td></tr></table></figure>
+
 <p><img data-src="/images/pasted-57.png" alt="upload successful"></p>
 <h2 id="创建LXC容器"><a href="#创建LXC容器" class="headerlink" title="创建LXC容器"></a>创建LXC容器</h2><p>首先要<code>Add Connection</code>，然后<code>Hypervisor</code>选择<code>Libvirt-LXC</code>再<code>Connect</code>。</p>
 <p><img data-src="/images/pasted-58.png" alt="upload successful"></p>

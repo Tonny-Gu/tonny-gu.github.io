@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="generator" content="Hexo 6.0.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -237,6 +237,7 @@
 <h2 id="找不到CUDA-Toolkit"><a href="#找不到CUDA-Toolkit" class="headerlink" title="找不到CUDA Toolkit"></a>找不到CUDA Toolkit</h2><p><code>CMake</code>报<code>Could NOT find CUDA (missing: CUDA_INCLUDE_DIRS CUDA_CUDART_LIBRARY)</code>这样的错误，可以通过手动指定<code>CUDA Toolkit</code>的目录解决。有趣的是<code>NVIDIA HPC SDK</code>里自带的精简版<code>CUDA Toolkit</code>是可以给<code>CMake</code>使用的。</p>
 <p>给<code>CMake</code>指定参数<code>CUDA_TOOLKIT_ROOT_DIR</code>，比如：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用NVIDIA HPC SDK里自带的精简版Toolkit</span></span><br><span class="line">cmake -DCUDA_TOOLKIT_ROOT_DIR=/home/apac/hpc_sdk/Linux_x86_64/2020/cuda/11.0</span><br><span class="line"><span class="comment"># 或者使用常规方法安装的Toolkit</span></span><br><span class="line">cmake -DCUDA_TOOLKIT_ROOT_DIR=/usr/<span class="built_in">local</span>/cuda-11.0</span><br></pre></td></tr></table></figure>
+
 <h2 id="NVCC不兼容编译器"><a href="#NVCC不兼容编译器" class="headerlink" title="NVCC不兼容编译器"></a>NVCC不兼容编译器</h2><p>在<code>make</code>的时候报错<code>nvcc fatal   : Unsupported PGI compiler found.  pgc++ is the only PGI compiler that is supported.</code>或者<code>Host compiler targets unsupported OS</code>，这个时候可以通过<code>make VERBOSE=1</code>来输出更多调试信息。</p>
 <p>在输出中的出错的那几句话中找到调用<code>nvcc</code>的命令，然后找名为<code>--ccbin</code>的参数，这个参数可能会被愚蠢的<code>CMake</code>设置成了<code>gcc</code>或者<code>nvc</code>等一票C编译器而不是C++编译器，因此通过手动指定一个Host端的C++编译器可以解决问题。</p>
 <p>给CMake指定参数<code>DCUDA_HOST_COMPILER</code>，比如：</p>
