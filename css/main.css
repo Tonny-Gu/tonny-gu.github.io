@@ -3174,6 +3174,9 @@ figure.highlight {
 .posts-expand .post-meta-container time {
   border-bottom: 0px;
 }
+.powered-by a {
+  border-bottom: 0px;
+}
 /*
 .btn {
     padding: 0;
