@@ -1,115 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="neko">
 <head>
   <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.0.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
 
 <link rel="stylesheet" href="/css/main.css">
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.css">
-  <script src="/lib/pace/pace.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
+  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"nekodaemon.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeIn","post_body":"fadeIn","coll_header":"slideLeftIn","sidebar":"slideRightIn"}},"path":"search.xml"};
-  </script>
-
-  <meta name="description" content="ESXi 镜像添加网卡驱动程序">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="ESXi 镜像添加网卡驱动程序">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ESXi 折腾记录">
 <meta property="og:url" content="https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/index.html">
 <meta property="og:site_name" content="NekoDaemon&#39;s Blog">
 <meta property="og:description" content="ESXi 镜像添加网卡驱动程序">
-<meta property="og:locale" content="zh_CN">
+<meta property="og:locale">
 <meta property="article:published_time" content="2019-06-17T06:50:00.000Z">
 <meta property="article:modified_time" content="2020-01-08T17:51:02.000Z">
 <meta property="article:author" content="NekoDaemon">
 <meta property="article:tag" content="ESXi">
 <meta name="twitter:card" content="summary">
 
+
 <link rel="canonical" href="https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/">
 
 
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true,
-    lang   : 'zh-CN'
-  };
-</script>
 
-  <title>ESXi 折腾记录 | NekoDaemon's Blog</title>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/","path":"2019/06/17/ESXi-折腾记录/","title":"ESXi 折腾记录"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ESXi 折腾记录 | NekoDaemon's Blog</title>
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
-    <script data-pjax>
-      if (CONFIG.hostname === location.hostname) {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-LD3Y9EEN0K');
-      }
-    </script>
-
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
 
 
 
 
 
   <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
 <link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
+  <div class="headband"></div>
 
+  <main class="main">
     <header class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="切换导航栏">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">NekoDaemon's Blog</h1>
-      <span class="logo-line-after"><i></i></span>
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
     </a>
   </div>
 
@@ -122,24 +89,11 @@
 
 
 
-
 <nav class="site-nav">
-  <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a>
-
-  </li>
-        <li class="menu-item menu-item-about">
-
-    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a>
-
-  </li>
-        <li class="menu-item menu-item-more">
-
-    <a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a>
-
-  </li>
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
         </a>
@@ -150,23 +104,22 @@
 
 
   <div class="search-pop-overlay">
-    <div class="popup search-popup">
-        <div class="search-header">
+    <div class="popup search-popup"><div class="search-header">
   <span class="search-icon">
     <i class="fa fa-search"></i>
   </span>
   <div class="search-input-container">
-    <input autocomplete="off" autocapitalize="off"
-           placeholder="搜索..." spellcheck="false"
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
            type="search" class="search-input">
   </div>
-  <span class="popup-btn-close">
+  <span class="popup-btn-close" role="button">
     <i class="fa fa-times-circle"></i>
   </span>
 </div>
-<div id="search-result">
-  <div id="no-result">
-    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
   </div>
 </div>
 
@@ -174,28 +127,130 @@
   </div>
 
 </div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E9%95%9C%E5%83%8F%E6%B7%BB%E5%8A%A0%E7%BD%91%E5%8D%A1%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-text">ESXi 镜像添加网卡驱动程序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85PowerCLI"><span class="nav-text">1. 安装PowerCLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8B%E8%BD%BDESXi%E9%A9%B1%E5%8A%A8%E5%8C%85"><span class="nav-text">2. 下载ESXi驱动包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%B8%8B%E8%BD%BDVMware-vSphere-Hypervisor-ESXi-Offline-Bundle"><span class="nav-text">3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AF%BC%E5%85%A5Bundle%E5%88%B0%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-text">4. 导入Bundle到软件仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%88%9B%E5%BB%BAImage-Profile"><span class="nav-text">5. 创建Image Profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%90%91Image-Profile%E5%AF%BC%E5%85%A5%E9%A9%B1%E5%8A%A8Bundle"><span class="nav-text">6. 向Image Profile导入驱动Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AF%BC%E5%87%BAImage-ISO"><span class="nav-text">7. 导出Image ISO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86"><span class="nav-text">ESXi 安装程序崩溃处理</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+  <div class="cc-license site-overview-item animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdn.jsdelivr.net/npm/@creativecommons/vocabulary@2020.11.3/assets/license_badges/small/by_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
-  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
 
 
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
+    <div class="main-inner post posts-expand">
 
-          <div class="content post posts-expand">
-            
 
-    
+  
+
+
+<div class="post-block">
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
     <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -212,33 +267,35 @@
           ESXi 折腾记录
         </h1>
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
 
-              <time title="创建时间：2019-06-17 14:50:00" itemprop="dateCreated datePublished" datetime="2019-06-17T14:50:00+08:00">2019-06-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-09 01:51:02" itemprop="dateModified" datetime="2020-01-09T01:51:02+08:00">2020-01-09</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
-                </span>
-            </span>
+      <time title="Created: 2019-06-17 14:50:00" itemprop="dateCreated datePublished" datetime="2019-06-17T14:50:00+08:00">2019-06-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2020-01-09 01:51:02" itemprop="dateModified" datetime="2020-01-09T01:51:02+08:00">2020-01-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+        </span>
+    </span>
 
-          
+  
+</div>
 
         </div>
       </header>
@@ -247,8 +304,6 @@
     
     
     <div class="post-body" itemprop="articleBody">
-
-      
         <h1 id="ESXi-镜像添加网卡驱动程序"><a href="#ESXi-镜像添加网卡驱动程序" class="headerlink" title="ESXi 镜像添加网卡驱动程序"></a>ESXi 镜像添加网卡驱动程序</h1><p><a target="_blank" rel="noopener" href="https://www.sysadminstories.com/2018/08/adding-realtek-8111-driver-to-vsphere.html">参考文章</a></p>
 <h2 id="1-安装PowerCLI"><a href="#1-安装PowerCLI" class="headerlink" title="1. 安装PowerCLI"></a>1. 安装PowerCLI</h2><p>下面的Powershell命令可以直接安装最新版PowerCLI</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Install-Module -Name VMware.PowerCLI</span><br></pre></td></tr></table></figure>
@@ -298,328 +353,90 @@
     
     
     
-        
 
-<div>
-<ul class="post-copyright">
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>Tonny
+      <strong>Author:  </strong>Tonny
   </li>
   <li class="post-copyright-link">
-    <strong>本文链接：</strong>
-    <a href="https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/" title="ESXi 折腾记录">https://nekodaemon.com/2019/06/17/ESXi-折腾记录/</a>
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/" title="ESXi 折腾记录">https://nekodaemon.com/2019/06/17/ESXi-折腾记录/</a>
   </li>
   <li class="post-copyright-license">
-    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a> 许可协议。转载请注明出处！
+    <strong>Copyright:  </strong>Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
   </li>
 </ul>
 </div>
 
-
-      <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/ESXi/" rel="tag"># ESXi</a>
           </div>
 
         
 
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2019/06/13/Ubuntu-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Ubuntu 学习笔记">
-      <i class="fa fa-chevron-left"></i> Ubuntu 学习笔记
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2019/06/19/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E7%B3%BB%E7%BB%9F%E5%88%86%E6%9E%90/" rel="next" title="神威太湖之光 系统分析">
-      神威太湖之光 系统分析 <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
+    </footer>
   </article>
-  
-  
-  
-
-
-
-          </div>
-          
-    <div class="comments" id="utterances-container"></div>
-
-<script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
-    });
-  }
-</script>
-
-        </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
-  <aside class="sidebar">
-    <div class="sidebar-inner">
-
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          文章目录
-        </li>
-        <li class="sidebar-nav-overview">
-          站点概览
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E9%95%9C%E5%83%8F%E6%B7%BB%E5%8A%A0%E7%BD%91%E5%8D%A1%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.</span> <span class="nav-text">ESXi 镜像添加网卡驱动程序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85PowerCLI"><span class="nav-number">1.1.</span> <span class="nav-text">1. 安装PowerCLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8B%E8%BD%BDESXi%E9%A9%B1%E5%8A%A8%E5%8C%85"><span class="nav-number">1.2.</span> <span class="nav-text">2. 下载ESXi驱动包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%B8%8B%E8%BD%BDVMware-vSphere-Hypervisor-ESXi-Offline-Bundle"><span class="nav-number">1.3.</span> <span class="nav-text">3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AF%BC%E5%85%A5Bundle%E5%88%B0%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-number">1.4.</span> <span class="nav-text">4. 导入Bundle到软件仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%88%9B%E5%BB%BAImage-Profile"><span class="nav-number">1.5.</span> <span class="nav-text">5. 创建Image Profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%90%91Image-Profile%E5%AF%BC%E5%85%A5%E9%A9%B1%E5%8A%A8Bundle"><span class="nav-number">1.6.</span> <span class="nav-text">6. 向Image Profile导入驱动Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AF%BC%E5%87%BAImage-ISO"><span class="nav-number">1.7.</span> <span class="nav-text">7. 导出Image ISO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">ESXi 安装程序崩溃处理</span></a></li></ol></div>
-      </div>
-      <!--/noindex-->
-
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
-      src="/images/avatar.png">
-  <p class="site-author-name" itemprop="name">NekoDaemon</p>
-  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
 </div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives">
-          <span class="site-state-item-count">42</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-            <a href="/categories/">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-            <a href="/tags/">
-        <span class="site-state-item-count">11</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
-  </nav>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
 </div>
-  <div class="links-of-author motion-element">
-      <span class="links-of-author-item">
-        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-  </div>
-  <div class="cc-license motion-element" itemprop="license">
-    <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-sa.svg" alt="Creative Commons"></a>
-  </div>
+  </main>
 
+  <footer class="footer">
+    <div class="footer-inner">
 
-  <div class="links-of-blogroll motion-element">
-    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
-      Links
-    </div>
-    <ul class="links-of-blogroll-list">
-        <li class="links-of-blogroll-item">
-          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
-        </li>
-        <li class="links-of-blogroll-item">
-          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
-        </li>
-    </ul>
-  </div>
-
-      </div>
-
-    </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-        
 
 <div class="copyright">
-  
   &copy; 2019 – 
   <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-bone"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div><div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT.Remix (by NekoDaemon)</a>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-theme-next" class="theme-link" rel="noopener" target="_blank">NexT.Gemini (NekoDaemon Remix)</a>
-  </div>
 
-        
-
-
-
-
-
-
-
-
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="/lib/pjax.min.js"></script>
-  <script src="/lib/medium-zoom.min.js"></script>
-  <script src="/lib/lozad.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/pisces.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-  <script>
-var pjax = new Pjax({
-  selectors: [
-    'head title',
-    '#page-configurations',
-    '.content-wrap',
-    '.post-toc-wrap',
-    '.languages',
-    '#pjax'
-  ],
-  switches: {
-    '.post-toc-wrap': Pjax.switches.innerHTML
-  },
-  analytics: false,
-  cacheBust: false,
-  scrollTo : !CONFIG.bookmark.enable
-});
-
-window.addEventListener('pjax:success', () => {
-  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
-    var code = element.text || element.textContent || element.innerHTML || '';
-    var parent = element.parentNode;
-    parent.removeChild(element);
-    var script = document.createElement('script');
-    if (element.id) {
-      script.id = element.id;
-    }
-    if (element.className) {
-      script.className = element.className;
-    }
-    if (element.type) {
-      script.type = element.type;
-    }
-    if (element.src) {
-      script.src = element.src;
-      // Force synchronous loading of peripheral JS.
-      script.async = false;
-    }
-    if (element.dataset.pjax !== undefined) {
-      script.dataset.pjax = '';
-    }
-    if (code !== '') {
-      script.appendChild(document.createTextNode(code));
-    }
-    parent.appendChild(script);
-  });
-  NexT.boot.refresh();
-  // Define Motion Sequence & Bootstrap Motion.
-  if (CONFIG.motion.enable) {
-    NexT.motion.integrator
-      .init()
-      .add(NexT.motion.middleWares.subMenu)
-      .add(NexT.motion.middleWares.postList)
-      .bootstrap();
-  }
-  NexT.utils.updateSidebarPosition();
-});
-</script>
-
-
-
-
-  
-
-
-
-
-  
-<script src="/js/local-search.js"></script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div id="pjax">
-  
-
-  
-
-<script>
-NexT.utils.loadComments(document.querySelector('#utterances-container'), () => {
-    // if (typeof parcelRequire === 'function') { return; }
-    var js = document.createElement('script');
-    js.type = 'text/javascript';
-    js.src = 'https://utteranc.es/client.js';
-    js.async = true;
-    js.crossorigin = 'anonymous';
-    js.setAttribute('repo', 'Tonny-Gu/blog_comments');
-    js.setAttribute('issue-term', 'pathname');
-    js.setAttribute('theme', 'github-light');
-    document.getElementById('utterances-container').appendChild(js);
-});
-</script>
     </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
 </body>
 </html>
