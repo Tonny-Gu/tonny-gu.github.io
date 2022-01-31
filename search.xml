@@ -1373,7 +1373,7 @@
 <hr>
 <h2 id="超链接"><a href="#超链接" class="headerlink" title="超链接"></a>超链接</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Example](http://example.org/)</span><br><span class="line">[icon.png](./images/icon.png)</span><br><span class="line">[Google](http://www.google.com/ &quot;Put your mouse on this link&quot;)</span><br><span class="line">&lt;http://baidu.com/&gt;</span><br><span class="line">&lt;admin@163.com&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#x61;&#x64;&#109;&#x69;&#110;&#x40;&#x31;&#54;&#51;&#x2e;&#x63;&#111;&#x6d;">&#x61;&#x64;&#109;&#x69;&#110;&#x40;&#x31;&#54;&#51;&#x2e;&#x63;&#111;&#x6d;</a></p>
+<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#97;&#100;&#109;&#105;&#x6e;&#64;&#x31;&#x36;&#51;&#46;&#99;&#111;&#x6d;">&#97;&#100;&#109;&#105;&#x6e;&#64;&#x31;&#x36;&#51;&#46;&#99;&#111;&#x6d;</a></p>
 <hr>
 <h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">![HTML5](http://html5test.com/images/html5.png &quot;Put your mouse on this icon&quot;)</span><br></pre></td></tr></table></figure>
 
@@ -1522,52 +1522,6 @@
       <tags>
         <tag>NUS</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>OpenWRT路由器加速Switch联机的方案</title>
-    <url>/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/</url>
-    <content><![CDATA[<p>Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。</p>
-<h2 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h2><p>这篇文章适合对计算机网络有一定了解的（至少得知道NAT，TCP，UDP这些词），乐于请教搜索引擎，也有兴趣和能力部署爬墙工具的玩家，因为大家都知道的原因，本文将不会包含手把手部署爬墙工具的内容。实施这个方案也需要时间，耐心和勇气，有可能在部署过程中就把家里网弄塌了，而且大概还是要花点钱，折腾完了发现还是商用加速器香。</p>
-<h2 id="NAT-Type"><a href="#NAT-Type" class="headerlink" title="NAT Type"></a>NAT Type</h2><p>一般来说，NAT Type可以分为很多种，最经典的分类是RFC 3489里的，其中最受限的是对称形（Symmetric），最开放的是完全锥形（Full Cone）（注：无NAT的公网也可以被认为是完全锥形网络），简单来说就是联机双方网络受限程度越重，双方能够直接通信的可能性越小，也就是UDP打洞的成功率越低，因此NAT类型会对某些游戏的联机产生影响。<del>这里还是得喷任天堂，明明只要像CF一样弄个公共服务器辅助双方的通信就没这么多破事了，就算双方都是对称形都没关系。</del></p>
-<p>根据我的观察和网上的资料，Switch的NAT Type A差不多等同于RFC 3489中定义的<strong>完全锥形（Full Cone）</strong>。不过很遗憾，出于安全考虑，<del>以及封杀P2P的需要</del>，大部分国内网络别说各种受限的锥形了，基本上都是对称形，大多数玩家裸连都能喜提一个Type C或者D。还好，拯救对称形网络是完全可行的。</p>
-<p><img data-src="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif" alt="img"></p>
-<h2 id="加速的思路"><a href="#加速的思路" class="headerlink" title="加速的思路"></a>加速的思路</h2><p>通常网上常见的思路有两种，<del>DMZ法</del>，HTTP代理法，和透明代理法。<strong>这篇文章是基于透明代理的思路实现Switch联机加速</strong>。</p>
-<h3 id="DMZ法"><a href="#DMZ法" class="headerlink" title="DMZ法"></a><del>DMZ法</del></h3><p>这种方法通常没什么luan用，能通过DMZ提升NAT Type，仅适用于以下情况：</p>
-<ul>
-<li>运营商（ISP）给你家整了公网IP地址</li>
-<li>你给你家整了路由器</li>
-<li>同时路由器的防火墙设置比较严格</li>
-</ul>
-<p>考虑到绝大部分的人拿不到公网IP地址，这方法几乎不适用于绝大部分人群。就算有你家有公网IP地址，考虑到一般情况下你的数据包都会走稀烂的国际出口，你的Switch也不能稳定连接到其他玩家的设备。</p>
-<h3 id="HTTP代理法"><a href="#HTTP代理法" class="headerlink" title="HTTP代理法"></a>HTTP代理法</h3><p>这个方法有一点luan用，确实能加速下载游戏（因为下载是TCP通信），但不能提升NAT Type，原因非常简单，<strong>HTTP代理不能处理UDP包</strong>，也就是对于一些游戏来说，开和没开代理没有任何区别，因为那部分游戏的联机依赖UDP通信。</p>
-<h3 id="透明代理法"><a href="#透明代理法" class="headerlink" title="透明代理法"></a>透明代理法</h3><p>这个基本上就是最后的大招了。参考下图，电脑手机游戏机的数据包其实是先发送给网关（Gateway）来处理（一般路由器充当了网关Gateway，交换机Switch，和猫Modem），也就是说<strong>网关会拿到所有的数据，包括TCP包和UDP包</strong>。</p>
-<p>已知所有问题都是因为NAT，缺少公网IP造成的，那么如果我们刚好有一个有公网IP地址的VPS，能不能让Switch借用我们的VPS服务器的公网IP地址当作自己的IP地址完成通信？「借用身份」这个思想，其实就是「代理」这个词的含义，最初用于保护隐私，只不过我们通常用代理去干了一些别的事情。</p>
-<p>因此，<strong>这篇文章的主要就是让你折腾一个透明代理</strong>，所谓透明代理，在这篇文章里就是路由器拿着Switch的数据包，先传送到VPS上，以VPS的公网IP地址完成收发，而不是直接用路由器的IP地址收发。</p>
-<p>题外话，我还购买了腾讯加速器的服务，它要求修改Switch上的网关地址，本质上也是一种透明代理，而且也能提升到Type A，<del>不过感觉只有SVIP才能保证喷喷不掉线</del>。</p>
-<p><img data-src="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png" alt="Network Diagram with Gateway Server via HowToForge"></p>
-<h2 id="部署透明代理"><a href="#部署透明代理" class="headerlink" title="部署透明代理"></a>部署透明代理</h2><p>可能你会说，说了大半天，不就是要上透明代理嘛，这种教程到处都是。确实，不过这篇文章不会过多的深入配置的细节。</p>
-<h3 id="软件的选择"><a href="#软件的选择" class="headerlink" title="软件的选择"></a>软件的选择</h3><p>一般的透明代理常用以下几种软件：</p>
-<ul>
-<li>Shadowsocks系：包括SS，SSR，SSRR等等</li>
-<li>V2Ray系：包括V2Ray，V2Fly，和Xray</li>
-<li>Trojan</li>
-</ul>
-<p>我个人倾向于使用V2Ray系，可玩性非常高，支持的协议非常的全面，同时一些分支（如Xray）迭代的速度非常快，大量引入新特性。此外，据Xray作者所述，V2Ray原版UDP代理的实现一言难尽，可以欣赏这篇文章<a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a>感受Xray作者的无奈。所以本文将会使用<strong>Xray</strong>这个实现，而不是原版V2Ray。</p>
-<p>Shadowsocks系和Trojan当然没啥问题，只不过本文不会介绍它罢了。</p>
-<h3 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h3><p>略，可参考V2Ray的配置教程，毕竟这里老司机任意发挥各显神通的地方，我就不插嘴了，注意服务端和客户端<strong>一定都要用Xray</strong>，否则最后配置成的网络不是Full Cone的NAT，也会有UDP断流的问题（参见issue：<a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a>），推荐使用Docker部署。</p>
-<h3 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h3><p>推荐按照先这篇文章<a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a>部署。注意最好使用<strong>官方原版OpenWRT</strong>，基于某个Snapshot构建的同时打包了一堆插件的OpenWRT可能会产生兼容问题，当然刚好集成了文章中提及的插件的包可以试着用用。</p>
-<h3 id="替换路由器V2Ray版本"><a href="#替换路由器V2Ray版本" class="headerlink" title="替换路由器V2Ray版本"></a>替换路由器V2Ray版本</h3><p>由于原版V2Ray在处理UDP包的流程上有严重缺陷，所以必须要替换路由器上的V2Ray版本。首先在<a href="https://github.com/XTLS/Xray-core/releases">https://github.com/XTLS/Xray-core/releases</a>上下载Xray，注意区分路由器CPU指令集，如<code>armv7a</code>或者<code>x64</code>什么的。在电脑上下载再用<code>scp</code>上传，或者直接在路由器上<code>wget</code>都可以。将压缩包解压后，用解压出来的<code>xray</code>文件替换路由器上的<code>/usr/bin/v2ray</code>文件，再在OpenWRT网页端重载V2Ray服务即可，看到网页上显示V2Ray版本为Xray即可。</p>
-<p><img data-src="/images/pasted-63.png" alt="img"></p>
-<h3 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h3><p>当然用Switch直接做测试就可以了，不出意外的话能看到NAT Type A了，如果不是，可以检查VPS的防火墙配置。</p>
-<p>Windows下测试推荐使用<a href="https://github.com/HMBSbige/NatTypeTester">NatTypeTester</a>，注意关闭Windows防火墙以免其影响测试结果。</p>
-<p><img data-src="/images/pasted-64.png" alt="img"></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>不是吃饱了撑着或是有特殊需求，如用Switch看YouTube，建议还是上个加速器吧，VPS也是要钱的啊，而且人家付费加速器的线路大概率会比你随手买的VPS更好。</p>
-<h2 id="参考文章（强烈建议去看看）"><a href="#参考文章（强烈建议去看看）" class="headerlink" title="参考文章（强烈建议去看看）"></a>参考文章（强烈建议去看看）</h2><ul>
-<li><a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a></li>
-<li><a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a></li>
-<li><a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a></li>
-</ul>
-]]></content>
   </entry>
   <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
@@ -1776,6 +1730,52 @@
       <tags>
         <tag>Ubuntu</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>OpenWRT路由器加速Switch联机的方案</title>
+    <url>/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/</url>
+    <content><![CDATA[<p>Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。</p>
+<h2 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h2><p>这篇文章适合对计算机网络有一定了解的（至少得知道NAT，TCP，UDP这些词），乐于请教搜索引擎，也有兴趣和能力部署爬墙工具的玩家，因为大家都知道的原因，本文将不会包含手把手部署爬墙工具的内容。实施这个方案也需要时间，耐心和勇气，有可能在部署过程中就把家里网弄塌了，而且大概还是要花点钱，折腾完了发现还是商用加速器香。</p>
+<h2 id="NAT-Type"><a href="#NAT-Type" class="headerlink" title="NAT Type"></a>NAT Type</h2><p>一般来说，NAT Type可以分为很多种，最经典的分类是RFC 3489里的，其中最受限的是对称形（Symmetric），最开放的是完全锥形（Full Cone）（注：无NAT的公网也可以被认为是完全锥形网络），简单来说就是联机双方网络受限程度越重，双方能够直接通信的可能性越小，也就是UDP打洞的成功率越低，因此NAT类型会对某些游戏的联机产生影响。<del>这里还是得喷任天堂，明明只要像CF一样弄个公共服务器辅助双方的通信就没这么多破事了，就算双方都是对称形都没关系。</del></p>
+<p>根据我的观察和网上的资料，Switch的NAT Type A差不多等同于RFC 3489中定义的<strong>完全锥形（Full Cone）</strong>。不过很遗憾，出于安全考虑，<del>以及封杀P2P的需要</del>，大部分国内网络别说各种受限的锥形了，基本上都是对称形，大多数玩家裸连都能喜提一个Type C或者D。还好，拯救对称形网络是完全可行的。</p>
+<p><img data-src="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif" alt="img"></p>
+<h2 id="加速的思路"><a href="#加速的思路" class="headerlink" title="加速的思路"></a>加速的思路</h2><p>通常网上常见的思路有两种，<del>DMZ法</del>，HTTP代理法，和透明代理法。<strong>这篇文章是基于透明代理的思路实现Switch联机加速</strong>。</p>
+<h3 id="DMZ法"><a href="#DMZ法" class="headerlink" title="DMZ法"></a><del>DMZ法</del></h3><p>这种方法通常没什么luan用，能通过DMZ提升NAT Type，仅适用于以下情况：</p>
+<ul>
+<li>运营商（ISP）给你家整了公网IP地址</li>
+<li>你给你家整了路由器</li>
+<li>同时路由器的防火墙设置比较严格</li>
+</ul>
+<p>考虑到绝大部分的人拿不到公网IP地址，这方法几乎不适用于绝大部分人群。就算有你家有公网IP地址，考虑到一般情况下你的数据包都会走稀烂的国际出口，你的Switch也不能稳定连接到其他玩家的设备。</p>
+<h3 id="HTTP代理法"><a href="#HTTP代理法" class="headerlink" title="HTTP代理法"></a>HTTP代理法</h3><p>这个方法有一点luan用，确实能加速下载游戏（因为下载是TCP通信），但不能提升NAT Type，原因非常简单，<strong>HTTP代理不能处理UDP包</strong>，也就是对于一些游戏来说，开和没开代理没有任何区别，因为那部分游戏的联机依赖UDP通信。</p>
+<h3 id="透明代理法"><a href="#透明代理法" class="headerlink" title="透明代理法"></a>透明代理法</h3><p>这个基本上就是最后的大招了。参考下图，电脑手机游戏机的数据包其实是先发送给网关（Gateway）来处理（一般路由器充当了网关Gateway，交换机Switch，和猫Modem），也就是说<strong>网关会拿到所有的数据，包括TCP包和UDP包</strong>。</p>
+<p>已知所有问题都是因为NAT，缺少公网IP造成的，那么如果我们刚好有一个有公网IP地址的VPS，能不能让Switch借用我们的VPS服务器的公网IP地址当作自己的IP地址完成通信？「借用身份」这个思想，其实就是「代理」这个词的含义，最初用于保护隐私，只不过我们通常用代理去干了一些别的事情。</p>
+<p>因此，<strong>这篇文章的主要就是让你折腾一个透明代理</strong>，所谓透明代理，在这篇文章里就是路由器拿着Switch的数据包，先传送到VPS上，以VPS的公网IP地址完成收发，而不是直接用路由器的IP地址收发。</p>
+<p>题外话，我还购买了腾讯加速器的服务，它要求修改Switch上的网关地址，本质上也是一种透明代理，而且也能提升到Type A，<del>不过感觉只有SVIP才能保证喷喷不掉线</del>。</p>
+<p><img data-src="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png" alt="Network Diagram with Gateway Server via HowToForge"></p>
+<h2 id="部署透明代理"><a href="#部署透明代理" class="headerlink" title="部署透明代理"></a>部署透明代理</h2><p>可能你会说，说了大半天，不就是要上透明代理嘛，这种教程到处都是。确实，不过这篇文章不会过多的深入配置的细节。</p>
+<h3 id="软件的选择"><a href="#软件的选择" class="headerlink" title="软件的选择"></a>软件的选择</h3><p>一般的透明代理常用以下几种软件：</p>
+<ul>
+<li>Shadowsocks系：包括SS，SSR，SSRR等等</li>
+<li>V2Ray系：包括V2Ray，V2Fly，和Xray</li>
+<li>Trojan</li>
+</ul>
+<p>我个人倾向于使用V2Ray系，可玩性非常高，支持的协议非常的全面，同时一些分支（如Xray）迭代的速度非常快，大量引入新特性。此外，据Xray作者所述，V2Ray原版UDP代理的实现一言难尽，可以欣赏这篇文章<a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a>感受Xray作者的无奈。所以本文将会使用<strong>Xray</strong>这个实现，而不是原版V2Ray。</p>
+<p>Shadowsocks系和Trojan当然没啥问题，只不过本文不会介绍它罢了。</p>
+<h3 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h3><p>略，可参考V2Ray的配置教程，毕竟这里老司机任意发挥各显神通的地方，我就不插嘴了，注意服务端和客户端<strong>一定都要用Xray</strong>，否则最后配置成的网络不是Full Cone的NAT，也会有UDP断流的问题（参见issue：<a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a>），推荐使用Docker部署。</p>
+<h3 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h3><p>推荐按照先这篇文章<a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a>部署。注意最好使用<strong>官方原版OpenWRT</strong>，基于某个Snapshot构建的同时打包了一堆插件的OpenWRT可能会产生兼容问题，当然刚好集成了文章中提及的插件的包可以试着用用。</p>
+<h3 id="替换路由器V2Ray版本"><a href="#替换路由器V2Ray版本" class="headerlink" title="替换路由器V2Ray版本"></a>替换路由器V2Ray版本</h3><p>由于原版V2Ray在处理UDP包的流程上有严重缺陷，所以必须要替换路由器上的V2Ray版本。首先在<a href="https://github.com/XTLS/Xray-core/releases">https://github.com/XTLS/Xray-core/releases</a>上下载Xray，注意区分路由器CPU指令集，如<code>armv7a</code>或者<code>x64</code>什么的。在电脑上下载再用<code>scp</code>上传，或者直接在路由器上<code>wget</code>都可以。将压缩包解压后，用解压出来的<code>xray</code>文件替换路由器上的<code>/usr/bin/v2ray</code>文件，再在OpenWRT网页端重载V2Ray服务即可，看到网页上显示V2Ray版本为Xray即可。</p>
+<p><img data-src="/images/pasted-63.png" alt="img"></p>
+<h3 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h3><p>当然用Switch直接做测试就可以了，不出意外的话能看到NAT Type A了，如果不是，可以检查VPS的防火墙配置。</p>
+<p>Windows下测试推荐使用<a href="https://github.com/HMBSbige/NatTypeTester">NatTypeTester</a>，注意关闭Windows防火墙以免其影响测试结果。</p>
+<p><img data-src="/images/pasted-64.png" alt="img"></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>不是吃饱了撑着或是有特殊需求，如用Switch看YouTube，建议还是上个加速器吧，VPS也是要钱的啊，而且人家付费加速器的线路大概率会比你随手买的VPS更好。</p>
+<h2 id="参考文章（强烈建议去看看）"><a href="#参考文章（强烈建议去看看）" class="headerlink" title="参考文章（强烈建议去看看）"></a>参考文章（强烈建议去看看）</h2><ul>
+<li><a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a></li>
+<li><a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a></li>
+<li><a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a></li>
+</ul>
+]]></content>
   </entry>
   <entry>
     <title>Unattended Ubuntu 20.04 Server Offline Installation</title>
@@ -2167,19 +2167,6 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 使用mpic++包装的C++编译器</span></span><br><span class="line">cmake -DCUDA_HOST_COMPILER=$(<span class="built_in">which</span> mpic++)</span><br></pre></td></tr></table></figure>]]></content>
   </entry>
   <entry>
-    <title>导出Google Text-to-Speech的音频</title>
-    <url>/2020/11/07/%E5%AF%BC%E5%87%BAGoogle-Text-to-Speech%E7%9A%84%E9%9F%B3%E9%A2%91/</url>
-    <content><![CDATA[<p>Google Text-to-Speech用WaveNet神经网络整出来的声音过于好听，以至于非常适合代替懒狗充当PPT或者短视频的旁白，但是试用TTS的页面上并没有下载音频文件的选项，因此提取音频文件需要额外几个步骤。</p>
-<p>启动Chrome，要用谷歌的软件薅谷歌的羊毛。按下<code>F12</code>启动万能的调试工具，切换到<code>Network</code>选项卡，然后按下页面中的<code>Speak it</code>，接着就在调试工具里观察到一个<code>proxy?url=</code>的文件在传输，对着这个文件右键选择<code>Copy</code>-&gt;<code>Copy Response</code>，创建一个Python脚本文件（文本文档改后缀名<code>.py</code>即可）后粘贴。应该可以观察到和下面代码类似的东西。</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;audioContent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;timepoints&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;audioConfig&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;audioEncoding&quot;</span>: <span class="string">&quot;LINEAR16&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;speakingRate&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;pitch&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;volumeGainDb&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;sampleRateHertz&quot;</span>: <span class="number">24000</span>,</span><br><span class="line">    <span class="attr">&quot;effectsProfileId&quot;</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>把这个脚本修改为下面的样子并运行，就可以将音频导出为<code>wav</code>文件了。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line">dat = &#123;</span><br><span class="line">  <span class="string">&quot;audioContent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="string">&quot;timepoints&quot;</span>: [],</span><br><span class="line">  <span class="string">&quot;audioConfig&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;audioEncoding&quot;</span>: <span class="string">&quot;LINEAR16&quot;</span>,</span><br><span class="line">    <span class="string">&quot;speakingRate&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;pitch&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;volumeGainDb&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;sampleRateHertz&quot;</span>: <span class="number">24000</span>,</span><br><span class="line">    <span class="string">&quot;effectsProfileId&quot;</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;output.wav&quot;</span>, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(base64.b64decode(dat[<span class="string">&quot;audioContent&quot;</span>]))</span><br></pre></td></tr></table></figure>
-
-<p>现在可以愉快的把音频插入到PPT里，设置动画自动播放音频自动切换了。</p>
-]]></content>
-  </entry>
-  <entry>
     <title>修复错误version GLIBCXX_3.4.20 not found的思路</title>
     <url>/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/</url>
     <content><![CDATA[<p>实际上这次的情况有一些复杂，首先这个集群上跑的是<strong>活化石</strong>Cent OS，也就是说环境非常的古老（硬件倒是最新的），GCC还是4.8.5，甚至编译不了最新的DGL库。更悲伤的是我并没有这个公用集群的管理员权限，只能想方设法去绕开权限去安装软件，因此我用<strong>Conda</strong>装了CMake，GCC和G++。所以解决<code>version GLIBCXX_3.4.20 not found</code>这个问题就更加麻烦了，因此这篇文章的解决方法并不适用所有的情况，但可以作为一个参考。</p>
@@ -2216,6 +2203,66 @@
 <li><a href="https://stackoverflow.com/questions/12851184/dlopen-failed-cannot-open-shared-object-file-no-such-file-or-directory">https://stackoverflow.com/questions/12851184/dlopen-failed-cannot-open-shared-object-file-no-such-file-or-directory</a></li>
 <li><a href="https://nehckl0.medium.com/creating-relocatable-linux-executables-by-setting-rpath-with-origin-45de573a2e98">https://nehckl0.medium.com/creating-relocatable-linux-executables-by-setting-rpath-with-origin-45de573a2e98</a></li>
 </ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>博客年度总结既 Hexo 第三次魔改记录</title>
+    <url>/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>在除夕前那么几天终于有一点闲空了，早在半年前，我就对原来的博客很不爽了，原来的主题丑到我了，博客系统也废了很久（不过怎么还有人能成功评论了，我自己都不能登录上去）。突然又发现  NexT 主题悄悄换了个仓库，早就更新了一个大版本了，连渲染后端都换成了 Nunjucks 了。总之，是时候爆改我博客的 Remix 主题了。</p>
+<h2 id="更新日志"><a href="#更新日志" class="headerlink" title="更新日志"></a>更新日志</h2><p><img data-src="/images/pasted-96.png" alt="upload successful"></p>
+<p><img data-src="/images/pasted-97.png" alt="upload successful"></p>
+<p><img data-src="/images/pasted-98.png" alt="upload successful"></p>
+<ul>
+<li>2022.1 NexT.Remix v3 (Preview)：目前的版本，基于 NexT.Gemini v8，融合了 <a href="https://dnocm.com/cake/">Hexo Cake</a> 和 <a href="https://github.com/CaiJimmy/hugo-theme-stack">Hugo Stack</a> 两个主题的风格</li>
+<li>2021.8 NexT.Gemini (Remix v2)：速度优化</li>
+<li>2020.5 NexT.Gemini (Remix v1)：初始的魔改版本，基于 NexT.Gemini v7，风格参考了 Hexo Terminal 和某个 Markdown Resume 模板</li>
+</ul>
+<p>由于NexT v8较v7有大量的代码改动，<del>加上我原来改代码的方式充满野性</del>，NexT.Remix 的代码并不继承于之前的魔改主题，且代码的改动遵守了 NexT 的魔改规范，使用了 Theme Inject 来魔改主题，仅增加数个文件，并未对原有文件进行修改，能够（相对）方便的合并 upstream 的新代码。</p>
+<p>除了更新 upstream 和 Hexo 的版本以及界面风格调整外，还把烂掉了的 utterance 换成了 giscus。</p>
+<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ul>
+<li>暂时使用 jsdelivr 分发部分公共 JS 库，之后改成用博客的 CDN 来分发这些文件以提升国内访问速度和稳定性。</li>
+<li>目前 giscus 的 integration 做的很粗糙，等到改好了就给 upstream 交个 PR 。</li>
+</ul>
+<h2 id="演进方向"><a href="#演进方向" class="headerlink" title="演进方向"></a>演进方向</h2><h3 id="现代"><a href="#现代" class="headerlink" title="现代"></a>现代</h3><p>NexT 作为一个有着丰富历史（比如换了两次仓库）的主题，它仍然不忘初心，到现在还保持着最初的模样。然而我更喜欢时下流行的 <strong>后·扁平化</strong> 风格，但又馋 NexT 丰富的功能，同时也懒得迁移平台，所以只能去把 NexT 变成我喜欢的样子了。</p>
+<p>由于我并不是什么设计带师，就只好 ”参考“ 已有的优秀样式。</p>
+<ul>
+<li>Hexo Cake：在 NexT v7 上魔改的一个主题。总体很棒，由于都是 NexT·改，”参考“起来更方便了</li>
+<li>Hugo Stack：喜欢它的阴影和配色</li>
+</ul>
+<p>实际上，NexT 的底子非常不错，随便改改就能完全满足我的审美。</p>
+<h3 id="简洁"><a href="#简洁" class="headerlink" title="简洁"></a>简洁</h3><p>如果配置得当，NexT本身的界面并不臃肿。这是 Remix v1 开始就在追求的目标。这一次进一步的删除掉不必要的元素，比如到处都是的下划线，友链上那一堆，文章目录上那一堆，还有日期上的下划线。另外 Pagination 也成了我重拳出击的对象。</p>
+<p>此外，从很久以前开始，我就在弱化标签和分类这两个功能，因为我自己的习惯是从来不看博客文章的标签和分类，读者也都是从搜索引擎跳转过来的，搜索引擎也不需要标签就能自己从文中提取关键词，<del>当然更重要的原因就是我懒得加这些东西</del>，所以界面上关于标签和分类的元素也减少了。</p>
+<h3 id="个性"><a href="#个性" class="headerlink" title="个性"></a>个性</h3><p>这也是为什么要自己魔改主题的原因。一个显而易见的原因当然就是不希望自己的博客主题和其他大路货撞车。其次就是博客主题要符合自己的写作风格，不同于 <a href="https://www.whexy.com/">这位</a>，追求读者阅读的极致体验与获得感，我希望我能写出来：</p>
+<ul>
+<li>仅期望我自己，有时也包括事件相关者阅读的回忆类内容</li>
+<li>（最好是独一无二的）技术类文章<ul>
+<li>在自己忘掉的时候给自己参考</li>
+<li><strong>顺便</strong>给<strong>找不到其他资料</strong>的人参考</li>
+</ul>
+</li>
+</ul>
+<p>也就是说，我并不会花很多心思在提升读者阅读体验上。对我来说，我不喜欢把很多精力放在我不关心的东西上，一些不那么重要的问题就怎么省力怎么来。比如配图，别说统一配图的风格了，如果这个配图只是为了美观，我选择不配图。因此，没有文章配图也很好看的主题就是我需要的。那种不需要写摘要，会自动把文章第一段当作摘要的主题就是我需要的。</p>
+<p>我希望我的文章能侧重于回答那些暂时无解或者没人总结答案的但很多人关心的问题上，<del>这样读者在救命稻草前肯定不会对阅读体验挑三拣四</del>。当然基本的阅读体验还是要有的，魔改主题提升文章可读性也是改善阅读体验的一部分。</p>
+<p>还有就是，我指望魔改博客主题这件事能够一定程度的体现出博主的水平……什么，你说 dalao 都是自己造博客框架的？我又不是前端专业，我不揽这个瓷器活。</p>
+<p>哦对了，现在博客使用一种叫 Neko 语的东西，这语言一部分是中英双语，一部分是被我改掉的 NexT 的塑料英语。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>自我感觉这一年这个博客还是取得了显著的进步，看起来更 Professional 了。</p>
+<h3 id="文章数量"><a href="#文章数量" class="headerlink" title="文章数量"></a>文章数量</h3><p>似乎没有维持出一个月一篇的节奏。Anyway，我自认为文章质量比去年的还是强了一丢丢。（<del>可能是我太摸了，所以没有踩到什么坑。</del>）</p>
+<h3 id="博客主题"><a href="#博客主题" class="headerlink" title="博客主题"></a>博客主题</h3><p>改完之后我舒服了，从表面到代码实现都比原来美观了不少。</p>
+<h3 id="访问速度"><a href="#访问速度" class="headerlink" title="访问速度"></a>访问速度</h3><p>以前的方案又贵又拉，Azure CDN + Github Page 这套太强了。</p>
+<h3 id="访问量"><a href="#访问量" class="headerlink" title="访问量"></a>访问量</h3><p>只要写文章的速度比文章过气的速度快，访问量一定是会增长的。只不过百度死活还是只收录了主页，辣鸡玩意。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>导出Google Text-to-Speech的音频</title>
+    <url>/2020/11/07/%E5%AF%BC%E5%87%BAGoogle-Text-to-Speech%E7%9A%84%E9%9F%B3%E9%A2%91/</url>
+    <content><![CDATA[<p>Google Text-to-Speech用WaveNet神经网络整出来的声音过于好听，以至于非常适合代替懒狗充当PPT或者短视频的旁白，但是试用TTS的页面上并没有下载音频文件的选项，因此提取音频文件需要额外几个步骤。</p>
+<p>启动Chrome，要用谷歌的软件薅谷歌的羊毛。按下<code>F12</code>启动万能的调试工具，切换到<code>Network</code>选项卡，然后按下页面中的<code>Speak it</code>，接着就在调试工具里观察到一个<code>proxy?url=</code>的文件在传输，对着这个文件右键选择<code>Copy</code>-&gt;<code>Copy Response</code>，创建一个Python脚本文件（文本文档改后缀名<code>.py</code>即可）后粘贴。应该可以观察到和下面代码类似的东西。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;audioContent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;timepoints&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;audioConfig&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;audioEncoding&quot;</span>: <span class="string">&quot;LINEAR16&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;speakingRate&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;pitch&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;volumeGainDb&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;sampleRateHertz&quot;</span>: <span class="number">24000</span>,</span><br><span class="line">    <span class="attr">&quot;effectsProfileId&quot;</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>把这个脚本修改为下面的样子并运行，就可以将音频导出为<code>wav</code>文件了。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line">dat = &#123;</span><br><span class="line">  <span class="string">&quot;audioContent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="string">&quot;timepoints&quot;</span>: [],</span><br><span class="line">  <span class="string">&quot;audioConfig&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;audioEncoding&quot;</span>: <span class="string">&quot;LINEAR16&quot;</span>,</span><br><span class="line">    <span class="string">&quot;speakingRate&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;pitch&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;volumeGainDb&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;sampleRateHertz&quot;</span>: <span class="number">24000</span>,</span><br><span class="line">    <span class="string">&quot;effectsProfileId&quot;</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;output.wav&quot;</span>, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(base64.b64decode(dat[<span class="string">&quot;audioContent&quot;</span>]))</span><br></pre></td></tr></table></figure>
+
+<p>现在可以愉快的把音频插入到PPT里，设置动画自动播放音频自动切换了。</p>
 ]]></content>
   </entry>
   <entry>
@@ -2828,53 +2875,6 @@
 <li><a href="https://superuser.com/questions/1332709/setting-up-x11-forwarding-over-ssh-on-windows-10-subsystem-for-linux">https://superuser.com/questions/1332709/setting-up-x11-forwarding-over-ssh-on-windows-10-subsystem-for-linux</a></li>
 <li><a href="https://ddadaal.me/articles/run-gui-on-wsl2-with-x11-forwarding">https://ddadaal.me/articles/run-gui-on-wsl2-with-x11-forwarding</a></li>
 </ul>
-]]></content>
-  </entry>
-  <entry>
-    <title>博客年度总结既 Hexo 第三次魔改记录</title>
-    <url>/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<p>在除夕前那么几天终于有一点闲空了，早在半年前，我就对原来的博客很不爽了，原来的主题丑到我了，博客系统也废了很久（不过怎么还有人能成功评论了，我自己都不能登录上去）。突然又发现  NexT 主题悄悄换了个仓库，早就更新了一个大版本了，连渲染后端都换成了 Nunjucks 了。总之，是时候爆改我博客的 Remix 主题了。</p>
-<h2 id="更新日志"><a href="#更新日志" class="headerlink" title="更新日志"></a>更新日志</h2><p><img data-src="/images/pasted-96.png" alt="upload successful"></p>
-<p><img data-src="/images/pasted-97.png" alt="upload successful"></p>
-<p><img data-src="/images/pasted-98.png" alt="upload successful"></p>
-<ul>
-<li>2022.1 NexT.Remix v3 (Preview)：目前的版本，基于 NexT.Gemini v8，融合了 <a href="https://dnocm.com/cake/">Hexo Cake</a> 和 <a href="https://github.com/CaiJimmy/hugo-theme-stack">Hugo Stack</a> 两个主题的风格</li>
-<li>2021.8 NexT.Gemini (Remix v2)：速度优化</li>
-<li>2020.5 NexT.Gemini (Remix v1)：初始的魔改版本，基于 NexT.Gemini v7，风格参考了 Hexo Terminal 和某个 Markdown Resume 模板</li>
-</ul>
-<p>由于NexT v8较v7有大量的代码改动，<del>加上我原来改代码的方式充满野性</del>，NexT.Remix 的代码并不继承于之前的魔改主题，且代码的改动遵守了 NexT 的魔改规范，使用了 Theme Inject 来魔改主题，仅增加数个文件，并未对原有文件进行修改，能够（相对）方便的合并 upstream 的新代码。</p>
-<p>除了更新 upstream 和 Hexo 的版本以及界面风格调整外，还把烂掉了的 utterance 换成了 giscus。</p>
-<h3 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h3><ul>
-<li>暂时使用 jsdelivr 分发部分公共 JS 库，之后改成用博客的 CDN 来分发这些文件以提升国内访问速度和稳定性。</li>
-<li>目前 giscus 的 integration 做的很粗糙，等到改好了就给 upstream 交个 PR 。</li>
-</ul>
-<h2 id="演进方向"><a href="#演进方向" class="headerlink" title="演进方向"></a>演进方向</h2><h3 id="现代"><a href="#现代" class="headerlink" title="现代"></a>现代</h3><p>NexT 作为一个有着丰富历史（比如换了两次仓库）的主题，它仍然不忘初心，到现在还保持着最初的模样。然而我更喜欢时下流行的 <strong>后·扁平化</strong> 风格，但又馋 NexT 丰富的功能，同时也懒得迁移平台，所以只能去把 NexT 变成我喜欢的样子了。</p>
-<p>由于我并不是什么设计带师，就只好 ”参考“ 已有的优秀样式。</p>
-<ul>
-<li>Hexo Cake：在 NexT v7 上魔改的一个主题。总体很棒，由于都是 NexT·改，”参考“起来更方便了</li>
-<li>Hugo Stack：喜欢它的阴影和配色</li>
-</ul>
-<p>实际上，NexT 的底子非常不错，随便改改就能完全满足我的审美。</p>
-<h3 id="简洁"><a href="#简洁" class="headerlink" title="简洁"></a>简洁</h3><p>如果配置得当，NexT本身的界面并不臃肿。这是 Remix v1 开始就在追求的目标。这一次进一步的删除掉不必要的元素，比如到处都是的下划线，友链上那一堆，文章目录上那一堆，还有日期上的下划线。另外 Pagination 也成了我重拳出击的对象。</p>
-<p>此外，从很久以前开始，我就在弱化标签和分类这两个功能，因为我自己的习惯是从来不看博客文章的标签和分类，读者也都是从搜索引擎跳转过来的，搜索引擎也不需要标签就能自己从文中提取关键词，<del>当然更重要的原因就是我懒得加这些东西</del>，所以界面上关于标签和分类的元素也减少了。</p>
-<h3 id="个性"><a href="#个性" class="headerlink" title="个性"></a>个性</h3><p>这也是为什么要自己魔改主题的原因。一个显而易见的原因当然就是不希望自己的博客主题和其他大路货撞车。其次就是博客主题要符合自己的写作风格，不同于 <a href="https://www.whexy.com/">这位</a>，追求读者阅读的极致体验与获得感，我希望我能写出来：</p>
-<ul>
-<li>仅期望我自己，有时也包括事件相关者阅读的回忆类内容</li>
-<li>（最好是独一无二的）技术类文章<ul>
-<li>在自己忘掉的时候给自己参考</li>
-<li><strong>顺便</strong>给<strong>找不到其他资料</strong>的人参考</li>
-</ul>
-</li>
-</ul>
-<p>也就是说，我并不会花很多心思在提升读者阅读体验上。对我来说，我不喜欢把很多精力放在我不关心的东西上，一些不那么重要的问题就怎么省力怎么来。比如配图，别说统一配图的风格了，如果这个配图只是为了美观，我选择不配图。因此，没有文章配图也很好看的主题就是我需要的。那种不需要写摘要，会自动把文章第一段当作摘要的主题就是我需要的。</p>
-<p>我希望我的文章能侧重于回答那些暂时无解或者没人总结答案的但很多人关心的问题上，<del>这样读者在救命稻草前肯定不会对阅读体验挑三拣四</del>。当然基本的阅读体验还是要有的，魔改主题提升文章可读性也是改善阅读体验的一部分。</p>
-<p>还有就是，我指望魔改博客主题这件事能够一定程度的体现出博主的水平……什么，你说 dalao 都是自己造博客框架的？我又不是前端专业，我不揽这个瓷器活。</p>
-<p>哦对了，现在博客使用一种叫 Neko 语的东西，这语言一部分是中英双语，一部分是被我改掉的 NexT 的塑料英语。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>自我感觉这一年这个博客还是取得了显著的进步，看起来更 Professional 了。</p>
-<h3 id="文章数量"><a href="#文章数量" class="headerlink" title="文章数量"></a>文章数量</h3><p>似乎没有维持出一个月一篇的节奏。Anyway，我自认为文章质量比去年的还是强了一丢丢。（<del>可能是我太摸了，所以没有踩到什么坑。</del>）</p>
-<h3 id="博客主题"><a href="#博客主题" class="headerlink" title="博客主题"></a>博客主题</h3><p>改完之后我舒服了，从表面到代码实现都比原来美观了不少。</p>
-<h3 id="访问速度"><a href="#访问速度" class="headerlink" title="访问速度"></a>访问速度</h3><p>以前的方案又贵又拉，Azure CDN + Github Page 这套太强了。</p>
-<h3 id="访问量"><a href="#访问量" class="headerlink" title="访问量"></a>访问量</h3><p>只要写文章的速度比文章过气的速度快，访问量一定是会增长的。只不过百度死活还是只收录了主页，辣鸡玩意。</p>
 ]]></content>
   </entry>
 </search>
