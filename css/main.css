@@ -3222,9 +3222,18 @@ figure.highlight {
 .post-meta {
   justify-content: left;
 }
-.post-block,
-.comments {
+.post-block {
   padding-bottom: 20px;
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .post-block {
+    padding-bottom: 0px;
+  }
+}
+@media (max-width: 767px) {
+  .post-block {
+    padding-bottom: 0px;
+  }
 }
 .footer {
   padding: 10px 0;
