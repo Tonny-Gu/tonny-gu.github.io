@@ -233,41 +233,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>Docker 学习笔记</title>
-    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h2 id="Docker-自启动"><a href="#Docker-自启动" class="headerlink" title="Docker 自启动"></a>Docker 自启动</h2><p>Debian系的系统下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="Docker-Container-自启动"><a href="#Docker-Container-自启动" class="headerlink" title="Docker Container 自启动"></a>Docker Container 自启动</h2><h4 id="Container-Restart-Policy"><a href="#Container-Restart-Policy" class="headerlink" title="Container Restart Policy"></a>Container Restart Policy</h4><blockquote>
-<p>–restart的可选参数：</p>
-<ol>
-<li>no (默认值) Container退出时不重启</li>
-<li>on-failure[:max-retries] exit code非0时重启</li>
-<li>always</li>
-<li>unless-stopped</li>
-</ol>
-</blockquote>
-<p>未创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
-
-<p>已创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="Docker-Container-自启动脚本"><a href="#Docker-Container-自启动脚本" class="headerlink" title="Docker Container 自启动脚本"></a>Docker Container 自启动脚本</h2><p>在Container下创建/startup.sh (别忘了执行权限)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
-
-<p>创建Container</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>Docker</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ESXi 折腾记录</title>
     <url>/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h1 id="ESXi-镜像添加网卡驱动程序"><a href="#ESXi-镜像添加网卡驱动程序" class="headerlink" title="ESXi 镜像添加网卡驱动程序"></a>ESXi 镜像添加网卡驱动程序</h1><p><a href="https://www.sysadminstories.com/2018/08/adding-realtek-8111-driver-to-vsphere.html">参考文章</a></p>
@@ -510,6 +475,41 @@
 <li>Tsinghua student supercomputing team / TUNA</li>
 </ul>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Docker 学习笔记</title>
+    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="Docker-自启动"><a href="#Docker-自启动" class="headerlink" title="Docker 自启动"></a>Docker 自启动</h2><p>Debian系的系统下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Docker-Container-自启动"><a href="#Docker-Container-自启动" class="headerlink" title="Docker Container 自启动"></a>Docker Container 自启动</h2><h4 id="Container-Restart-Policy"><a href="#Container-Restart-Policy" class="headerlink" title="Container Restart Policy"></a>Container Restart Policy</h4><blockquote>
+<p>–restart的可选参数：</p>
+<ol>
+<li>no (默认值) Container退出时不重启</li>
+<li>on-failure[:max-retries] exit code非0时重启</li>
+<li>always</li>
+<li>unless-stopped</li>
+</ol>
+</blockquote>
+<p>未创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
+
+<p>已创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Docker-Container-自启动脚本"><a href="#Docker-Container-自启动脚本" class="headerlink" title="Docker Container 自启动脚本"></a>Docker Container 自启动脚本</h2><p>在Container下创建/startup.sh (别忘了执行权限)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
+
+<p>创建Container</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>Docker</tag>
+      </tags>
   </entry>
   <entry>
     <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
@@ -1167,6 +1167,14 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Jetson Nano的USB共享网络</title>
+    <url>/2020/11/07/Jetson-Nano%E7%9A%84USB%E5%85%B1%E4%BA%AB%E7%BD%91%E7%BB%9C/</url>
+    <content><![CDATA[<h2 id="通过USB连接Jetson-Nano"><a href="#通过USB连接Jetson-Nano" class="headerlink" title="通过USB连接Jetson Nano"></a>通过USB连接Jetson Nano</h2><p>在完成初始化，设置好用户的账号密码后，Jetson Nano官方的L4T系统默认开启了RNDIS将自己虚拟为一张网卡。当用电脑连接到Nano的USB供电接口时，电脑会将Nano识别为一张网卡，并且可以获取到IP地址（NVIDIA贴心的帮你配好了DHCP和SSH）。此时用SSH连接到<code>192.168.50.1</code>就可以连接上Jetson Nano了。</p>
+<p>如果没有完成初始化，碰巧手边没有显示器，可以参考<a href="https://desertbot.io/blog/jetson-nano-headless-wifi-setup">这篇文章</a>完成headless下的初始化设置，通过Jetson Nano假扮成的USB Modem完成初始化。</p>
+<h2 id="关闭或启动Jetson-Nano"><a href="#关闭或启动Jetson-Nano" class="headerlink" title="关闭或启动Jetson Nano"></a>关闭或启动Jetson Nano</h2><p>对于绝大多数人来说是没有这个需要的，但是碰巧我用电脑给Nano供电，碰巧用Chrome OS系统，没有禁用网卡的选项，也不能改路由表，不关掉这个网络就没法上网。还好NVIDIA有脚本。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 禁用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode-stop.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode.sh</span><br></pre></td></tr></table></figure>]]></content>
+  </entry>
+  <entry>
     <title>Jetson Nano PWM配置</title>
     <url>/2019/08/22/Jetson-Nano-PWM%E9%85%8D%E7%BD%AE/</url>
     <content><![CDATA[<p>Updated on 7 Feb, 2021. For English User, there is an English version of this post. Link: <a href="https://www.seeedstudio.com/blog/2020/05/27/configure-pwm-output-on-jetson-nano-m/">https://www.seeedstudio.com/blog/2020/05/27/configure-pwm-output-on-jetson-nano-m/</a>. By the way, I sincerely hope the translator will be capable of understanding the meaning of <strong>reference</strong> thoroughly next time.</p>
@@ -1320,14 +1328,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Jetson Nano的USB共享网络</title>
-    <url>/2020/11/07/Jetson-Nano%E7%9A%84USB%E5%85%B1%E4%BA%AB%E7%BD%91%E7%BB%9C/</url>
-    <content><![CDATA[<h2 id="通过USB连接Jetson-Nano"><a href="#通过USB连接Jetson-Nano" class="headerlink" title="通过USB连接Jetson Nano"></a>通过USB连接Jetson Nano</h2><p>在完成初始化，设置好用户的账号密码后，Jetson Nano官方的L4T系统默认开启了RNDIS将自己虚拟为一张网卡。当用电脑连接到Nano的USB供电接口时，电脑会将Nano识别为一张网卡，并且可以获取到IP地址（NVIDIA贴心的帮你配好了DHCP和SSH）。此时用SSH连接到<code>192.168.50.1</code>就可以连接上Jetson Nano了。</p>
-<p>如果没有完成初始化，碰巧手边没有显示器，可以参考<a href="https://desertbot.io/blog/jetson-nano-headless-wifi-setup">这篇文章</a>完成headless下的初始化设置，通过Jetson Nano假扮成的USB Modem完成初始化。</p>
-<h2 id="关闭或启动Jetson-Nano"><a href="#关闭或启动Jetson-Nano" class="headerlink" title="关闭或启动Jetson Nano"></a>关闭或启动Jetson Nano</h2><p>对于绝大多数人来说是没有这个需要的，但是碰巧我用电脑给Nano供电，碰巧用Chrome OS系统，没有禁用网卡的选项，也不能改路由表，不关掉这个网络就没法上网。还好NVIDIA有脚本。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 禁用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode-stop.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode.sh</span><br></pre></td></tr></table></figure>]]></content>
-  </entry>
-  <entry>
     <title>MATLAB 一些向量化思路和例子</title>
     <url>/2020/05/21/MATLAB-%E4%B8%80%E4%BA%9B%E5%90%91%E9%87%8F%E5%8C%96%E6%80%9D%E8%B7%AF%E5%92%8C%E4%BE%8B%E5%AD%90/</url>
     <content><![CDATA[<p>Digital Image Processing的处理经常需要密集的计算，效率低的代码处理一张500x500的图片都可以计算30秒。<del>为了方便调参</del>，<del>同时身为超算比赛参赛者，职业病犯了</del>，写一个速度快的代码是很有必要的。本文的code和benchmark来自我写的DIP实验报告。</p>
@@ -1373,7 +1373,7 @@
 <hr>
 <h2 id="超链接"><a href="#超链接" class="headerlink" title="超链接"></a>超链接</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Example](http://example.org/)</span><br><span class="line">[icon.png](./images/icon.png)</span><br><span class="line">[Google](http://www.google.com/ &quot;Put your mouse on this link&quot;)</span><br><span class="line">&lt;http://baidu.com/&gt;</span><br><span class="line">&lt;admin@163.com&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#97;&#100;&#109;&#x69;&#x6e;&#x40;&#x31;&#54;&#51;&#x2e;&#99;&#x6f;&#109;">&#97;&#100;&#109;&#x69;&#x6e;&#x40;&#x31;&#54;&#51;&#x2e;&#99;&#x6f;&#109;</a></p>
+<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#x61;&#x64;&#x6d;&#x69;&#110;&#64;&#49;&#x36;&#51;&#46;&#x63;&#111;&#x6d;">&#x61;&#x64;&#x6d;&#x69;&#110;&#64;&#49;&#x36;&#51;&#46;&#x63;&#111;&#x6d;</a></p>
 <hr>
 <h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">![HTML5](http://html5test.com/images/html5.png &quot;Put your mouse on this icon&quot;)</span><br></pre></td></tr></table></figure>
 
@@ -2812,6 +2812,26 @@
       </tags>
   </entry>
   <entry>
+    <title>解决DHTMLX6窗口重叠异常的问题</title>
+    <url>/2020/05/20/%E8%A7%A3%E5%86%B3DHTMLX6%E7%AA%97%E5%8F%A3%E9%87%8D%E5%8F%A0%E5%BC%82%E5%B8%B8%E7%9A%84%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<p>年少无知的我第一次看到酷炫的DHTMLX框架，便决定用DHTMLX写一发前端（第一次写前端），最后Chrome调试工具熟练度显著增加（？）</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>只要用上了<code>DHTMLX</code>的<code>Window</code>组件，不管是跟<code>DHX Suite</code>的其他组件组合，还是跟<code>DHX</code>家的其他库组合，都能出现各种各样的问题，其中最为常见的问题就是本来应该浮于组件上方的组件反而衬于组件的下方。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>先介绍几个神奇的API</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">dhxWindow._handlers.setActive(); <span class="comment">// 激活Window窗口</span></span><br><span class="line">form.getItem(<span class="string">&quot;component-id&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>); <span class="comment">// 激活组件窗口</span></span><br></pre></td></tr></table></figure>
+
+<p>我遇到的第一种问题，新建的窗口未被正确激活，显示在旧窗口下方，这个时候可以这么写</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  dhxWindow.show();</span><br><span class="line">  dhxWindow._handlers.setActive();</span><br><span class="line">&#125;, <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这里延迟100ms启动是因为，这个bug偶尔会出现在点击按钮创建窗口的时候，等待100ms其实是等待用户释放鼠标。</p>
+<p>我遇到的第二种问题是，<code>Window</code>套<code>Form</code>套<code>Datepicker</code>，在同时有多个<code>Window</code>的情况下，<code>Datepicker</code>的日历出现在<code>Window</code>下方（能100%复现的bug），这个时候只要”激活”<code>Datepicker</code>的日历就好了。比如</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> form = <span class="keyword">new</span> dhx.Form(<span class="literal">null</span>, &#123;</span><br><span class="line">    <span class="attr">css</span>: <span class="string">&quot;dhx_widget--no-bordered&quot;</span>,</span><br><span class="line">    <span class="attr">rows</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">id</span>: <span class="string">&quot;iamid&quot;</span>,</span><br><span class="line">            <span class="attr">type</span>: <span class="string">&quot;datepicker&quot;</span>,</span><br><span class="line">            <span class="attr">name</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">            <span class="attr">gravity</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">value</span>: <span class="string">&quot;2020-05-01&quot;</span>,</span><br><span class="line">            <span class="attr">dateFormat</span>: <span class="string">&quot;%Y-%m-%d&quot;</span>,</span><br><span class="line">            <span class="attr">label</span>: <span class="string">&quot;开行日期&quot;</span>,</span><br><span class="line">            <span class="attr">labelInline</span>: <span class="literal">true</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">form.getItem(<span class="string">&quot;iamid&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以让日历正确显示了。</p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p><code>DHTMLX</code>框架是也是通过<code>CSS</code>的<code>z-index</code>来确定窗口的层次的，上面涉及到的两个神奇API干的都是同一件事情，添加内置<code>z-index</code>的<code>style</code> (<code>dhx_popup--window_active</code>)到组件上，实现激活窗口的效果。但是<code>DHX</code>那群nt工程师压根就没给<code>datepicker</code>之类的组件写自动添加<code>dhx_popup--window_active</code>的代码，至于<code>Window</code>组件，自动添加的代码有是有，就是有bug。</p>
+<h2 id="牢骚"><a href="#牢骚" class="headerlink" title="牢骚"></a>牢骚</h2><p><code>DHX</code>的库bug多也就算了，官网上放着的文档也是有一堆bug的假文档，作为一个历史悠久，功能酷炫，但没人用的库，是不是该考虑为什么过了那么多年自己还是那么冷门啊。</p>
+]]></content>
+  </entry>
+  <entry>
     <title>神威太湖之光上机摸索记录</title>
     <url>/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h2 id="CPU端序"><a href="#CPU端序" class="headerlink" title="CPU端序"></a>CPU端序</h2><p>sw26010和x86一样都是小端序。测试程序如下，输出均为1</p>
@@ -2839,26 +2859,6 @@
 
 <h2 id="奇怪的问题"><a href="#奇怪的问题" class="headerlink" title="奇怪的问题"></a>奇怪的问题</h2><h3 id="函数命名问题"><a href="#函数命名问题" class="headerlink" title="函数命名问题"></a>函数命名问题</h3><p>函数名字不要以<code>slave_</code>开头，否则会引发<code>undefined reference to slave_slave_***</code>的错误。从核函数在编译过程中会被重命名为<code>slave_</code>加原名的函数。从编译器内置的一些宏可以看出来这点。</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SLAVE_FUN(x)        slave_##x</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> athread_spawn(y,z) __real_athread_spawn(slave_##y,z)</span></span><br></pre></td></tr></table></figure>]]></content>
-  </entry>
-  <entry>
-    <title>解决DHTMLX6窗口重叠异常的问题</title>
-    <url>/2020/05/20/%E8%A7%A3%E5%86%B3DHTMLX6%E7%AA%97%E5%8F%A3%E9%87%8D%E5%8F%A0%E5%BC%82%E5%B8%B8%E7%9A%84%E9%97%AE%E9%A2%98/</url>
-    <content><![CDATA[<p>年少无知的我第一次看到酷炫的DHTMLX框架，便决定用DHTMLX写一发前端（第一次写前端），最后Chrome调试工具熟练度显著增加（？）</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>只要用上了<code>DHTMLX</code>的<code>Window</code>组件，不管是跟<code>DHX Suite</code>的其他组件组合，还是跟<code>DHX</code>家的其他库组合，都能出现各种各样的问题，其中最为常见的问题就是本来应该浮于组件上方的组件反而衬于组件的下方。</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>先介绍几个神奇的API</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">dhxWindow._handlers.setActive(); <span class="comment">// 激活Window窗口</span></span><br><span class="line">form.getItem(<span class="string">&quot;component-id&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>); <span class="comment">// 激活组件窗口</span></span><br></pre></td></tr></table></figure>
-
-<p>我遇到的第一种问题，新建的窗口未被正确激活，显示在旧窗口下方，这个时候可以这么写</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  dhxWindow.show();</span><br><span class="line">  dhxWindow._handlers.setActive();</span><br><span class="line">&#125;, <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
-
-<p>这里延迟100ms启动是因为，这个bug偶尔会出现在点击按钮创建窗口的时候，等待100ms其实是等待用户释放鼠标。</p>
-<p>我遇到的第二种问题是，<code>Window</code>套<code>Form</code>套<code>Datepicker</code>，在同时有多个<code>Window</code>的情况下，<code>Datepicker</code>的日历出现在<code>Window</code>下方（能100%复现的bug），这个时候只要”激活”<code>Datepicker</code>的日历就好了。比如</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> form = <span class="keyword">new</span> dhx.Form(<span class="literal">null</span>, &#123;</span><br><span class="line">    <span class="attr">css</span>: <span class="string">&quot;dhx_widget--no-bordered&quot;</span>,</span><br><span class="line">    <span class="attr">rows</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">id</span>: <span class="string">&quot;iamid&quot;</span>,</span><br><span class="line">            <span class="attr">type</span>: <span class="string">&quot;datepicker&quot;</span>,</span><br><span class="line">            <span class="attr">name</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">            <span class="attr">gravity</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">value</span>: <span class="string">&quot;2020-05-01&quot;</span>,</span><br><span class="line">            <span class="attr">dateFormat</span>: <span class="string">&quot;%Y-%m-%d&quot;</span>,</span><br><span class="line">            <span class="attr">label</span>: <span class="string">&quot;开行日期&quot;</span>,</span><br><span class="line">            <span class="attr">labelInline</span>: <span class="literal">true</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">form.getItem(<span class="string">&quot;iamid&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<p>这样就可以让日历正确显示了。</p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p><code>DHTMLX</code>框架是也是通过<code>CSS</code>的<code>z-index</code>来确定窗口的层次的，上面涉及到的两个神奇API干的都是同一件事情，添加内置<code>z-index</code>的<code>style</code> (<code>dhx_popup--window_active</code>)到组件上，实现激活窗口的效果。但是<code>DHX</code>那群nt工程师压根就没给<code>datepicker</code>之类的组件写自动添加<code>dhx_popup--window_active</code>的代码，至于<code>Window</code>组件，自动添加的代码有是有，就是有bug。</p>
-<h2 id="牢骚"><a href="#牢骚" class="headerlink" title="牢骚"></a>牢骚</h2><p><code>DHX</code>的库bug多也就算了，官网上放着的文档也是有一堆bug的假文档，作为一个历史悠久，功能酷炫，但没人用的库，是不是该考虑为什么过了那么多年自己还是那么冷门啊。</p>
-]]></content>
   </entry>
   <entry>
     <title>配置WSL的SSH X11 Forwarding</title>

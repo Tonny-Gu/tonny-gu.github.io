@@ -3186,10 +3186,6 @@ figure.highlight {
   border-radius: 6px;
   padding: 5px 20px;
 }
-.sidebar-inner {
-  padding-left: 0;
-  padding-right: 0;
-}
 .links-of-author {
   padding: 0 20px;
 }
@@ -3302,9 +3298,6 @@ figure.highlight {
   .site-brand-container {
     display: none;
   }
-}
-.post-toc ol {
-  padding-left: 20px;
 }
 .post-toc a {
   border-bottom: none;
