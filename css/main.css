@@ -3193,8 +3193,9 @@ figure.highlight {
   transition-duration: 0.2s;
 }
 .links-of-blogroll-title {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #eee;
   padding-top: 10px;
+  margin: 0 50px;
 }
 .links-of-blogroll-list {
   display: grid;
