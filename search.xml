@@ -1373,7 +1373,7 @@
 <hr>
 <h2 id="超链接"><a href="#超链接" class="headerlink" title="超链接"></a>超链接</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Example](http://example.org/)</span><br><span class="line">[icon.png](./images/icon.png)</span><br><span class="line">[Google](http://www.google.com/ &quot;Put your mouse on this link&quot;)</span><br><span class="line">&lt;http://baidu.com/&gt;</span><br><span class="line">&lt;admin@163.com&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#97;&#100;&#109;&#105;&#x6e;&#64;&#x31;&#x36;&#51;&#46;&#99;&#111;&#x6d;">&#97;&#100;&#109;&#105;&#x6e;&#64;&#x31;&#x36;&#51;&#46;&#99;&#111;&#x6d;</a></p>
+<p><a href="http://example.org/">Example</a><br><a href="./images/icon.png">icon.png</a><br><a href="http://www.google.com/" title="Put your mouse on this link">Google</a><br><a href="http://baidu.com/">http://baidu.com/</a><br><a href="mailto:&#97;&#100;&#109;&#x69;&#x6e;&#x40;&#x31;&#54;&#51;&#x2e;&#99;&#x6f;&#109;">&#97;&#100;&#109;&#x69;&#x6e;&#x40;&#x31;&#54;&#51;&#x2e;&#99;&#x6f;&#109;</a></p>
 <hr>
 <h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">![HTML5](http://html5test.com/images/html5.png &quot;Put your mouse on this icon&quot;)</span><br></pre></td></tr></table></figure>
 
@@ -1522,6 +1522,52 @@
       <tags>
         <tag>NUS</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>OpenWRT路由器加速Switch联机的方案</title>
+    <url>/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/</url>
+    <content><![CDATA[<p>Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。</p>
+<h2 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h2><p>这篇文章适合对计算机网络有一定了解的（至少得知道NAT，TCP，UDP这些词），乐于请教搜索引擎，也有兴趣和能力部署爬墙工具的玩家，因为大家都知道的原因，本文将不会包含手把手部署爬墙工具的内容。实施这个方案也需要时间，耐心和勇气，有可能在部署过程中就把家里网弄塌了，而且大概还是要花点钱，折腾完了发现还是商用加速器香。</p>
+<h2 id="NAT-Type"><a href="#NAT-Type" class="headerlink" title="NAT Type"></a>NAT Type</h2><p>一般来说，NAT Type可以分为很多种，最经典的分类是RFC 3489里的，其中最受限的是对称形（Symmetric），最开放的是完全锥形（Full Cone）（注：无NAT的公网也可以被认为是完全锥形网络），简单来说就是联机双方网络受限程度越重，双方能够直接通信的可能性越小，也就是UDP打洞的成功率越低，因此NAT类型会对某些游戏的联机产生影响。<del>这里还是得喷任天堂，明明只要像CF一样弄个公共服务器辅助双方的通信就没这么多破事了，就算双方都是对称形都没关系。</del></p>
+<p>根据我的观察和网上的资料，Switch的NAT Type A差不多等同于RFC 3489中定义的<strong>完全锥形（Full Cone）</strong>。不过很遗憾，出于安全考虑，<del>以及封杀P2P的需要</del>，大部分国内网络别说各种受限的锥形了，基本上都是对称形，大多数玩家裸连都能喜提一个Type C或者D。还好，拯救对称形网络是完全可行的。</p>
+<p><img data-src="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif" alt="img"></p>
+<h2 id="加速的思路"><a href="#加速的思路" class="headerlink" title="加速的思路"></a>加速的思路</h2><p>通常网上常见的思路有两种，<del>DMZ法</del>，HTTP代理法，和透明代理法。<strong>这篇文章是基于透明代理的思路实现Switch联机加速</strong>。</p>
+<h3 id="DMZ法"><a href="#DMZ法" class="headerlink" title="DMZ法"></a><del>DMZ法</del></h3><p>这种方法通常没什么luan用，能通过DMZ提升NAT Type，仅适用于以下情况：</p>
+<ul>
+<li>运营商（ISP）给你家整了公网IP地址</li>
+<li>你给你家整了路由器</li>
+<li>同时路由器的防火墙设置比较严格</li>
+</ul>
+<p>考虑到绝大部分的人拿不到公网IP地址，这方法几乎不适用于绝大部分人群。就算有你家有公网IP地址，考虑到一般情况下你的数据包都会走稀烂的国际出口，你的Switch也不能稳定连接到其他玩家的设备。</p>
+<h3 id="HTTP代理法"><a href="#HTTP代理法" class="headerlink" title="HTTP代理法"></a>HTTP代理法</h3><p>这个方法有一点luan用，确实能加速下载游戏（因为下载是TCP通信），但不能提升NAT Type，原因非常简单，<strong>HTTP代理不能处理UDP包</strong>，也就是对于一些游戏来说，开和没开代理没有任何区别，因为那部分游戏的联机依赖UDP通信。</p>
+<h3 id="透明代理法"><a href="#透明代理法" class="headerlink" title="透明代理法"></a>透明代理法</h3><p>这个基本上就是最后的大招了。参考下图，电脑手机游戏机的数据包其实是先发送给网关（Gateway）来处理（一般路由器充当了网关Gateway，交换机Switch，和猫Modem），也就是说<strong>网关会拿到所有的数据，包括TCP包和UDP包</strong>。</p>
+<p>已知所有问题都是因为NAT，缺少公网IP造成的，那么如果我们刚好有一个有公网IP地址的VPS，能不能让Switch借用我们的VPS服务器的公网IP地址当作自己的IP地址完成通信？「借用身份」这个思想，其实就是「代理」这个词的含义，最初用于保护隐私，只不过我们通常用代理去干了一些别的事情。</p>
+<p>因此，<strong>这篇文章的主要就是让你折腾一个透明代理</strong>，所谓透明代理，在这篇文章里就是路由器拿着Switch的数据包，先传送到VPS上，以VPS的公网IP地址完成收发，而不是直接用路由器的IP地址收发。</p>
+<p>题外话，我还购买了腾讯加速器的服务，它要求修改Switch上的网关地址，本质上也是一种透明代理，而且也能提升到Type A，<del>不过感觉只有SVIP才能保证喷喷不掉线</del>。</p>
+<p><img data-src="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png" alt="Network Diagram with Gateway Server via HowToForge"></p>
+<h2 id="部署透明代理"><a href="#部署透明代理" class="headerlink" title="部署透明代理"></a>部署透明代理</h2><p>可能你会说，说了大半天，不就是要上透明代理嘛，这种教程到处都是。确实，不过这篇文章不会过多的深入配置的细节。</p>
+<h3 id="软件的选择"><a href="#软件的选择" class="headerlink" title="软件的选择"></a>软件的选择</h3><p>一般的透明代理常用以下几种软件：</p>
+<ul>
+<li>Shadowsocks系：包括SS，SSR，SSRR等等</li>
+<li>V2Ray系：包括V2Ray，V2Fly，和Xray</li>
+<li>Trojan</li>
+</ul>
+<p>我个人倾向于使用V2Ray系，可玩性非常高，支持的协议非常的全面，同时一些分支（如Xray）迭代的速度非常快，大量引入新特性。此外，据Xray作者所述，V2Ray原版UDP代理的实现一言难尽，可以欣赏这篇文章<a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a>感受Xray作者的无奈。所以本文将会使用<strong>Xray</strong>这个实现，而不是原版V2Ray。</p>
+<p>Shadowsocks系和Trojan当然没啥问题，只不过本文不会介绍它罢了。</p>
+<h3 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h3><p>略，可参考V2Ray的配置教程，毕竟这里老司机任意发挥各显神通的地方，我就不插嘴了，注意服务端和客户端<strong>一定都要用Xray</strong>，否则最后配置成的网络不是Full Cone的NAT，也会有UDP断流的问题（参见issue：<a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a>），推荐使用Docker部署。</p>
+<h3 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h3><p>推荐按照先这篇文章<a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a>部署。注意最好使用<strong>官方原版OpenWRT</strong>，基于某个Snapshot构建的同时打包了一堆插件的OpenWRT可能会产生兼容问题，当然刚好集成了文章中提及的插件的包可以试着用用。</p>
+<h3 id="替换路由器V2Ray版本"><a href="#替换路由器V2Ray版本" class="headerlink" title="替换路由器V2Ray版本"></a>替换路由器V2Ray版本</h3><p>由于原版V2Ray在处理UDP包的流程上有严重缺陷，所以必须要替换路由器上的V2Ray版本。首先在<a href="https://github.com/XTLS/Xray-core/releases">https://github.com/XTLS/Xray-core/releases</a>上下载Xray，注意区分路由器CPU指令集，如<code>armv7a</code>或者<code>x64</code>什么的。在电脑上下载再用<code>scp</code>上传，或者直接在路由器上<code>wget</code>都可以。将压缩包解压后，用解压出来的<code>xray</code>文件替换路由器上的<code>/usr/bin/v2ray</code>文件，再在OpenWRT网页端重载V2Ray服务即可，看到网页上显示V2Ray版本为Xray即可。</p>
+<p><img data-src="/images/pasted-63.png" alt="img"></p>
+<h3 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h3><p>当然用Switch直接做测试就可以了，不出意外的话能看到NAT Type A了，如果不是，可以检查VPS的防火墙配置。</p>
+<p>Windows下测试推荐使用<a href="https://github.com/HMBSbige/NatTypeTester">NatTypeTester</a>，注意关闭Windows防火墙以免其影响测试结果。</p>
+<p><img data-src="/images/pasted-64.png" alt="img"></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>不是吃饱了撑着或是有特殊需求，如用Switch看YouTube，建议还是上个加速器吧，VPS也是要钱的啊，而且人家付费加速器的线路大概率会比你随手买的VPS更好。</p>
+<h2 id="参考文章（强烈建议去看看）"><a href="#参考文章（强烈建议去看看）" class="headerlink" title="参考文章（强烈建议去看看）"></a>参考文章（强烈建议去看看）</h2><ul>
+<li><a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a></li>
+<li><a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a></li>
+<li><a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a></li>
+</ul>
+]]></content>
   </entry>
   <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
@@ -1730,52 +1776,6 @@
       <tags>
         <tag>Ubuntu</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>OpenWRT路由器加速Switch联机的方案</title>
-    <url>/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/</url>
-    <content><![CDATA[<p>Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。</p>
-<h2 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h2><p>这篇文章适合对计算机网络有一定了解的（至少得知道NAT，TCP，UDP这些词），乐于请教搜索引擎，也有兴趣和能力部署爬墙工具的玩家，因为大家都知道的原因，本文将不会包含手把手部署爬墙工具的内容。实施这个方案也需要时间，耐心和勇气，有可能在部署过程中就把家里网弄塌了，而且大概还是要花点钱，折腾完了发现还是商用加速器香。</p>
-<h2 id="NAT-Type"><a href="#NAT-Type" class="headerlink" title="NAT Type"></a>NAT Type</h2><p>一般来说，NAT Type可以分为很多种，最经典的分类是RFC 3489里的，其中最受限的是对称形（Symmetric），最开放的是完全锥形（Full Cone）（注：无NAT的公网也可以被认为是完全锥形网络），简单来说就是联机双方网络受限程度越重，双方能够直接通信的可能性越小，也就是UDP打洞的成功率越低，因此NAT类型会对某些游戏的联机产生影响。<del>这里还是得喷任天堂，明明只要像CF一样弄个公共服务器辅助双方的通信就没这么多破事了，就算双方都是对称形都没关系。</del></p>
-<p>根据我的观察和网上的资料，Switch的NAT Type A差不多等同于RFC 3489中定义的<strong>完全锥形（Full Cone）</strong>。不过很遗憾，出于安全考虑，<del>以及封杀P2P的需要</del>，大部分国内网络别说各种受限的锥形了，基本上都是对称形，大多数玩家裸连都能喜提一个Type C或者D。还好，拯救对称形网络是完全可行的。</p>
-<p><img data-src="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif" alt="img"></p>
-<h2 id="加速的思路"><a href="#加速的思路" class="headerlink" title="加速的思路"></a>加速的思路</h2><p>通常网上常见的思路有两种，<del>DMZ法</del>，HTTP代理法，和透明代理法。<strong>这篇文章是基于透明代理的思路实现Switch联机加速</strong>。</p>
-<h3 id="DMZ法"><a href="#DMZ法" class="headerlink" title="DMZ法"></a><del>DMZ法</del></h3><p>这种方法通常没什么luan用，能通过DMZ提升NAT Type，仅适用于以下情况：</p>
-<ul>
-<li>运营商（ISP）给你家整了公网IP地址</li>
-<li>你给你家整了路由器</li>
-<li>同时路由器的防火墙设置比较严格</li>
-</ul>
-<p>考虑到绝大部分的人拿不到公网IP地址，这方法几乎不适用于绝大部分人群。就算有你家有公网IP地址，考虑到一般情况下你的数据包都会走稀烂的国际出口，你的Switch也不能稳定连接到其他玩家的设备。</p>
-<h3 id="HTTP代理法"><a href="#HTTP代理法" class="headerlink" title="HTTP代理法"></a>HTTP代理法</h3><p>这个方法有一点luan用，确实能加速下载游戏（因为下载是TCP通信），但不能提升NAT Type，原因非常简单，<strong>HTTP代理不能处理UDP包</strong>，也就是对于一些游戏来说，开和没开代理没有任何区别，因为那部分游戏的联机依赖UDP通信。</p>
-<h3 id="透明代理法"><a href="#透明代理法" class="headerlink" title="透明代理法"></a>透明代理法</h3><p>这个基本上就是最后的大招了。参考下图，电脑手机游戏机的数据包其实是先发送给网关（Gateway）来处理（一般路由器充当了网关Gateway，交换机Switch，和猫Modem），也就是说<strong>网关会拿到所有的数据，包括TCP包和UDP包</strong>。</p>
-<p>已知所有问题都是因为NAT，缺少公网IP造成的，那么如果我们刚好有一个有公网IP地址的VPS，能不能让Switch借用我们的VPS服务器的公网IP地址当作自己的IP地址完成通信？「借用身份」这个思想，其实就是「代理」这个词的含义，最初用于保护隐私，只不过我们通常用代理去干了一些别的事情。</p>
-<p>因此，<strong>这篇文章的主要就是让你折腾一个透明代理</strong>，所谓透明代理，在这篇文章里就是路由器拿着Switch的数据包，先传送到VPS上，以VPS的公网IP地址完成收发，而不是直接用路由器的IP地址收发。</p>
-<p>题外话，我还购买了腾讯加速器的服务，它要求修改Switch上的网关地址，本质上也是一种透明代理，而且也能提升到Type A，<del>不过感觉只有SVIP才能保证喷喷不掉线</del>。</p>
-<p><img data-src="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png" alt="Network Diagram with Gateway Server via HowToForge"></p>
-<h2 id="部署透明代理"><a href="#部署透明代理" class="headerlink" title="部署透明代理"></a>部署透明代理</h2><p>可能你会说，说了大半天，不就是要上透明代理嘛，这种教程到处都是。确实，不过这篇文章不会过多的深入配置的细节。</p>
-<h3 id="软件的选择"><a href="#软件的选择" class="headerlink" title="软件的选择"></a>软件的选择</h3><p>一般的透明代理常用以下几种软件：</p>
-<ul>
-<li>Shadowsocks系：包括SS，SSR，SSRR等等</li>
-<li>V2Ray系：包括V2Ray，V2Fly，和Xray</li>
-<li>Trojan</li>
-</ul>
-<p>我个人倾向于使用V2Ray系，可玩性非常高，支持的协议非常的全面，同时一些分支（如Xray）迭代的速度非常快，大量引入新特性。此外，据Xray作者所述，V2Ray原版UDP代理的实现一言难尽，可以欣赏这篇文章<a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a>感受Xray作者的无奈。所以本文将会使用<strong>Xray</strong>这个实现，而不是原版V2Ray。</p>
-<p>Shadowsocks系和Trojan当然没啥问题，只不过本文不会介绍它罢了。</p>
-<h3 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h3><p>略，可参考V2Ray的配置教程，毕竟这里老司机任意发挥各显神通的地方，我就不插嘴了，注意服务端和客户端<strong>一定都要用Xray</strong>，否则最后配置成的网络不是Full Cone的NAT，也会有UDP断流的问题（参见issue：<a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a>），推荐使用Docker部署。</p>
-<h3 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h3><p>推荐按照先这篇文章<a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a>部署。注意最好使用<strong>官方原版OpenWRT</strong>，基于某个Snapshot构建的同时打包了一堆插件的OpenWRT可能会产生兼容问题，当然刚好集成了文章中提及的插件的包可以试着用用。</p>
-<h3 id="替换路由器V2Ray版本"><a href="#替换路由器V2Ray版本" class="headerlink" title="替换路由器V2Ray版本"></a>替换路由器V2Ray版本</h3><p>由于原版V2Ray在处理UDP包的流程上有严重缺陷，所以必须要替换路由器上的V2Ray版本。首先在<a href="https://github.com/XTLS/Xray-core/releases">https://github.com/XTLS/Xray-core/releases</a>上下载Xray，注意区分路由器CPU指令集，如<code>armv7a</code>或者<code>x64</code>什么的。在电脑上下载再用<code>scp</code>上传，或者直接在路由器上<code>wget</code>都可以。将压缩包解压后，用解压出来的<code>xray</code>文件替换路由器上的<code>/usr/bin/v2ray</code>文件，再在OpenWRT网页端重载V2Ray服务即可，看到网页上显示V2Ray版本为Xray即可。</p>
-<p><img data-src="/images/pasted-63.png" alt="img"></p>
-<h3 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h3><p>当然用Switch直接做测试就可以了，不出意外的话能看到NAT Type A了，如果不是，可以检查VPS的防火墙配置。</p>
-<p>Windows下测试推荐使用<a href="https://github.com/HMBSbige/NatTypeTester">NatTypeTester</a>，注意关闭Windows防火墙以免其影响测试结果。</p>
-<p><img data-src="/images/pasted-64.png" alt="img"></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>不是吃饱了撑着或是有特殊需求，如用Switch看YouTube，建议还是上个加速器吧，VPS也是要钱的啊，而且人家付费加速器的线路大概率会比你随手买的VPS更好。</p>
-<h2 id="参考文章（强烈建议去看看）"><a href="#参考文章（强烈建议去看看）" class="headerlink" title="参考文章（强烈建议去看看）"></a>参考文章（强烈建议去看看）</h2><ul>
-<li><a href="https://v2xtls.org/%E8%BF%9B%E9%98%B6%E5%BF%85%E8%AF%BB%EF%BC%9A%E4%BB%A3%E7%90%86%E5%8D%8F%E8%AE%AE-udp-%E5%85%A8%E6%96%B9%E4%BD%8D%E9%80%8F%E5%BD%BB%E8%A7%A3%E6%9E%90/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a></li>
-<li><a href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a></li>
-<li><a href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a></li>
-</ul>
-]]></content>
   </entry>
   <entry>
     <title>Unattended Ubuntu 20.04 Server Offline Installation</title>

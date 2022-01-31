@@ -3186,8 +3186,9 @@ figure.highlight {
   border-radius: 6px;
   padding: 5px 20px;
 }
-.main-menu .menu-item-active::after {
-  display: none;
+.sidebar-inner {
+  padding-left: 0;
+  padding-right: 0;
 }
 .links-of-author {
   padding: 0 20px;
@@ -3198,7 +3199,6 @@ figure.highlight {
 .links-of-blogroll-title {
   border-top: 1px solid #ddd;
   padding-top: 10px;
-  margin: 0 20px;
 }
 .links-of-blogroll-list {
   display: grid;
@@ -3302,6 +3302,9 @@ figure.highlight {
   .site-brand-container {
     display: none;
   }
+}
+.post-toc ol {
+  padding-left: 20px;
 }
 .post-toc a {
   border-bottom: none;
