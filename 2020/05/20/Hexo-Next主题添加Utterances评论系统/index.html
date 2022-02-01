@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="当前网上有很多给Hexo NexT主题添加Utterances评论系统的教程，但是这些实现并没有充分利用Hexo的特性，所以我参考了其他评论模块的代码，将Utterances模块插入到文章中。">
@@ -149,7 +149,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-text">过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAutterances-swig"><span class="nav-text">创建utterances.swig</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAutterances-js"><span class="nav-text">创建utterances.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E4%B8%BB%E9%A2%98%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-text">修改主题配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-text">已知问题</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-text">过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAutterances.swig"><span class="nav-text">创建utterances.swig</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAutterances.js"><span class="nav-text">创建utterances.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E4%B8%BB%E9%A2%98%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-text">修改主题配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-text">已知问题</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -292,19 +292,22 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>当前网上有很多给Hexo NexT主题添加Utterances评论系统的教程，但是这些实现并没有充分利用Hexo的特性，所以我参考了其他评论模块的代码，将Utterances模块插入到文章中。</p>
-<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><h3 id="创建utterances-swig"><a href="#创建utterances-swig" class="headerlink" title="创建utterances.swig"></a>创建<code>utterances.swig</code></h3><p>在<code>layout/_third-party/comments</code>里创建<code>utterances.swig</code>，内容如下</p>
+<h2 id="过程">过程</h2>
+<h3 id="创建utterances.swig">创建<code>utterances.swig</code></h3>
+<p>在<code>layout/_third-party/comments</code>里创建<code>utterances.swig</code>，内容如下</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;%- if page.comments %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></span><br><span class="line"><span class="javascript">NexT.utils.loadComments(<span class="built_in">document</span>.querySelector(<span class="string">&#x27;#utterances-container&#x27;</span>), <span class="function">() =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">    <span class="comment">// if (typeof parcelRequire === &#x27;function&#x27;) &#123; return; &#125;</span></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> js = <span class="built_in">document</span>.createElement(<span class="string">&#x27;script&#x27;</span>);</span></span><br><span class="line"><span class="javascript">    js.type = <span class="string">&#x27;text/javascript&#x27;</span>;</span></span><br><span class="line"><span class="javascript">    js.src = <span class="string">&#x27;https://utteranc.es/client.js&#x27;</span>;</span></span><br><span class="line"><span class="javascript">    js.async = <span class="literal">true</span>;</span></span><br><span class="line"><span class="javascript">    js.crossorigin = <span class="string">&#x27;anonymous&#x27;</span>;</span></span><br><span class="line"><span class="javascript">    js.setAttribute(<span class="string">&#x27;repo&#x27;</span>, <span class="string">&#x27;&#123;&#123; theme.utterances.repo &#125;&#125;&#x27;</span>);</span></span><br><span class="line"><span class="javascript">    js.setAttribute(<span class="string">&#x27;issue-term&#x27;</span>, <span class="string">&#x27;&#123;&#123; theme.utterances.issue_term &#125;&#125;&#x27;</span>);</span></span><br><span class="line"><span class="javascript">    js.setAttribute(<span class="string">&#x27;theme&#x27;</span>, <span class="string">&#x27;&#123;&#123; theme.utterances.theme &#125;&#125;&#x27;</span>);</span></span><br><span class="line"><span class="javascript">    <span class="built_in">document</span>.getElementById(<span class="string">&#x27;utterances-container&#x27;</span>).appendChild(js);</span></span><br><span class="line"><span class="javascript">&#125;);</span></span><br><span class="line"><span class="javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">&#123;%- endif %&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="创建utterances-js"><a href="#创建utterances-js" class="headerlink" title="创建utterances.js"></a>创建<code>utterances.js</code></h3><p>在<code>scripts/filters/comment</code>下创建<code>utterances.js</code>，内容如下</p>
+<h3 id="创建utterances.js">创建<code>utterances.js</code></h3>
+<p>在<code>scripts/filters/comment</code>下创建<code>utterances.js</code>，内容如下</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* global hexo */</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">&#x27;use strict&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add comment</span></span><br><span class="line">hexo.extend.filter.register(<span class="string">&#x27;theme_inject&#x27;</span>, <span class="function"><span class="params">injects</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> theme = hexo.theme.config;</span><br><span class="line">  <span class="keyword">if</span> (!theme.utterances.enable) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  injects.comment.raw(<span class="string">&#x27;utterances&#x27;</span>, <span class="string">&#x27;&lt;div class=&quot;comments&quot; id=&quot;utterances-container&quot;&gt;&lt;/div&gt;&#x27;</span>, &#123;&#125;, &#123;<span class="attr">cache</span>: <span class="literal">true</span>&#125;);</span><br><span class="line"></span><br><span class="line">  injects.bodyEnd.file(<span class="string">&#x27;utterances&#x27;</span>, path.join(hexo.theme_dir, <span class="string">&#x27;layout/_third-party/comments/utterances.swig&#x27;</span>));</span><br><span class="line"></span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="修改主题配置文件"><a href="#修改主题配置文件" class="headerlink" title="修改主题配置文件"></a>修改主题配置文件</h3><p>在主题配置文件中添加</p>
+<h3 id="修改主题配置文件">修改主题配置文件</h3>
+<p>在主题配置文件中添加</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">utterances:</span> </span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">&quot;你的repo地址&quot;</span></span><br><span class="line">  <span class="attr">issue_term:</span> <span class="string">&quot;pathname&quot;</span></span><br><span class="line">  <span class="attr">theme:</span> <span class="string">&quot;github-light&quot;</span></span><br></pre></td></tr></table></figure>
-
 <p>关于配置选项的更多信息可参考<a target="_blank" rel="noopener" href="https://utteranc.es/">官方网站</a>.</p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>在<code>swig</code>文件中调用了<code>NexT</code>提供的函数来插入评论模块，查看这个函数的源码的话可以发现这个函数其实是个观察者，用来Lazyload评论模块的。</p>
+<h2 id="分析">分析</h2>
+<p>在<code>swig</code>文件中调用了<code>NexT</code>提供的函数来插入评论模块，查看这个函数的源码的话可以发现这个函数其实是个观察者，用来Lazyload评论模块的。</p>
 <p>而<code>js</code>文件是一个以相对正式的方法在<code>document</code>的评论里精准插入一个用来attach新元素的div标签，相当于指定了新添加的Utterances显示的位置。</p>
-<h2 id="已知问题"><a href="#已知问题" class="headerlink" title="已知问题"></a>已知问题</h2><p>似乎有部分地区的网络不能加载这个评论模块，至少我的移动宽带是不能直接加载这个模块的，大概这就是NexT没集成这个模块的原因吧。</p>
+<h2 id="已知问题">已知问题</h2>
+<p>似乎有部分地区的网络不能加载这个评论模块，至少我的移动宽带是不能直接加载这个模块的，大概这就是NexT没集成这个模块的原因吧。</p>
 
     </div>
 
@@ -369,14 +372,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -391,7 +394,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

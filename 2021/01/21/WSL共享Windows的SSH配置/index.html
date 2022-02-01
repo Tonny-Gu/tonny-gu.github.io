@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="众所周知WSL和Windows各自维护一套SSH配置，也就是说Windows下配置的SSH别名不能在WSL下使用，同时Windows下也没有ssh-copy-id这个好东西。由于我经常在Windows下使用VSCode远程开发，所以之前我非常愚蠢的每次都切换到WSL下启动ssh-copy-id -i配置免密登录，因此想让WSL共享Windows的SSH别名和公钥。">
@@ -149,7 +149,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Windows%E4%B8%8B%E7%94%9F%E6%88%90SSH%E5%AF%86%E9%92%A5"><span class="nav-text">Windows下生成SSH密钥</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WSL%E4%B8%8B%E8%BD%AF%E8%BF%9E%E6%8E%A5-ssh%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="nav-text">WSL下软连接.ssh文件夹</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-ssh%E6%96%87%E4%BB%B6%E5%A4%B9%E6%9D%83%E9%99%90"><span class="nav-text">配置~&#x2F;.ssh文件夹权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-text">参考文章</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#windows%E4%B8%8B%E7%94%9F%E6%88%90ssh%E5%AF%86%E9%92%A5"><span class="nav-text">Windows下生成SSH密钥</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wsl%E4%B8%8B%E8%BD%AF%E8%BF%9E%E6%8E%A5.ssh%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="nav-text">WSL下软连接.ssh文件夹</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE.ssh%E6%96%87%E4%BB%B6%E5%A4%B9%E6%9D%83%E9%99%90"><span class="nav-text">配置~&#x2F;.ssh文件夹权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-text">参考文章</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -286,23 +286,22 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>众所周知WSL和Windows各自维护一套SSH配置，也就是说Windows下配置的SSH别名不能在WSL下使用，同时Windows下也没有<code>ssh-copy-id</code>这个好东西。由于我经常在Windows下使用VSCode远程开发，所以之前我<del>非常愚蠢的</del>每次都切换到WSL下启动<code>ssh-copy-id -i</code>配置免密登录，因此想让WSL共享Windows的SSH别名和公钥。</p>
-<h2 id="Windows下生成SSH密钥"><a href="#Windows下生成SSH密钥" class="headerlink" title="Windows下生成SSH密钥"></a>Windows下生成SSH密钥</h2><p>老掉牙的问题了，在Powershell下执行<code>ssh-keygen.exe</code>，然后狂按回车（如果不想每次SSH公钥登录都输一次密码的话）。公钥就会生成在Windows用户目录下的<code>.ssh</code>文件夹里。</p>
-<h2 id="WSL下软连接-ssh文件夹"><a href="#WSL下软连接-ssh文件夹" class="headerlink" title="WSL下软连接.ssh文件夹"></a>WSL下软连接<code>.ssh</code>文件夹</h2><p>这一步也很正常。</p>
+<h2 id="windows下生成ssh密钥">Windows下生成SSH密钥</h2>
+<p>老掉牙的问题了，在Powershell下执行<code>ssh-keygen.exe</code>，然后狂按回车（如果不想每次SSH公钥登录都输一次密码的话）。公钥就会生成在Windows用户目录下的<code>.ssh</code>文件夹里。</p>
+<h2 id="wsl下软连接.ssh文件夹">WSL下软连接<code>.ssh</code>文件夹</h2>
+<p>这一步也很正常。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># WSL Environment</span></span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line">ln -s /mnt/c/Users/&lt;Your Name&gt;/.ssh .</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置-ssh文件夹权限"><a href="#配置-ssh文件夹权限" class="headerlink" title="配置~/.ssh文件夹权限"></a>配置<code>~/.ssh</code>文件夹权限</h2><p>这一步有点坑，默认情况下在WSL下修改Windows文件夹权限是不会生效的，所以需要稍加配置。编辑<code>/etc/wsl.conf</code>（没有就创建一个），建议使用nano编辑。</p>
+<h2 id="配置.ssh文件夹权限">配置<code>~/.ssh</code>文件夹权限</h2>
+<p>这一步有点坑，默认情况下在WSL下修改Windows文件夹权限是不会生效的，所以需要稍加配置。编辑<code>/etc/wsl.conf</code>（没有就创建一个），建议使用nano编辑。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nano /etc/wsl.conf</span><br></pre></td></tr></table></figure>
-
 <p>并写入以下内容：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[automount]</span><br><span class="line">options = &quot;metadata&quot;</span><br></pre></td></tr></table></figure>
-
 <p>保存并通过Powershell重启WSL。</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Powershell Environment</span></span><br><span class="line">wsl.exe -<span class="literal">-shutdown</span></span><br></pre></td></tr></table></figure>
-
 <p>最后给<code>~/.ssh</code>文件夹配置权限</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># WSL Environment</span></span><br><span class="line"><span class="built_in">cd</span> ~/.ssh</span><br><span class="line">chmod 644 config</span><br><span class="line">chmod 400 id_rsa</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<h2 id="参考文章">参考文章</h2>
+<ul>
 <li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1323645/unable-to-change-file-permissions-on-ubuntu-bash-for-windows-10">https://superuser.com/questions/1323645/unable-to-change-file-permissions-on-ubuntu-bash-for-windows-10</a></li>
 <li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1126721/rebooting-ubuntu-on-windows-without-rebooting-windows">https://superuser.com/questions/1126721/rebooting-ubuntu-on-windows-without-rebooting-windows</a></li>
 </ul>
@@ -370,14 +369,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -392,7 +391,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

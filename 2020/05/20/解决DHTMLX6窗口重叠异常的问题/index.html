@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="年少无知的我第一次看到酷炫的DHTMLX框架，便决定用DHTMLX写一发前端（第一次写前端），最后Chrome调试工具熟练度显著增加（？）">
@@ -292,20 +292,21 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>年少无知的我第一次看到酷炫的DHTMLX框架，便决定用DHTMLX写一发前端（第一次写前端），最后Chrome调试工具熟练度显著增加（？）</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>只要用上了<code>DHTMLX</code>的<code>Window</code>组件，不管是跟<code>DHX Suite</code>的其他组件组合，还是跟<code>DHX</code>家的其他库组合，都能出现各种各样的问题，其中最为常见的问题就是本来应该浮于组件上方的组件反而衬于组件的下方。</p>
-<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>先介绍几个神奇的API</p>
+<h2 id="问题">问题</h2>
+<p>只要用上了<code>DHTMLX</code>的<code>Window</code>组件，不管是跟<code>DHX Suite</code>的其他组件组合，还是跟<code>DHX</code>家的其他库组合，都能出现各种各样的问题，其中最为常见的问题就是本来应该浮于组件上方的组件反而衬于组件的下方。</p>
+<h2 id="解决方案">解决方案</h2>
+<p>先介绍几个神奇的API</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dhxWindow._handlers.setActive(); <span class="comment">// 激活Window窗口</span></span><br><span class="line">form.getItem(<span class="string">&quot;component-id&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>); <span class="comment">// 激活组件窗口</span></span><br></pre></td></tr></table></figure>
-
 <p>我遇到的第一种问题，新建的窗口未被正确激活，显示在旧窗口下方，这个时候可以这么写</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  dhxWindow.show();</span><br><span class="line">  dhxWindow._handlers.setActive();</span><br><span class="line">&#125;, <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
-
 <p>这里延迟100ms启动是因为，这个bug偶尔会出现在点击按钮创建窗口的时候，等待100ms其实是等待用户释放鼠标。</p>
-<p>我遇到的第二种问题是，<code>Window</code>套<code>Form</code>套<code>Datepicker</code>，在同时有多个<code>Window</code>的情况下，<code>Datepicker</code>的日历出现在<code>Window</code>下方（能100%复现的bug），这个时候只要”激活”<code>Datepicker</code>的日历就好了。比如</p>
+<p>我遇到的第二种问题是，<code>Window</code>套<code>Form</code>套<code>Datepicker</code>，在同时有多个<code>Window</code>的情况下，<code>Datepicker</code>的日历出现在<code>Window</code>下方（能100%复现的bug），这个时候只要"激活"<code>Datepicker</code>的日历就好了。比如</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> form = <span class="keyword">new</span> dhx.Form(<span class="literal">null</span>, &#123;</span><br><span class="line">    <span class="attr">css</span>: <span class="string">&quot;dhx_widget--no-bordered&quot;</span>,</span><br><span class="line">    <span class="attr">rows</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">id</span>: <span class="string">&quot;iamid&quot;</span>,</span><br><span class="line">            <span class="attr">type</span>: <span class="string">&quot;datepicker&quot;</span>,</span><br><span class="line">            <span class="attr">name</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">            <span class="attr">gravity</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">value</span>: <span class="string">&quot;2020-05-01&quot;</span>,</span><br><span class="line">            <span class="attr">dateFormat</span>: <span class="string">&quot;%Y-%m-%d&quot;</span>,</span><br><span class="line">            <span class="attr">label</span>: <span class="string">&quot;开行日期&quot;</span>,</span><br><span class="line">            <span class="attr">labelInline</span>: <span class="literal">true</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">form.getItem(<span class="string">&quot;iamid&quot;</span>)._popup._popup.classList.add(<span class="string">&quot;dhx_popup--window_active&quot;</span>);</span><br></pre></td></tr></table></figure>
-
 <p>这样就可以让日历正确显示了。</p>
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p><code>DHTMLX</code>框架是也是通过<code>CSS</code>的<code>z-index</code>来确定窗口的层次的，上面涉及到的两个神奇API干的都是同一件事情，添加内置<code>z-index</code>的<code>style</code> (<code>dhx_popup--window_active</code>)到组件上，实现激活窗口的效果。但是<code>DHX</code>那群nt工程师压根就没给<code>datepicker</code>之类的组件写自动添加<code>dhx_popup--window_active</code>的代码，至于<code>Window</code>组件，自动添加的代码有是有，就是有bug。</p>
-<h2 id="牢骚"><a href="#牢骚" class="headerlink" title="牢骚"></a>牢骚</h2><p><code>DHX</code>的库bug多也就算了，官网上放着的文档也是有一堆bug的假文档，作为一个历史悠久，功能酷炫，但没人用的库，是不是该考虑为什么过了那么多年自己还是那么冷门啊。</p>
+<h2 id="分析">分析</h2>
+<p><code>DHTMLX</code>框架是也是通过<code>CSS</code>的<code>z-index</code>来确定窗口的层次的，上面涉及到的两个神奇API干的都是同一件事情，添加内置<code>z-index</code>的<code>style</code> (<code>dhx_popup--window_active</code>)到组件上，实现激活窗口的效果。但是<code>DHX</code>那群nt工程师压根就没给<code>datepicker</code>之类的组件写自动添加<code>dhx_popup--window_active</code>的代码，至于<code>Window</code>组件，自动添加的代码有是有，就是有bug。</p>
+<h2 id="牢骚">牢骚</h2>
+<p><code>DHX</code>的库bug多也就算了，官网上放着的文档也是有一堆bug的假文档，作为一个历史悠久，功能酷炫，但没人用的库，是不是该考虑为什么过了那么多年自己还是那么冷门啊。</p>
 
     </div>
 
@@ -370,14 +371,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -392,7 +393,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

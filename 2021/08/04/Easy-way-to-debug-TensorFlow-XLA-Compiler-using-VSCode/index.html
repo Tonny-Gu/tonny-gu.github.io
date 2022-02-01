@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace X">
@@ -151,7 +151,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Preparing-Environment"><span class="nav-text">Preparing Environment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Compile-the-source-code"><span class="nav-text">Compile the source code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pick-a-unit-test-to-compile"><span class="nav-text">Pick a unit test to compile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fix-broken-dependency-Optional"><span class="nav-text">Fix broken dependency (Optional)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Configuring-VSCode"><span class="nav-text">Configuring VSCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-text">Reference</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#preparing-environment"><span class="nav-text">Preparing Environment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compile-the-source-code"><span class="nav-text">Compile the source code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pick-a-unit-test-to-compile"><span class="nav-text">Pick a unit test to compile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fix-broken-dependency-optional"><span class="nav-text">Fix broken dependency (Optional)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configuring-vscode"><span class="nav-text">Configuring VSCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -287,44 +287,45 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler. </p>
-<p><img data-src="/images/pasted-82.png" alt="upload successful"></p>
-<h2 id="Preparing-Environment"><a href="#Preparing-Environment" class="headerlink" title="Preparing Environment"></a>Preparing Environment</h2><p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
+        <p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
+<figure>
+<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="preparing-environment">Preparing Environment</h2>
+<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
-
-<h2 id="Compile-the-source-code"><a href="#Compile-the-source-code" class="headerlink" title="Compile the source code"></a>Compile the source code</h2><p>First of all, configure the project and build it. </p>
+<h2 id="compile-the-source-code">Compile the source code</h2>
+<p>First of all, configure the project and build it.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
-
 <p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a target="_blank" rel="noopener" href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
-<p>As for the bazel build flag, </p>
+<p>As for the bazel build flag,</p>
 <ul>
 <li><code>--config=dbg</code> adds debugging symbols. Required.</li>
 <li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
 </ul>
 <p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
-<h2 id="Pick-a-unit-test-to-compile"><a href="#Pick-a-unit-test-to-compile" class="headerlink" title="Pick a unit test to compile"></a>Pick a unit test to compile</h2><p>In fact, we don’t have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
+<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
+<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
 <p>Let pick a simple test first to validate the code is compiled correctly.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
-
 <p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
-
-<p>Then pick a test you interest, and repeat the steps above. </p>
-<h2 id="Fix-broken-dependency-Optional"><a href="#Fix-broken-dependency-Optional" class="headerlink" title="Fix broken dependency (Optional)"></a>Fix broken dependency (Optional)</h2><p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
+<p>Then pick a test you interest, and repeat the steps above.</p>
+<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
+<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
-
-<p>This is because this executable is not linked to a valid backend, which means this executable doesn’t contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
-<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>. </p>
+<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
+<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<h2 id="Configuring-VSCode"><a href="#Configuring-VSCode" class="headerlink" title="Configuring VSCode"></a>Configuring VSCode</h2><p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
+<h2 id="configuring-vscode">Configuring VSCode</h2>
+<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
 <blockquote>
 <p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
 </blockquote>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>Everything is all set! Press <code>F5</code> to start debugging.</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<h2 id="reference">Reference</h2>
+<ul>
 <li><a target="_blank" rel="noopener" href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
 <li><a target="_blank" rel="noopener" href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
 </ul>
@@ -392,14 +393,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -414,7 +415,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="Last year, I wrote a post about how to install Ubuntu 18.04 Server automatically. The major reason why I choose to install the older version is I failed to make Ubuntu 20.04 install without pressing a">
@@ -149,7 +149,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Download-the-image"><span class="nav-text">Download the image</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Update-some-files-in-ISO-image"><span class="nav-text">Update some files in ISO image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Add-Kernel-Arguments"><span class="nav-text">Add Kernel Arguments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Add-Auto-install-Configurations"><span class="nav-text">Add Auto-install Configurations</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#download-the-image"><span class="nav-text">Download the image</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#update-some-files-in-iso-image"><span class="nav-text">Update some files in ISO image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#add-kernel-arguments"><span class="nav-text">Add Kernel Arguments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#add-auto-install-configurations"><span class="nav-text">Add Auto-install Configurations</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -285,22 +285,24 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>Last year, I wrote <a href="/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">a post</a> about how to install Ubuntu 18.04 Server automatically. The major reason why I choose to install the older version is I failed to make Ubuntu 20.04 install without pressing any key at that time while the approach for the offline installation recommended by the official is not working. </p>
+        <p>Last year, I wrote <a href="/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">a post</a> about how to install Ubuntu 18.04 Server automatically. The major reason why I choose to install the older version is I failed to make Ubuntu 20.04 install without pressing any key at that time while the approach for the offline installation recommended by the official is not working.</p>
 <p>There is <a target="_blank" rel="noopener" href="https://www.pugetsystems.com/labs/hpc/How-To-Make-Ubuntu-Autoinstall-ISO-with-Cloud-init-2213/">an article</a> already described the detailed steps about the automatic installation of Ubuntu 20.04 Server, but according what its author said, their blog system ripped out some important characters. So, by checking with <a target="_blank" rel="noopener" href="https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e">this script</a>, I figured out the correct way to achieve our goal.</p>
-<h2 id="Download-the-image"><a href="#Download-the-image" class="headerlink" title="Download the image"></a>Download the image</h2><p>Download the live CD image in whichever way you prefer. For the user locates in China, I would suggest you download from <a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso">https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso</a>. </p>
-<h2 id="Update-some-files-in-ISO-image"><a href="#Update-some-files-in-ISO-image" class="headerlink" title="Update some files in ISO image"></a>Update some files in ISO image</h2><p>Only thing we need to do is updating several files. And here are some recommended editors.</p>
+<h2 id="download-the-image">Download the image</h2>
+<p>Download the live CD image in whichever way you prefer. For the user locates in China, I would suggest you download from <a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso">https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.3-live-server-amd64.iso</a>.</p>
+<h2 id="update-some-files-in-iso-image">Update some files in ISO image</h2>
+<p>Only thing we need to do is updating several files. And here are some recommended editors.</p>
 <ul>
 <li>For Windows user, I strongly recommend you use <code>Ultraiso</code> to edit the ISO file.</li>
-<li>For Linux user, <code>ISO Master</code> should work. (I didn’t try it before.)</li>
+<li>For Linux user, <code>ISO Master</code> should work. (I didn't try it before.)</li>
 <li>For the user who wants to deeply customize the ISO file, including unpacking <code>rootfs</code> image, <code>cubic</code> is everything you need. You can refer to <a href="(/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/)">my previous post</a> and learn how it works.</li>
 </ul>
-<h3 id="Add-Kernel-Arguments"><a href="#Add-Kernel-Arguments" class="headerlink" title="Add Kernel Arguments"></a>Add Kernel Arguments</h3><p>Assume the root directory of ISO image is <code>/cdrom</code>. There are two bootloader configuration files need to modify, one for UEFI system, one for the legacy one.</p>
+<h3 id="add-kernel-arguments">Add Kernel Arguments</h3>
+<p>Assume the root directory of ISO image is <code>/cdrom</code>. There are two bootloader configuration files need to modify, one for UEFI system, one for the legacy one.</p>
 <ul>
 <li><code>/cdrom/isolinux/txt.cfg</code></li>
 </ul>
 <p>Append the kernel arguments like this,</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
-
 <blockquote>
 <p>Note: HWE Kernel is a higher version of Linux kernel compared to the default one, which is shipped with the newer drivers. Theoretically, it has a better support for the latest hardware.</p>
 </blockquote>
@@ -308,16 +310,15 @@
 <li><code>/cdrom/grub.cfg</code></li>
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
-
-<h3 id="Add-Auto-install-Configurations"><a href="#Add-Auto-install-Configurations" class="headerlink" title="Add Auto-install Configurations"></a>Add Auto-install Configurations</h3><p>Two new files are also required for automatic answering.</p>
+<h3 id="add-auto-install-configurations">Add Auto-install Configurations</h3>
+<p>Two new files are also required for automatic answering.</p>
 <ul>
 <li><code>/cdrom/user-data</code></li>
 </ul>
 <p>This configuration is what I am using now, and it is for the machine without Internet. I have verified that it can make the installation procedure fully automatic.</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cloud-config</span></span><br><span class="line"><span class="attr">autoinstall:</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">storage:</span>  <span class="comment"># should set the interactive default but doesn&#x27;t seem to work??</span></span><br><span class="line">    <span class="attr">layout:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">direct</span></span><br><span class="line">  <span class="attr">locale:</span> <span class="string">en_US.UTF-8</span></span><br><span class="line">  <span class="attr">keyboard:</span></span><br><span class="line">    <span class="attr">layout:</span> <span class="string">us</span></span><br><span class="line">  <span class="attr">identity:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">ubuntu-server</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">&quot;$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0&quot;</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">tonny</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">allow-pw:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">install-server:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">package_update:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">package_upgrade:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
 <blockquote>
-<p>Note: </p>
+<p>Note:</p>
 <ul>
 <li><code>direct</code> storage layout means using and erasing the whole disk. (The default option provided by the interactive installer.)</li>
 <li>The password is <code>ubuntu</code>. This can be generated by <code>mkpasswd</code>.</li>
@@ -392,14 +393,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -414,7 +415,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

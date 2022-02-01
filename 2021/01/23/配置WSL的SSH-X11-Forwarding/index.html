@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="我最喜欢SSH的一个功能就是X11 Forwarding，可以把远程服务器的图形界面转发到本地的X11 Server上，然而WSL并不原生支持这个功能（因为Windows里没有原生的X11 Server）。但是其实稍加配置，其实WSL的SSH可以比较好的支持X11 Forwarding。（Chrome OS什么都不需要配置，yyds！）">
@@ -151,7 +151,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87Windows%E7%9A%84X11-Server"><span class="nav-text">准备Windows的X11 Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEWSL%E7%9A%84%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-text">配置WSL的环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-text">参考文章</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87windows%E7%9A%84x11-server"><span class="nav-text">准备Windows的X11 Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEwsl%E7%9A%84%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-text">配置WSL的环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-text">参考文章</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -288,14 +288,18 @@
     
     <div class="post-body" itemprop="articleBody">
         <p>我最喜欢SSH的一个功能就是X11 Forwarding，可以把远程服务器的图形界面转发到本地的X11 Server上，然而WSL并不原生支持这个功能（因为Windows里没有原生的X11 Server）。但是其实稍加配置，其实WSL的SSH可以比较好的支持X11 Forwarding。（Chrome OS什么都不需要配置，yyds！）</p>
-<h2 id="准备Windows的X11-Server"><a href="#准备Windows的X11-Server" class="headerlink" title="准备Windows的X11 Server"></a>准备Windows的X11 Server</h2><p>我个人喜欢的是<code>VcXsrv</code>这个X11 Server，可以在<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/vcxsrv/">这里</a>下载它的安装包。</p>
+<h2 id="准备windows的x11-server">准备Windows的X11 Server</h2>
+<p>我个人喜欢的是<code>VcXsrv</code>这个X11 Server，可以在<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/vcxsrv/">这里</a>下载它的安装包。</p>
 <p>安装好以后，打开桌面上的<code>XLaunch</code>，然后选择<code>Multiple windows</code>-&gt;<code>Start no client</code>-&gt;勾选<code>Disable access control</code>-&gt;<code>Save Configuration</code>保存一下设置，方便以后使用-&gt;<code>Finish</code>。</p>
-<h2 id="配置WSL的环境变量"><a href="#配置WSL的环境变量" class="headerlink" title="配置WSL的环境变量"></a>配置WSL的环境变量</h2><p>编辑WSL的<code>~/.bashrc</code>文件，在文件末尾写入以下内容，注意仅仅<code>export DISPLAY=0.0</code>是不行的。</p>
+<h2 id="配置wsl的环境变量">配置WSL的环境变量</h2>
+<p>编辑WSL的<code>~/.bashrc</code>文件，在文件末尾写入以下内容，注意仅仅<code>export DISPLAY=0.0</code>是不行的。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DISPLAY=localhost:0.0</span><br></pre></td></tr></table></figure>
-
 <p>然后通过<code>source ~/.bashrc</code>，或者打开新终端载入新配置。enjoy it！</p>
-<p><img data-src="/images/pasted-62.png" alt="upload successful"></p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<figure>
+<img data-src="/images/pasted-62.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="参考文章">参考文章</h2>
+<ul>
 <li><a target="_blank" rel="noopener" href="https://superuser.com/questions/1332709/setting-up-x11-forwarding-over-ssh-on-windows-10-subsystem-for-linux">https://superuser.com/questions/1332709/setting-up-x11-forwarding-over-ssh-on-windows-10-subsystem-for-linux</a></li>
 <li><a target="_blank" rel="noopener" href="https://ddadaal.me/articles/run-gui-on-wsl2-with-x11-forwarding">https://ddadaal.me/articles/run-gui-on-wsl2-with-x11-forwarding</a></li>
 </ul>
@@ -363,14 +367,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -385,7 +389,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

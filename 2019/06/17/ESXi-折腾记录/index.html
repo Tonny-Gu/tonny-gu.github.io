@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="ESXi 镜像添加网卡驱动程序">
@@ -150,7 +150,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E9%95%9C%E5%83%8F%E6%B7%BB%E5%8A%A0%E7%BD%91%E5%8D%A1%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-text">ESXi 镜像添加网卡驱动程序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85PowerCLI"><span class="nav-text">1. 安装PowerCLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8B%E8%BD%BDESXi%E9%A9%B1%E5%8A%A8%E5%8C%85"><span class="nav-text">2. 下载ESXi驱动包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%B8%8B%E8%BD%BDVMware-vSphere-Hypervisor-ESXi-Offline-Bundle"><span class="nav-text">3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AF%BC%E5%85%A5Bundle%E5%88%B0%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-text">4. 导入Bundle到软件仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%88%9B%E5%BB%BAImage-Profile"><span class="nav-text">5. 创建Image Profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%90%91Image-Profile%E5%AF%BC%E5%85%A5%E9%A9%B1%E5%8A%A8Bundle"><span class="nav-text">6. 向Image Profile导入驱动Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%AF%BC%E5%87%BAImage-ISO"><span class="nav-text">7. 导出Image ISO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ESXi-%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86"><span class="nav-text">ESXi 安装程序崩溃处理</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#esxi-%E9%95%9C%E5%83%8F%E6%B7%BB%E5%8A%A0%E7%BD%91%E5%8D%A1%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-text">ESXi 镜像添加网卡驱动程序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85powercli"><span class="nav-text">1. 安装PowerCLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDesxi%E9%A9%B1%E5%8A%A8%E5%8C%85"><span class="nav-text">2. 下载ESXi驱动包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDvmware-vsphere-hypervisor-esxi-offline-bundle"><span class="nav-text">3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5bundle%E5%88%B0%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-text">4. 导入Bundle到软件仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAimage-profile"><span class="nav-text">5. 创建Image Profile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91image-profile%E5%AF%BC%E5%85%A5%E9%A9%B1%E5%8A%A8bundle"><span class="nav-text">6. 向Image Profile导入驱动Bundle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BAimage-iso"><span class="nav-text">7. 导出Image ISO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#esxi-%E5%AE%89%E8%A3%85%E7%A8%8B%E5%BA%8F%E5%B4%A9%E6%BA%83%E5%A4%84%E7%90%86"><span class="nav-text">ESXi 安装程序崩溃处理</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -301,44 +301,44 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="ESXi-镜像添加网卡驱动程序"><a href="#ESXi-镜像添加网卡驱动程序" class="headerlink" title="ESXi 镜像添加网卡驱动程序"></a>ESXi 镜像添加网卡驱动程序</h1><p><a target="_blank" rel="noopener" href="https://www.sysadminstories.com/2018/08/adding-realtek-8111-driver-to-vsphere.html">参考文章</a></p>
-<h2 id="1-安装PowerCLI"><a href="#1-安装PowerCLI" class="headerlink" title="1. 安装PowerCLI"></a>1. 安装PowerCLI</h2><p>下面的Powershell命令可以直接安装最新版PowerCLI</p>
+        <h1 id="esxi-镜像添加网卡驱动程序">ESXi 镜像添加网卡驱动程序</h1>
+<p><a target="_blank" rel="noopener" href="https://www.sysadminstories.com/2018/08/adding-realtek-8111-driver-to-vsphere.html">参考文章</a></p>
+<h2 id="安装powercli">1. 安装PowerCLI</h2>
+<p>下面的Powershell命令可以直接安装最新版PowerCLI</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Install-Module -Name VMware.PowerCLI</span><br></pre></td></tr></table></figure>
-
-<h2 id="2-下载ESXi驱动包"><a href="#2-下载ESXi驱动包" class="headerlink" title="2. 下载ESXi驱动包"></a>2. 下载ESXi驱动包</h2><p><a target="_blank" rel="noopener" href="https://vibsdepot.v-front.de/wiki/index.php/Welcome">下载链接</a></p>
+<h2 id="下载esxi驱动包">2. 下载ESXi驱动包</h2>
+<p><a target="_blank" rel="noopener" href="https://vibsdepot.v-front.de/wiki/index.php/Welcome">下载链接</a></p>
 <p>在List of EXSi packages中寻找自己网卡的驱动，我的网卡是Realtek 8168系列的，故下载包net55-r8168</p>
-<h2 id="3-下载VMware-vSphere-Hypervisor-ESXi-Offline-Bundle"><a href="#3-下载VMware-vSphere-Hypervisor-ESXi-Offline-Bundle" class="headerlink" title="3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle"></a>3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</h2><p><a target="_blank" rel="noopener" href="https://my.vmware.com/web/vmware/details?productId=742&downloadGroup=ESXI67U2">官方下载链接</a></p>
-<p><a target="_blank" rel="noopener" href="http://ddl6.digiboy.ir/vmware/6.7/VMware-ESXi-6.7.0-8169922-depot.zip">分流下载链接</a><br><a target="_blank" rel="noopener" href="https://www.v2ex.com/t/448441">本链接来自于V2EX</a></p>
-<h2 id="4-导入Bundle到软件仓库"><a href="#4-导入Bundle到软件仓库" class="headerlink" title="4. 导入Bundle到软件仓库"></a>4. 导入Bundle到软件仓库</h2><p>假设两个Bundles的放置位置分别为</p>
+<h2 id="下载vmware-vsphere-hypervisor-esxi-offline-bundle">3. 下载VMware vSphere Hypervisor (ESXi) Offline Bundle</h2>
+<p><a target="_blank" rel="noopener" href="https://my.vmware.com/web/vmware/details?productId=742&amp;downloadGroup=ESXI67U2">官方下载链接</a></p>
+<p><a target="_blank" rel="noopener" href="http://ddl6.digiboy.ir/vmware/6.7/VMware-ESXi-6.7.0-8169922-depot.zip">分流下载链接</a> <a target="_blank" rel="noopener" href="https://www.v2ex.com/t/448441">本链接来自于V2EX</a></p>
+<h2 id="导入bundle到软件仓库">4. 导入Bundle到软件仓库</h2>
+<p>假设两个Bundles的放置位置分别为</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">D:\net55-r8168-8.045a-napi-offline_bundle.zip</span><br><span class="line">D:\VMware-ESXi-6.7.0-8169922-depot.zip</span><br></pre></td></tr></table></figure>
-
 <p>通过以下命令导入软件仓库</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwareDepot &quot;D:\net55-r8168-8.045a-napi-offline_bundle.zip&quot;, &quot;D:\VMware-ESXi-6.7.0-8169922-depot.zip&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="5-创建Image-Profile"><a href="#5-创建Image-Profile" class="headerlink" title="5. 创建Image Profile"></a>5. 创建Image Profile</h2><ol>
-<li><p>获取软件仓库中可用的Image Profile</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxImageProfile</span><br></pre></td></tr></table></figure></li>
-<li><p>克隆Image Profile</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; New-EsxImageProfile -CloneProfile ESXi-6.7.0-8169922-standard -name ESXi-6.7.0-8169922-standard-RTL8111 -Vendor Tonny </span><br></pre></td></tr></table></figure></li>
-<li><p>允许导入社区维护的Bundle</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Set-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -AcceptanceLevel CommunitySupported</span><br></pre></td></tr></table></figure></li>
+<h2 id="创建image-profile">5. 创建Image Profile</h2>
+<ol type="1">
+<li><p>获取软件仓库中可用的Image Profile <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxImageProfile</span><br></pre></td></tr></table></figure></p></li>
+<li><p>克隆Image Profile <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; New-EsxImageProfile -CloneProfile ESXi-6.7.0-8169922-standard -name ESXi-6.7.0-8169922-standard-RTL8111 -Vendor Tonny </span><br></pre></td></tr></table></figure></p></li>
+<li><p>允许导入社区维护的Bundle <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Set-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -AcceptanceLevel CommunitySupported</span><br></pre></td></tr></table></figure></p></li>
 </ol>
-<h2 id="6-向Image-Profile导入驱动Bundle"><a href="#6-向Image-Profile导入驱动Bundle" class="headerlink" title="6. 向Image Profile导入驱动Bundle"></a>6. 向Image Profile导入驱动Bundle</h2><ol>
+<h2 id="向image-profile导入驱动bundle">6. 向Image Profile导入驱动Bundle</h2>
+<ol type="1">
 <li>查找某一板卡厂商的Bundle</li>
 </ol>
 <p>假定查找Realtek的</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Get-EsxSoftwarePackage | Where &#123;$_.Vendor -eq &quot;Realtek&quot;&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
+<ol start="2" type="1">
 <li>导入驱动Bundle</li>
 </ol>
 <p>假定Bundle名为net55-r8168</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Add-EsxSoftwarePackage -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -SoftwarePackage net55-r8168</span><br></pre></td></tr></table></figure>
-
-<h2 id="7-导出Image-ISO"><a href="#7-导出Image-ISO" class="headerlink" title="7. 导出Image ISO"></a>7. 导出Image ISO</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Export-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -ExportToIso -filepath D:\VMware-ESXi-6.7.0-8169922-RTL8111.iso</span><br></pre></td></tr></table></figure>
-
-<h1 id="ESXi-安装程序崩溃处理"><a href="#ESXi-安装程序崩溃处理" class="headerlink" title="ESXi 安装程序崩溃处理"></a>ESXi 安装程序崩溃处理</h1><p><a target="_blank" rel="noopener" href="https://zhidao.baidu.com/question/242122597991245964.html">参考文章</a><br>不得不说百度知道在9102年了还有人好好答题还是有点让人感动的</p>
-<p>现象：安装EXSi时提示Shutting down firmware services… Using ‘simple offset’ UEFI RTS mapping policy</p>
+<h2 id="导出image-iso">7. 导出Image ISO</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PS&gt; Export-EsxImageProfile -ImageProfile ESXi-6.7.0-8169922-standard-RTL8111 -ExportToIso -filepath D:\VMware-ESXi-6.7.0-8169922-RTL8111.iso</span><br></pre></td></tr></table></figure>
+<h1 id="esxi-安装程序崩溃处理">ESXi 安装程序崩溃处理</h1>
+<p><a target="_blank" rel="noopener" href="https://zhidao.baidu.com/question/242122597991245964.html">参考文章</a> 不得不说百度知道在9102年了还有人好好答题还是有点让人感动的</p>
+<p>现象：安装EXSi时提示Shutting down firmware services... Using 'simple offset' UEFI RTS mapping policy</p>
 <p>解决办法：显然添加<code>ignoreHeadless=TRUE</code>参数也没救回我电脑，根据评论区dalao提示</p>
 <blockquote>
 <p>在BIOS中将<code>PCI 64bit Resources Handling</code>里的<code>Above 4G Decoding</code>关掉就好了</p>
@@ -411,14 +411,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -433,7 +433,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

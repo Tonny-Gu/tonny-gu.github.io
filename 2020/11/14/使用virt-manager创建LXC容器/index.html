@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="virt-manager创建LXC容器是怎么回事呢？virt-manager相信大家都很熟悉，但是virt-manager创建LXC容器是怎么回事呢，下面就让小编带大家一起了解吧。virt-manager创建LXC容器，其实就是可以创建LXC容器，大家可能会很惊讶virt-manager怎么会创建LXC容器呢？但事实就是这样，小编也感到非常惊讶。">
@@ -156,7 +156,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%AE%B9%E5%99%A8RootFS"><span class="nav-text">下载容器RootFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8BRootFS"><span class="nav-text">解压RootFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8chroot%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81"><span class="nav-text">使用chroot修改密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BALXC%E5%AE%B9%E5%99%A8"><span class="nav-text">创建LXC容器</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%AE%B9%E5%99%A8rootfs"><span class="nav-text">下载容器RootFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8Brootfs"><span class="nav-text">解压RootFS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8chroot%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81"><span class="nav-text">使用chroot修改密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAlxc%E5%AE%B9%E5%99%A8"><span class="nav-text">创建LXC容器</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -293,22 +293,36 @@
     
     <div class="post-body" itemprop="articleBody">
         <p><del>virt-manager创建LXC容器是怎么回事呢？virt-manager相信大家都很熟悉，但是virt-manager创建LXC容器是怎么回事呢，下面就让小编带大家一起了解吧。virt-manager创建LXC容器，其实就是可以创建LXC容器，大家可能会很惊讶virt-manager怎么会创建LXC容器呢？但事实就是这样，小编也感到非常惊讶。</del></p>
-<h2 id="下载容器RootFS"><a href="#下载容器RootFS" class="headerlink" title="下载容器RootFS"></a>下载容器RootFS</h2><p>当然对于dalao来说，的确是可以用bootstrap或者busybox创建Linux的RootFS。显然为了省事，还是直接下载一个现成的比较方便。在<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images">http://uk.images.linuxcontainers.org/images</a>选一个合适的镜像下载，注意要下载xz压缩包。我比较喜欢Ubuntu 20.04，就下载了<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images/ubuntu/focal/amd64/default/20201114_07:42/rootfs.tar.xz">这个文件</a>。</p>
-<h2 id="解压RootFS"><a href="#解压RootFS" class="headerlink" title="解压RootFS"></a>解压RootFS</h2><p>找个合适的地方放镜像，比如<code>/data/tonny/ubuntu2004</code>，这里<code>/data</code>目录是我挂载的数据盘，然后解压<code>xz</code>文件。我的文件叫做<code>rootfs.tar.xz</code>，那么解压的命令如下。</p>
+<h2 id="下载容器rootfs">下载容器RootFS</h2>
+<p>当然对于dalao来说，的确是可以用bootstrap或者busybox创建Linux的RootFS。显然为了省事，还是直接下载一个现成的比较方便。在<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images">http://uk.images.linuxcontainers.org/images</a>选一个合适的镜像下载，注意要下载xz压缩包。我比较喜欢Ubuntu 20.04，就下载了<a target="_blank" rel="noopener" href="http://uk.images.linuxcontainers.org/images/ubuntu/focal/amd64/default/20201114_07:42/rootfs.tar.xz">这个文件</a>。</p>
+<h2 id="解压rootfs">解压RootFS</h2>
+<p>找个合适的地方放镜像，比如<code>/data/tonny/ubuntu2004</code>，这里<code>/data</code>目录是我挂载的数据盘，然后解压<code>xz</code>文件。我的文件叫做<code>rootfs.tar.xz</code>，那么解压的命令如下。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xz -d rootfs.tar.xz</span><br><span class="line">tar -xvf rootfs.tar</span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pasted-55.png" alt="upload successful"></p>
-<h2 id="使用chroot修改密码"><a href="#使用chroot修改密码" class="headerlink" title="使用chroot修改密码"></a>使用chroot修改密码</h2><p>反正我查了半天都没查到Image的默认密码是啥，但知道有个<code>ubuntu</code>的账户，不如直接切进RootFS改密码。</p>
+<figure>
+<img data-src="/images/pasted-55.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="使用chroot修改密码">使用chroot修改密码</h2>
+<p>反正我查了半天都没查到Image的默认密码是啥，但知道有个<code>ubuntu</code>的账户，不如直接切进RootFS改密码。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo chroot /data/tonny/ubuntu2004</span><br><span class="line">passwd ubuntu <span class="comment"># 或者可以直接passwd修改root密码</span></span><br></pre></td></tr></table></figure>
-
-<p><img data-src="/images/pasted-57.png" alt="upload successful"></p>
-<h2 id="创建LXC容器"><a href="#创建LXC容器" class="headerlink" title="创建LXC容器"></a>创建LXC容器</h2><p>首先要<code>Add Connection</code>，然后<code>Hypervisor</code>选择<code>Libvirt-LXC</code>再<code>Connect</code>。</p>
-<p><img data-src="/images/pasted-58.png" alt="upload successful"></p>
-<p><img data-src="/images/pasted-59.png" alt="upload successful"></p>
+<figure>
+<img data-src="/images/pasted-57.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="创建lxc容器">创建LXC容器</h2>
+<p>首先要<code>Add Connection</code>，然后<code>Hypervisor</code>选择<code>Libvirt-LXC</code>再<code>Connect</code>。</p>
+<figure>
+<img data-src="/images/pasted-58.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure>
+<img data-src="/images/pasted-59.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
 <p>接着<code>New Virtual Machine</code>，参数如下图。</p>
-<p><img data-src="/images/pasted-60.png" alt="upload successful"></p>
+<figure>
+<img data-src="/images/pasted-60.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
 <p>之后<code>root directory</code>选择<code>Browse</code>-&gt;<code>Browse Local</code>，找到<code>/data/tonny/ubuntu2004</code>并<code>Open</code>。最后像设置虚拟机一样配置CPU内存网络就可以启动LXC容器了。</p>
-<p><img data-src="/images/pasted-61.png" alt="upload successful"></p>
+<figure>
+<img data-src="/images/pasted-61.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
 
     </div>
 
@@ -373,14 +387,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -395,7 +409,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

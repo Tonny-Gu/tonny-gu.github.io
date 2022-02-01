@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="常用编译选项">
@@ -149,7 +149,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-text">常用编译选项</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ICC%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">ICC编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ICC%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5-OpenMP-OpenMPI"><span class="nav-text">ICC编译链接: OpenMP + OpenMPI</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PGI-NVCC%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">PGI + NVCC编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-1"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PGI%E7%BC%96%E8%AF%91%EF%BC%9AOpenACC-OpenMP-OpenMPI"><span class="nav-text">PGI编译：OpenACC + OpenMP + OpenMPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NVCC%E7%BC%96%E8%AF%91-CUDA-OpenMPI"><span class="nav-text">NVCC编译: CUDA + OpenMPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PGI%E9%93%BE%E6%8E%A5"><span class="nav-text">PGI链接</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95"><span class="nav-text">性能分析方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Intel-Vtune%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-text">Intel Vtune性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-2"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GUI%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90"><span class="nav-text">GUI启动分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CLI%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90"><span class="nav-text">CLI启动分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NVIDIA-Profiler%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-text">NVIDIA Profiler性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-3"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CLI%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90-1"><span class="nav-text">CLI启动分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95"><span class="nav-text">调试方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%A4%9A%E7%AA%97%E5%8F%A3GDB%E8%B0%83%E8%AF%95"><span class="nav-text">多进程多窗口GDB调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%8D%95%E7%AA%97%E5%8F%A3GDB%E8%B0%83%E8%AF%95"><span class="nav-text">多进程单窗口GDB调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PGI-GUI%E8%B0%83%E8%AF%95"><span class="nav-text">PGI GUI调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7"><span class="nav-text">调试技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CUDA-GDB%E6%9F%A5%E7%9C%8B%E6%98%BE%E5%AD%98%E4%B8%8A%E6%95%B0%E7%BB%84"><span class="nav-text">CUDA-GDB查看显存上数组</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9"><span class="nav-text">常用编译选项</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#icc%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">ICC编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#icc%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5-openmp-openmpi"><span class="nav-text">ICC编译链接: OpenMP + OpenMPI</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pgi-nvcc%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">PGI + NVCC编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-1"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pgi%E7%BC%96%E8%AF%91openacc-openmp-openmpi"><span class="nav-text">PGI编译：OpenACC + OpenMP + OpenMPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nvcc%E7%BC%96%E8%AF%91-cuda-openmpi"><span class="nav-text">NVCC编译: CUDA + OpenMPI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pgi%E9%93%BE%E6%8E%A5"><span class="nav-text">PGI链接</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95"><span class="nav-text">性能分析方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#intel-vtune%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-text">Intel Vtune性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-2"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gui%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90"><span class="nav-text">GUI启动分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cli%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90"><span class="nav-text">CLI启动分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nvidia-profiler%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="nav-text">NVIDIA Profiler性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87-3"><span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cli%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90-1"><span class="nav-text">CLI启动分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95"><span class="nav-text">调试方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%A4%9A%E7%AA%97%E5%8F%A3gdb%E8%B0%83%E8%AF%95"><span class="nav-text">多进程多窗口GDB调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%8D%95%E7%AA%97%E5%8F%A3gdb%E8%B0%83%E8%AF%95"><span class="nav-text">多进程单窗口GDB调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pgi-gui%E8%B0%83%E8%AF%95"><span class="nav-text">PGI GUI调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7"><span class="nav-text">调试技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#cuda-gdb%E6%9F%A5%E7%9C%8B%E6%98%BE%E5%AD%98%E4%B8%8A%E6%95%B0%E7%BB%84"><span class="nav-text">CUDA-GDB查看显存上数组</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -285,47 +285,55 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="常用编译选项"><a href="#常用编译选项" class="headerlink" title="常用编译选项"></a>常用编译选项</h1><h2 id="ICC编译器"><a href="#ICC编译器" class="headerlink" title="ICC编译器"></a>ICC编译器</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /opt/intel/bin/compilervars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/bin/iccvars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/vtune_profiler/env/vars.sh</span><br></pre></td></tr></table></figure>
-
-<h3 id="ICC编译链接-OpenMP-OpenMPI"><a href="#ICC编译链接-OpenMP-OpenMPI" class="headerlink" title="ICC编译链接: OpenMP + OpenMPI"></a>ICC编译链接: OpenMP + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -g -fopenmp -O3 -xhost -qopt-report=5 -qopt-report-phase=vec -cxx=icc</span><br></pre></td></tr></table></figure>
-
-<h2 id="PGI-NVCC编译器"><a href="#PGI-NVCC编译器" class="headerlink" title="PGI + NVCC编译器"></a>PGI + NVCC编译器</h2><h3 id="环境准备-1"><a href="#环境准备-1" class="headerlink" title="环境准备"></a>环境准备</h3><p>向<code>~/.modulerc</code>添加以下代码给Environment Modules导入文件夹<code>/opt/pgi/modulefiles</code></p>
+        <h1 id="常用编译选项">常用编译选项</h1>
+<h2 id="icc编译器">ICC编译器</h2>
+<h3 id="环境准备">环境准备</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /opt/intel/bin/compilervars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/bin/iccvars.sh intel64</span><br><span class="line"><span class="built_in">source</span> /opt/intel/vtune_profiler/env/vars.sh</span><br></pre></td></tr></table></figure>
+<h3 id="icc编译链接-openmp-openmpi">ICC编译链接: OpenMP + OpenMPI</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -g -fopenmp -O3 -xhost -qopt-report=5 -qopt-report-phase=vec -cxx=icc</span><br></pre></td></tr></table></figure>
+<h2 id="pgi-nvcc编译器">PGI + NVCC编译器</h2>
+<h3 id="环境准备-1">环境准备</h3>
+<p>向<code>~/.modulerc</code>添加以下代码给Environment Modules导入文件夹<code>/opt/pgi/modulefiles</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">module use /opt/pgi/modulefiles</span><br></pre></td></tr></table></figure>
-
 <p>启动Environment Modules</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> /etc/profile.d/modules.sh</span><br></pre></td></tr></table></figure>
-
 <p>然后启动PGI环境</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">module load pgi-nollvm</span><br><span class="line">module load pgi/19.10</span><br><span class="line">module load openmpi</span><br></pre></td></tr></table></figure>
-
 <p>添加NVIDIA工具链路径</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/cuda-11.1/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="PGI编译：OpenACC-OpenMP-OpenMPI"><a href="#PGI编译：OpenACC-OpenMP-OpenMPI" class="headerlink" title="PGI编译：OpenACC + OpenMP + OpenMPI"></a>PGI编译：OpenACC + OpenMP + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast</span><br></pre></td></tr></table></figure>
-
-<h3 id="NVCC编译-CUDA-OpenMPI"><a href="#NVCC编译-CUDA-OpenMPI" class="headerlink" title="NVCC编译: CUDA + OpenMPI"></a>NVCC编译: CUDA + OpenMPI</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -lineinfo -g -O3 -std=c++11 -gencode arch=compute_60,code=sm_60 -ccbin=mpicxx</span><br></pre></td></tr></table></figure>
-
-<h3 id="PGI链接"><a href="#PGI链接" class="headerlink" title="PGI链接"></a>PGI链接</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast -lnvToolsExt -lcudart -L/usr/<span class="built_in">local</span>/cuda-11.1/lib64</span><br></pre></td></tr></table></figure>
-
-<h1 id="性能分析方法"><a href="#性能分析方法" class="headerlink" title="性能分析方法"></a>性能分析方法</h1><h2 id="Intel-Vtune性能分析"><a href="#Intel-Vtune性能分析" class="headerlink" title="Intel Vtune性能分析"></a>Intel Vtune性能分析</h2><h3 id="环境准备-2"><a href="#环境准备-2" class="headerlink" title="环境准备"></a>环境准备</h3><p>同<code>ICC</code>环境准备</p>
-<h3 id="GUI启动分析"><a href="#GUI启动分析" class="headerlink" title="GUI启动分析"></a>GUI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vtune-gui &amp;</span><br></pre></td></tr></table></figure>
-
-<h3 id="CLI启动分析"><a href="#CLI启动分析" class="headerlink" title="CLI启动分析"></a>CLI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/intel/vtune_profiler_2020.1.0.607630/bin64/vtune -collect hpc-performance -finalization-mode=full -app-working-dir /home/tonny -- /home/tonny/myscript</span><br></pre></td></tr></table></figure>
-
+<h3 id="pgi编译openacc-openmp-openmpi">PGI编译：OpenACC + OpenMP + OpenMPI</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast</span><br></pre></td></tr></table></figure>
+<h3 id="nvcc编译-cuda-openmpi">NVCC编译: CUDA + OpenMPI</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -lineinfo -g -O3 -std=c++11 -gencode arch=compute_60,code=sm_60 -ccbin=mpicxx</span><br></pre></td></tr></table></figure>
+<h3 id="pgi链接">PGI链接</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpicxx -std=c++11 -I/usr/<span class="built_in">local</span>/cuda-11.1/include -g -O3 -mp=numa -acc -Minfo=accel -ta=tesla:cc60 -fast -lnvToolsExt -lcudart -L/usr/<span class="built_in">local</span>/cuda-11.1/lib64</span><br></pre></td></tr></table></figure>
+<h1 id="性能分析方法">性能分析方法</h1>
+<h2 id="intel-vtune性能分析">Intel Vtune性能分析</h2>
+<h3 id="环境准备-2">环境准备</h3>
+<p>同<code>ICC</code>环境准备</p>
+<h3 id="gui启动分析">GUI启动分析</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vtune-gui &amp;</span><br></pre></td></tr></table></figure>
+<h3 id="cli启动分析">CLI启动分析</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/opt/intel/vtune_profiler_2020.1.0.607630/bin64/vtune -collect hpc-performance -finalization-mode=full -app-working-dir /home/tonny -- /home/tonny/myscript</span><br></pre></td></tr></table></figure>
 <p><code>myscript</code>是一个包含了启动环境变量，用<code>mpirun</code>启动目标程序的脚本</p>
-<h2 id="NVIDIA-Profiler性能分析"><a href="#NVIDIA-Profiler性能分析" class="headerlink" title="NVIDIA Profiler性能分析"></a>NVIDIA Profiler性能分析</h2><h3 id="环境准备-3"><a href="#环境准备-3" class="headerlink" title="环境准备"></a>环境准备</h3><p>添加NVIDIA工具链路径</p>
+<h2 id="nvidia-profiler性能分析">NVIDIA Profiler性能分析</h2>
+<h3 id="环境准备-3">环境准备</h3>
+<p>添加NVIDIA工具链路径</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/cuda-11.1/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
-
 <p>推荐使用Java 8，NVVP不兼容高版本Java</p>
-<h3 id="CLI启动分析-1"><a href="#CLI启动分析-1" class="headerlink" title="CLI启动分析"></a>CLI启动分析</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 nvprof --cpu-profiling on --cpu-profiling-mode top-down --annotate-mpi openmpi  -o output.%h.%p.%q&#123;OMPI_COMM_WORLD_RANK&#125;.nvvp ./myprogram</span><br></pre></td></tr></table></figure>
+<h3 id="cli启动分析-1">CLI启动分析</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 nvprof --cpu-profiling on --cpu-profiling-mode top-down --annotate-mpi openmpi  -o output.%h.%p.%q&#123;OMPI_COMM_WORLD_RANK&#125;.nvvp ./myprogram</span><br></pre></td></tr></table></figure>
+<h1 id="调试方法">调试方法</h1>
+<h2 id="多进程多窗口gdb调试">多进程多窗口GDB调试</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 xterm gdb ./myprogram</span><br><span class="line">mpirun -np 4 xterm cuda-gdb ./myprogram</span><br></pre></td></tr></table></figure>
+<h2 id="多进程单窗口gdb调试">多进程单窗口GDB调试</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 1 gdb ./myprogram : -np 3 ./myprogram</span><br><span class="line">mpirun -np 1 cuda-gdb ./myprogram : -np 3 ./myprogram</span><br></pre></td></tr></table></figure>
+<h2 id="pgi-gui调试">PGI GUI调试</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pgdbg ./myprogram</span><br></pre></td></tr></table></figure>
+<h1 id="调试技巧">调试技巧</h1>
+<h2 id="cuda-gdb查看显存上数组">CUDA-GDB查看显存上数组</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span> ((@global double*)arr)[0]@100</span><br></pre></td></tr></table></figure>
 
-<h1 id="调试方法"><a href="#调试方法" class="headerlink" title="调试方法"></a>调试方法</h1><h2 id="多进程多窗口GDB调试"><a href="#多进程多窗口GDB调试" class="headerlink" title="多进程多窗口GDB调试"></a>多进程多窗口GDB调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 4 xterm gdb ./myprogram</span><br><span class="line">mpirun -np 4 xterm cuda-gdb ./myprogram</span><br></pre></td></tr></table></figure>
-
-<h2 id="多进程单窗口GDB调试"><a href="#多进程单窗口GDB调试" class="headerlink" title="多进程单窗口GDB调试"></a>多进程单窗口GDB调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 1 gdb ./myprogram : -np 3 ./myprogram</span><br><span class="line">mpirun -np 1 cuda-gdb ./myprogram : -np 3 ./myprogram</span><br></pre></td></tr></table></figure>
-
-<h2 id="PGI-GUI调试"><a href="#PGI-GUI调试" class="headerlink" title="PGI GUI调试"></a>PGI GUI调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pgdbg ./myprogram</span><br></pre></td></tr></table></figure>
-
-<h1 id="调试技巧"><a href="#调试技巧" class="headerlink" title="调试技巧"></a>调试技巧</h1><h2 id="CUDA-GDB查看显存上数组"><a href="#CUDA-GDB查看显存上数组" class="headerlink" title="CUDA-GDB查看显存上数组"></a>CUDA-GDB查看显存上数组</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span> ((@global double*)arr)[0]@100</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -389,14 +397,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -411,7 +419,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 

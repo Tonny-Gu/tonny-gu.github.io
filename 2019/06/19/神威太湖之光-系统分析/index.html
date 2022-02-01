@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/orange/pace-theme-minimal.css">
-  <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="内存子系统">
@@ -150,7 +150,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-text">内存子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-text">0. 推荐阅读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E7%AE%80%E4%BB%8B"><span class="nav-text">1. 神威太湖之光简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Cache"><span class="nav-text">2. Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%AE%BF%E5%AD%98%E5%BB%B6%E8%BF%9F"><span class="nav-text">3. 访存延迟</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B"><span class="nav-text">4. 存储模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#OpenACC%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%9A"><span class="nav-text">OpenACC内存模型：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-DMA"><span class="nav-text">5. DMA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DMA%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="nav-text">DMA命令模式</span></a></li></ol></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-text">内存子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E9%98%85%E8%AF%BB"><span class="nav-text">0. 推荐阅读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E7%AE%80%E4%BB%8B"><span class="nav-text">1. 神威太湖之光简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cache"><span class="nav-text">2. Cache</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BF%E5%AD%98%E5%BB%B6%E8%BF%9F"><span class="nav-text">3. 访存延迟</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E6%A8%A1%E5%9E%8B"><span class="nav-text">4. 存储模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#openacc%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="nav-text">OpenACC内存模型：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dma"><span class="nav-text">5. DMA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dma%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F"><span class="nav-text">DMA命令模式</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -301,188 +301,238 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <h1 id="内存子系统"><a href="#内存子系统" class="headerlink" title="内存子系统"></a>内存子系统</h1><h2 id="0-推荐阅读"><a href="#0-推荐阅读" class="headerlink" title="0. 推荐阅读"></a>0. 推荐阅读</h2><p><a target="_blank" rel="noopener" href="https://miraclezqc.github.io/2018/10/25/Sunway-Taihu-Optimization/">Sunway-Taihu-Optimization</a></p>
+        <h1 id="内存子系统">内存子系统</h1>
+<h2 id="推荐阅读">0. 推荐阅读</h2>
+<p><a target="_blank" rel="noopener" href="https://miraclezqc.github.io/2018/10/25/Sunway-Taihu-Optimization/">Sunway-Taihu-Optimization</a></p>
 <p><a target="_blank" rel="noopener" href="https://miraclezqc.github.io/2018/11/16/ATHREAD/">Athread</a></p>
-<h2 id="1-神威太湖之光简介"><a href="#1-神威太湖之光简介" class="headerlink" title="1. 神威太湖之光简介"></a>1. 神威太湖之光简介</h2><ul>
+<h2 id="神威太湖之光简介">1. 神威太湖之光简介</h2>
+<ul>
 <li>每个节点有2片SW26010处理器</li>
 <li>每片SW26010有4个CGs(核组, Core-Groups)</li>
 <li>每个CG有1个MPE(主核, 运算控制核心, Management Processing Element)</li>
 <li>每个CG有8x8=64个CPEs(从核, 运算核心, Computing Processing Elements)</li>
 </ul>
 <p>讲道理这SW26010确实像把4片PS3上的IBM Cell处理器用胶水糊在了一起</p>
-<h2 id="2-Cache"><a href="#2-Cache" class="headerlink" title="2. Cache"></a>2. Cache</h2><p>主核存储系统：</p>
+<h2 id="cache">2. Cache</h2>
+<p>主核存储系统：</p>
 <table>
 <thead>
-<tr>
+<tr class="header">
 <th>存储器</th>
 <th>容量</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr class="odd">
 <td>L1 Cache</td>
 <td>指令32KB 数据32KB</td>
 </tr>
-<tr>
+<tr class="even">
 <td>L2 Cache</td>
 <td>512KB</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>从核存储系统：</p>
 <table>
 <thead>
-<tr>
+<tr class="header">
 <th>存储器</th>
 <th>容量</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr class="odd">
 <td>L1 Cache</td>
 <td>指令16KB</td>
 </tr>
-<tr>
+<tr class="even">
 <td>L2 Cache</td>
 <td>CG内共享指令64KB</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>Scratch Pad Memory</td>
 <td>64KB</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>这SPM真的是和Cell处理器一毛一样了，现在我也能感受PS3开发者的恐惧了www</p>
 <p>PS: cache是由硬件控制，对程序员不可见，其实我们只需要榨干Scratch Pad Memory</p>
-<h2 id="3-访存延迟"><a href="#3-访存延迟" class="headerlink" title="3. 访存延迟"></a>3. 访存延迟</h2><table>
+<h2 id="访存延迟">3. 访存延迟</h2>
+<table>
 <thead>
-<tr>
+<tr class="header">
 <th>项目</th>
 <th>Cycle</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr class="odd">
 <td>主核到L1</td>
 <td>4</td>
 </tr>
-<tr>
+<tr class="even">
 <td>主核到L2</td>
 <td>13</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>主核到主存</td>
 <td>154</td>
 </tr>
-<tr>
+<tr class="even">
 <td>主核到LDM</td>
 <td>94</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>从核到主存</td>
 <td>177-278</td>
 </tr>
-<tr>
+<tr class="even">
 <td>从核到自己的LDM</td>
 <td>4</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>从核到其他核的LDM</td>
 <td>10</td>
 </tr>
-<tr>
+<tr class="even">
 <td>LDM到主存(DMA方式)</td>
 <td>25</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>从核行广播</td>
 <td>14</td>
 </tr>
-<tr>
+<tr class="even">
 <td>从核列广播</td>
 <td>14</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>官网的文档，直接说，这部分的描述就是一坨狗屎，还好找到了<a target="_blank" rel="noopener" href="http://bbs.nsccwx.cn/assets/uploads/files/1528120200586-cpc%E5%9F%B9%E8%AE%AD_%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E5%B9%B6%E8%A1%8C%E7%BC%96%E7%A8%8B%E4%B8%8E%E4%B8%8A%E6%9C%BA%E5%AE%9E%E8%B7%B5.pdf">CPC2018的培训资料</a></p>
-<h2 id="4-存储模型"><a href="#4-存储模型" class="headerlink" title="4. 存储模型"></a>4. 存储模型</h2><blockquote>
+<h2 id="存储模型">4. 存储模型</h2>
+<blockquote>
 <p>SW26010运算核心的用户虚空间分为<code>LDM空间</code>和<code>主存空间</code>，<code>主存空间</code>进一步可以分为<code>系统区</code>、<code>用户连续区</code>和<code>用户交叉区</code>。</p>
 </blockquote>
 <table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
 <thead>
-<tr>
+<tr class="header">
 <th>虚空间内存地址</th>
 <th>主核</th>
 <th>从核</th>
 <th>C语言修饰</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr class="odd">
 <td>0x00 0000 0000</td>
 <td>系统连续(可Cache)</td>
 <td>LDM空间</td>
 <td><code>__thread_local</code> <code>__thread</code> <code>__thread_local_fix</code> <code>__thread_local_kernel</code></td>
 </tr>
-<tr>
+<tr class="even">
 <td>0x20 0000 0000</td>
 <td>用户私有连续(可Cache)</td>
 <td>用户私有连续</td>
 <td><code>__thread</code></td>
 </tr>
-<tr>
+<tr class="odd">
 <td>0x4F F000 0000</td>
 <td>用户共享连续(可Cache)(只读)</td>
 <td>用户共享连续(只读)</td>
 <td><code>不加修饰</code></td>
 </tr>
-<tr>
+<tr class="even">
 <td>0x50 0000 0000</td>
 <td>用户共享连续(可Cache)(读写)</td>
 <td>用户共享连续(读写)</td>
 <td><code>不加修饰</code></td>
 </tr>
-<tr>
+<tr class="odd">
 <td>0x60 0000 0000</td>
 <td>用户共享交叉(不可Cache)</td>
 <td>用户共享交叉</td>
 <td><code>__thread_group</code></td>
 </tr>
-<tr>
+<tr class="even">
 <td>0x80 0000 0000</td>
 <td>核组IO空间</td>
 <td>?</td>
 <td>?</td>
 </tr>
-<tr>
+<tr class="odd">
 <td>0xA0 0000 0000</td>
 <td>芯片IO空间</td>
 <td>?</td>
 <td>?</td>
 </tr>
-</tbody></table>
-<h3 id="OpenACC内存模型："><a href="#OpenACC内存模型：" class="headerlink" title="OpenACC内存模型："></a>OpenACC内存模型：</h3><p>空间名称 | 存储位置 | OpenACC修饰 | 加速线程可见性<br>— | — | —<br>主线程数据空间 | 主存 | 加速区外定义的变量 | 其他线程可见<br>加速线程私有空间 | 主存 | <code>private</code> <code>firstprivate</code> | 其他线程不可见<br>加速线程本地空间 | LDM | <code>local</code> <code>copy</code> 等 | 其他线程不可见</p>
-<h2 id="5-DMA"><a href="#5-DMA" class="headerlink" title="5. DMA"></a>5. DMA</h2><h3 id="DMA命令模式"><a href="#DMA命令模式" class="headerlink" title="DMA命令模式"></a>DMA命令模式</h3><table>
+</tbody>
+</table>
+<h3 id="openacc内存模型">OpenACC内存模型：</h3>
+<table>
 <thead>
-<tr>
+<tr class="header">
+<th>空间名称</th>
+<th>存储位置</th>
+<th>OpenACC修饰</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>主线程数据空间</td>
+<td>主存</td>
+<td>加速区外定义的变量</td>
+</tr>
+<tr class="even">
+<td>加速线程私有空间</td>
+<td>主存</td>
+<td><code>private</code> <code>firstprivate</code></td>
+</tr>
+<tr class="odd">
+<td>加速线程本地空间</td>
+<td>LDM</td>
+<td><code>local</code> <code>copy</code> 等</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dma">5. DMA</h2>
+<h3 id="dma命令模式">DMA命令模式</h3>
+<table>
+<thead>
+<tr class="header">
 <th>命令模式</th>
 <th>代码</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr class="odd">
 <td>单运算核心模式</td>
 <td><code>PE_MODE</code></td>
 </tr>
-<tr>
+<tr class="even">
 <td>广播模式</td>
 <td><code>BCAST_MODE</code></td>
 </tr>
-<tr>
+<tr class="odd">
 <td>行模式</td>
 <td><code>ROW_MODE</code></td>
 </tr>
-<tr>
+<tr class="even">
 <td>广播行模式</td>
 <td><code>BROW_MODE</code></td>
 </tr>
-<tr>
+<tr class="odd">
 <td>行集合模式</td>
 <td><code>RANK_MODE</code></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <p>好了官方文档的作者估计写到这里饿了，又开始写得不清不楚了，还好我大Google帮我找到了<a target="_blank" rel="noopener" href="http://bbs.nsccwx.cn/assets/uploads/files/1529047771770-%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E9%AB%98%E7%BA%A7%E8%BF%9B%E9%98%B6.pdf">高级优化技术进阶</a></p>
 
     </div>
@@ -551,14 +601,14 @@
   </footer>
 
   
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@next-theme/pjax@0.5.0/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lozad@1.16.0/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
 
   
-<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
 <script src="/js/third-party/search/local-search.js"></script>
 
 
@@ -573,7 +623,7 @@
 
   
 
-  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
 <script src="/js/third-party/math/mathjax.js"></script>
 
 
