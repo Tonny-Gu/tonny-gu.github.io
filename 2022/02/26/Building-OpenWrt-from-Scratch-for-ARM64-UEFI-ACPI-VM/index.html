@@ -20,15 +20,15 @@
   <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
-<meta name="description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. Since Arm commu">
+<meta name="description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. But we can stil">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Building OpenWrt from Scratch for ARM64 UEFI ACPI VM">
 <meta property="og:url" content="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/index.html">
 <meta property="og:site_name" content="NekoDaemon&#39;s Blog">
-<meta property="og:description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. Since Arm commu">
+<meta property="og:description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. But we can stil">
 <meta property="og:locale">
 <meta property="article:published_time" content="2022-02-26T09:34:48.000Z">
-<meta property="article:modified_time" content="2022-02-26T09:39:51.440Z">
+<meta property="article:modified_time" content="2022-02-26T18:16:15.842Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 
@@ -270,9 +270,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2022-02-26 17:34:48 / Modified: 17:39:51" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+08:00">2022-02-26</time>
+      <time title="Created: 2022-02-26 17:34:48" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+08:00">2022-02-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-02-27 02:16:15" itemprop="dateModified" datetime="2022-02-27T02:16:15+08:00">2022-02-27</time>
     </span>
 
   
@@ -285,7 +291,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-        <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned). Thus, I won't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers. But, we can still make it work by compiling it from source and building a disk image manually.</p>
+        <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. But we can still make it work by compiling it from source and building a disk image manually.</p>
+<p>Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned), I would suggest that don't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers.</p>
 <h2 id="compile-kernel-and-rootfs-from-source">Compile Kernel and Rootfs from Source</h2>
 <p>Don't be scared. With the help of <code>buildroot</code>, which could automatically prepare the cross-compilation toolchain we need, this step is much simple nowadays.</p>
 <blockquote>

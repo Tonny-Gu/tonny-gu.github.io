@@ -266,9 +266,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2022-02-26 17:34:48 / Modified: 17:39:51" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+08:00">2022-02-26</time>
+      <time title="Created: 2022-02-26 17:34:48" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+08:00">2022-02-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-02-27 02:16:15" itemprop="dateModified" datetime="2022-02-27T02:16:15+08:00">2022-02-27</time>
     </span>
 
   
@@ -281,7 +287,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned). Thus, I won't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers. But, we can still make it work by compiling it from source and building a disk image manually.</p>
+          <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. But we can still make it work by compiling it from source and building a disk image manually.</p>
           <!--noindex-->
           <!--/noindex-->
         

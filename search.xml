@@ -204,7 +204,8 @@
   <entry>
     <title>Building OpenWrt from Scratch for ARM64 UEFI ACPI VM</title>
     <url>/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</url>
-    <content><![CDATA[<p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned). Thus, I won't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers. But, we can still make it work by compiling it from source and building a disk image manually.</p>
+    <content><![CDATA[<p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. But we can still make it work by compiling it from source and building a disk image manually.</p>
+<p>Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned), I would suggest that don't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers.</p>
 <h2 id="compile-kernel-and-rootfs-from-source">Compile Kernel and Rootfs from Source</h2>
 <p>Don't be scared. With the help of <code>buildroot</code>, which could automatically prepare the cross-compilation toolchain we need, this step is much simple nowadays.</p>
 <blockquote>
