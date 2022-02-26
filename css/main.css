@@ -3191,7 +3191,7 @@ figure.highlight {
 .site-state-item a {
   padding: 0 10px;
   border-bottom: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   transition-duration: 0.2s;
 }
 .site-state-item a:hover {
