@@ -202,6 +202,207 @@
       </tags>
   </entry>
   <entry>
+    <title>Building OpenWrt from Scratch for ARM64 UEFI ACPI VM</title>
+    <url>/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</url>
+    <content><![CDATA[<p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned). Thus, I won't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers. But, we can still make it work by compiling it from source and building a disk image manually.</p>
+<h2 id="compile-kernel-and-rootfs-from-source">Compile Kernel and Rootfs from Source</h2>
+<p>Don't be scared. With the help of <code>buildroot</code>, which could automatically prepare the cross-compilation toolchain we need, this step is much simple nowadays.</p>
+<blockquote>
+<p>Note: My test environment is Ubuntu 21.10 ARM64 on Apple M1 Pro. It doesn't matter if you use a machine with a different system or architecture like AMD64, but you may need to take a few extra steps if so.</p>
+</blockquote>
+<h3 id="install-dependencies">Install Dependencies</h3>
+<p>For Debian / Ubuntu users,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install build-essential ccache ecj fastjar file g++ gawk \</span><br><span class="line">gettext git java-propose-classpath libelf-dev libncurses5-dev \</span><br><span class="line">libncursesw5-dev libssl-dev python python2.7-dev python3 unzip wget \</span><br><span class="line">python3-distutils python3-setuptools python3-dev rsync subversion \</span><br><span class="line">swig time xsltproc zlib1g-dev </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: The content of this sub-section is copied from the <a href="https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem">official guide</a>. Take a look at it if this command is not applicable for your system.</p>
+</blockquote>
+<h3 id="download-the-source-code">Download the Source Code</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.openwrt.org/openwrt/openwrt.git</span><br><span class="line"><span class="built_in">cd</span> openwrt</span><br><span class="line">git tag</span><br><span class="line">git checkout v21.02.2</span><br><span class="line">./scripts/feeds update -a</span><br></pre></td></tr></table></figure>
+<h3 id="configure-the-project">Configure the Project</h3>
+<ol type="1">
+<li>Import the official configuration.</li>
+</ol>
+<p>To save our effort, it is a good idea to modify an existing configuration instead of creating a new one.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://downloads.openwrt.org/releases/21.02.2/targets/armvirt/64/config.buildinfo</span><br><span class="line">cp config.buildinfo .config</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Add UEFI ACPI support.</li>
+</ol>
+<p>Open file <code>target/linux/armvirt/config-5.4</code>, and append the following lines to the end of file.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CONFIG_EFI_STUB=y</span><br><span class="line">CONFIG_EFI=y</span><br><span class="line">CONFIG_EFI_VARS=y</span><br><span class="line">CONFIG_ARCH_SUPPORTS_ACPI=y</span><br><span class="line">CONFIG_ACPI=y</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>Launch Memuconfig.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make menuconfig</span><br><span class="line">make kernel_menuconfig</span><br></pre></td></tr></table></figure>
+<p>Tweak the configuration as you like, but you should clearly understand the consequence before you turn on and off something. Keeping default options is also fine.</p>
+<blockquote>
+<p>Note: These commands will build the whole toolchain from source for the first time they are executed. The compilation process is very slow.</p>
+</blockquote>
+<h3 id="build-the-kernel-and-rootfs">Build the Kernel and Rootfs</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make -j $(nproc) defconfig download clean world</span><br></pre></td></tr></table></figure>
+<p>It will compile the kernel and all of the selected pre-installed utilities, then generate an EFI binary of Linux Kernel and an Ext4 / SquashFS partition image of Rootfs.</p>
+<h3 id="verify-the-firmware-image">Verify the Firmware Image</h3>
+<p>The exciting moment comes. Let's test the kernel and rootfs we just built.</p>
+<ol type="1">
+<li>Install QEMU.</li>
+</ol>
+<p>For Ubuntu users, I would suggest to install virt-manager instead, which offers a helpful GUI wizard for QEMU.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install virt-manager</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Launch a virtual machine.</li>
+</ol>
+<p>The magical QEMU allows virtual machines to boot a kernel without a bootloader. That is a great feature enables us to test the kernel's functionality at the early stage.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">qemu-system-aarch64 -m 512 -nographic -cpu cortex-a72 -smp 1 -M virt -kernel ~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-Image-initramfs -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: <code>Image-initramfs</code> is the kernel binary while it integrates the OpenWrt's Rootfs as <code>initramfs</code>, so this virtual machine will lose data each time it reboots.</p>
+</blockquote>
+<blockquote>
+<p>Note: If you encounter this issue,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">EFI stub: Booting Linux Kernel...</span><br><span class="line">EFI stub: ERROR: Failed to relocate kernel</span><br><span class="line">EFI stub: ERROR: Failed to relocate kernel</span><br></pre></td></tr></table></figure>
+<p>The solution is to increase the memory capacity of your virtual machine. Empirically, it should be at least 256 MB.</p>
+</blockquote>
+<h2 id="build-the-disk-image">Build the Disk Image</h2>
+<p>Considered that data loss is not acceptable, while not every hypervisor is capable of launching a kernel directly, we should put everything we built into a disk, or virtual machine's disk image.</p>
+<p>To keep things simple, let's start from building a raw disk image, which is one of the virtual disk formats supported by QEMU.</p>
+<h3 id="create-an-empty-disk-image">Create an Empty Disk Image</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ dd <span class="keyword">if</span>=/dev/zero of=disk.img bs=1M count=1024</span><br><span class="line">1024+0 records <span class="keyword">in</span></span><br><span class="line">1024+0 records out</span><br><span class="line">1073741824 bytes (1.1 GB, 1.0 GiB) copied, 0.958229 s, 1.1 GB/s</span><br></pre></td></tr></table></figure>
+<p>This command will create an empty disk image. Feel free to replace the value of <code>count</code> to change the size of the disk. (size = 1 MB * 1024 = 1 GB)</p>
+<h3 id="partition-mount-and-format-the-disk-image">Partition, Mount, and Format the Disk Image</h3>
+<ol type="1">
+<li>Partition the disk.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ fdisk disk.img</span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.36.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line">Device does not contain a recognized partition table.</span><br><span class="line">Created a new DOS disklabel with disk identifier 0xb89701e3.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): g</span><br><span class="line">Created a new GPT disklabel (GUID: 43B50BB3-20FD-3D4B-BFE1-50B5016F8059).</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-2097118, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-2097118, default 2097118): +100M</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 100 MiB.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): t</span><br><span class="line">Selected partition 1</span><br><span class="line">Partition <span class="built_in">type</span> or <span class="built_in">alias</span> (<span class="built_in">type</span> L to list all): uefi</span><br><span class="line">Changed <span class="built_in">type</span> of partition <span class="string">&#x27;Linux filesystem&#x27;</span> to <span class="string">&#x27;EFI System&#x27;</span>.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (2-128, default 2):</span><br><span class="line">First sector (206848-2097118, default 206848):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (206848-2097118, default 2097118):</span><br><span class="line"></span><br><span class="line">Created a new partition 2 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 923 MiB.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk disk.img: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: 43B50BB3-20FD-3D4B-BFE1-50B5016F8059</span><br><span class="line"></span><br><span class="line">Device      Start     End Sectors  Size Type</span><br><span class="line">disk.img1    2048  206847  204800  100M EFI System</span><br><span class="line">disk.img2  206848 2097118 1890271  923M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
+<p>A new GPT partition table with two partitions is written to the disk image.</p>
+<ol start="2" type="1">
+<li>Mount the disk image as a logical disk.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo losetup -Pf disk.img</span><br><span class="line">tonny@vm:~$ lsblk</span><br><span class="line">NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT</span><br><span class="line">loop5                       7:5    0    1G  0 loop</span><br><span class="line">├─loop5p1                 259:4    0  100M  0 part</span><br><span class="line">└─loop5p2                 259:5    0  923M  0 part</span><br></pre></td></tr></table></figure>
+<p>OS has recognized the two partitions, <code>loop5p1</code> and <code>loop5p2</code>.</p>
+<ol start="3" type="1">
+<li>Format the partitions.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt$ sudo mkfs.vfat /dev/loop5p1</span><br><span class="line">mkfs.fat 4.2 (2021-01-31)</span><br></pre></td></tr></table></figure>
+<p>We don't need to format the second partition (Rootfs) for now, because we can directly restore the partition image of Rootfs instead, which is already formatted with Ext4 File System.</p>
+<ol start="4" type="1">
+<li>Mount ESP partition.</li>
+</ol>
+<p>ESP partition contains the EFI executables of bootloaders (e.g., GRUB), as well as its configuration files. We can also put the kernel binary here.</p>
+<blockquote>
+<p>Note: Some Linux distributions, like Ubuntu, will put their kernel in a third partition.</p>
+</blockquote>
+<p>Unlike Rootfs, OpenWrt Build System won't generate an ESP partition image for ARM64 platform. That means we have to build ESP partition manually.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt$ mkdir -p ~/mnt/esp</span><br><span class="line">tonny@vm:~/mnt$ sudo mount /dev/loop5p1 ~/mnt/esp</span><br></pre></td></tr></table></figure>
+<h3 id="restore-rootfs-partition-image">Restore Rootfs Partition Image</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo dd <span class="keyword">if</span>=~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-rootfs-ext4.img of=/dev/loop5p2 bs=1M</span><br><span class="line">104+0 records <span class="keyword">in</span></span><br><span class="line">104+0 records out</span><br><span class="line">109051904 bytes (109 MB, 104 MiB) copied, 0.613318 s, 178 MB/s</span><br><span class="line">tonny@vm:~$ sudo resize2fs /dev/loop5p2</span><br><span class="line">resize2fs 1.46.3 (27-Jul-2021)</span><br><span class="line">Resizing the filesystem on /dev/loop5p2 to 236283 (4k) blocks.</span><br><span class="line">The filesystem on /dev/loop5p2 is now 236283 (4k) blocks long.</span><br></pre></td></tr></table></figure>
+<p>The size of Rootfs image is about 128 MB, which implies that the file system inside will assume the partition size is about 128 MB. The size of our Rootfs partition is likely larger than this number, so we should notify the filesystem there is a change on the partition size.</p>
+<h3 id="install-grub-to-esp-partition">Install GRUB to ESP Partition</h3>
+<h4 id="install-arm64-grub-to-host">Install ARM64 GRUB to Host</h4>
+<p>For Ubuntu users,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install grub-efi-arm64-bin</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: If your Host's architecture isn't ARM64, Apt may fail to find this package. Fortunately, thanks to Multiarch feature, we can easily install a package for other architectures. Take Ubuntu AMD64 as an example.</p>
+<ol type="1">
+<li>Request for ARM64 architecture's packages.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo dpkg --add-architecture arm64</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Add an Apt Repository for ARM64.</li>
+</ol>
+<p>Modify the file <code>/etc/apt/source.list</code> and add a ARM64 repository. Pay attention that ARM64 and AMD64 don't share the same repository, so we also need to add a filter for each repository. Here is an example.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-security main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-security main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-updates main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-updates main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-backports main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-backports main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-security main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-security main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-updates main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-updates main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-backports main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-backports main restricted universe multiverse</span></span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>Install ARM64 GRUB</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install grub-efi-arm64-bin</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="generate-efi-executable">Generate EFI Executable</h4>
+<ol type="1">
+<li>Check Partition's UUIDs.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ lsblk -o PATH,UUID,PARTUUID /dev/loop5</span><br><span class="line">PATH         UUID                                 PARTUUID</span><br><span class="line">/dev/loop5</span><br><span class="line">/dev/loop5p1 CF95-2044                            3754ccb7-1920-2b41-9962-af81ac6a04b2</span><br><span class="line">/dev/loop5p2 ff313567-e9f1-5a5d-9895-3ba130b4a864 e09a20c3-0ea7-0c48-b653-0482facd93db</span><br></pre></td></tr></table></figure>
+<p>Those UUIDs will be referred by the GRUB configurations.</p>
+<ol start="2" type="1">
+<li>Write Early-stage GRUB Configuration.</li>
+</ol>
+<p>Create a new file <code>~/grub-early.cfg</code>, and write the following lines. This configuration will be hardcoded into GRUB's EFI binary.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">search.fs_uuid CF95-2044 root</span><br><span class="line"><span class="built_in">set</span> prefix=(<span class="variable">$root</span>)<span class="string">&#x27;/boot&#x27;</span></span><br><span class="line">configfile <span class="variable">$prefix</span>/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>Replace the UUID with your <code>loop5p1</code>'s.</p>
+<ol start="3" type="1">
+<li>Make GRUB EFI Executable.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># tonny@vm:~$ sudo mount /dev/loop5p1 ~/mnt/esp</span></span><br><span class="line">tonny@vm:~$ sudo mkdir -p ~/mnt/esp/EFI/BOOT/</span><br><span class="line">tonny@vm:~$ <span class="built_in">cd</span> ~/mnt/esp/EFI/BOOT/</span><br><span class="line">tonny@vm:~/mnt/esp/EFI/BOOT$ sudo grub-mkimage -c ~/grub-early.cfg -p /boot -o BOOTAA64.EFI -O arm64-efi boot chain configfile fat linux ls part_gpt reboot serial efi_gop search_fs_uuid</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: It is not recommended to use <code>grub-install</code> here. One of its typical usages is,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo grub-install --target=arm64-efi --efi-directory ~/mnt/esp --bootloader-id=GRUB --boot-directory ~/mnt/esp/boot/</span><br></pre></td></tr></table></figure>
+<p>The hidden disgusting thing is, if you use GRUB provided by Ubuntu, this command will hardcode an important GRUB variable <code>prefix='/EFI/ubuntu'</code> to the EFI binary, and there is no way to change it.</p>
+</blockquote>
+<h4 id="write-second-stage-grub-configuration">Write Second-stage GRUB Configuration</h4>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/EFI/BOOT$ <span class="built_in">cd</span> ../..</span><br><span class="line">tonny@vm:~/mnt/esp$ sudo mkdir boot</span><br><span class="line">tonny@vm:~/mnt/esp$ <span class="built_in">cd</span> boot/</span><br><span class="line">tonny@vm:~/mnt/esp/boot$ sudo nano grub.cfg <span class="comment"># or other text editor you feel comfortable with</span></span><br></pre></td></tr></table></figure>
+<p>The content of <code>grub.cfg</code> is,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1 --rtscts=off</span><br><span class="line">terminal_input console serial; terminal_output console serial</span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> default=<span class="string">&quot;0&quot;</span></span><br><span class="line"><span class="built_in">set</span> timeout=<span class="string">&quot;5&quot;</span></span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;OpenWrt&quot;</span> &#123;</span><br><span class="line">	linux /boot/vmlinuz root=PARTUUID=e09a20c3-0ea7-0c48-b653-0482facd93db rootwait   console=tty0 console=ttyS0,115200n8 noinitrd</span><br><span class="line">&#125;</span><br><span class="line">menuentry <span class="string">&quot;OpenWrt (failsafe)&quot;</span> &#123;</span><br><span class="line">	linux /boot/vmlinuz failsafe=<span class="literal">true</span> root=PARTUUID=e09a20c3-0ea7-0c48-b653-0482facd93db rootwait   console=tty0 console=ttyS0,115200n8 noinitrd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Replace <strong>PARTUUIDs</strong> (not UUIDs) with your <code>loop5p2</code>'s.</p>
+<h3 id="copy-linux-kernel">Copy Linux Kernel</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ sudo cp ~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-Image vmlinuz</span><br></pre></td></tr></table></figure>
+<h3 id="verify-the-disk-image">Verify the Disk Image</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ <span class="built_in">cd</span> ~</span><br><span class="line">tonny@vm:~$ qemu-system-aarch64 -m 512 -nographic -cpu cortex-a72 -smp 1 -M virt -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd -drive format=raw,file=disk.img</span><br></pre></td></tr></table></figure>
+<p>If everything goes well, you could see your kernel is running happily. Enjoy it!</p>
+<blockquote>
+<p>Note: You don't have to unmount the disk before launching the virtual machine. But you should sync the disk to make sure all the data cached in memory is written back.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ sync</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="clean-up">Clean up</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt$ sudo umount ~/mnt/esp</span><br><span class="line">tonny@vm:~/mnt$ sudo losetup -d /dev/loop5</span><br></pre></td></tr></table></figure>
+<h2 id="launch-vm-with-virt-manager">Launch VM with Virt-Manager</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~/mnt$ virt-manager</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: Sometimes <code>vert-manager</code> requires permissions to run.</p>
+</blockquote>
+<p>The recommended configuration:</p>
+<ul>
+<li>Step 1:
+<ul>
+<li>Architecture: <code>aarch64</code></li>
+<li>Machine Type: <code>virt</code></li>
+<li>Import existing disk image</li>
+</ul></li>
+<li>Step 2:
+<ul>
+<li>Browse ➡️ Add pool <code>Home</code> ➡️ Choose Volume <code>disk.img</code></li>
+<li>Choose OS: Generic Linux / OS</li>
+</ul></li>
+<li>Step 3:
+<ul>
+<li>Memory: &gt;= 256 MB</li>
+<li>CPU: Any</li>
+</ul></li>
+<li>Step 4:
+<ul>
+<li><strong>Customize configuration before install</strong></li>
+<li>Network (LAN Port): Bridge / Macvtap Bridge</li>
+</ul></li>
+<li>Configuration
+<ul>
+<li><strong>Overview/Firmware: <code>UEFI aarch64</code></strong></li>
+</ul></li>
+</ul>
+<blockquote>
+<p>Note: You can't change the firmware type after pre-install configuration.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://gist.github.com/tstellanova/dea7593a7dfe4f48432a58cb007e7056">https://gist.github.com/tstellanova/dea7593a7dfe4f48432a58cb007e7056</a></li>
+<li><a href="https://forum.openwrt.org/t/arm64-armvirt64-uefi-efi-openwrt-target/82740">https://forum.openwrt.org/t/arm64-armvirt64-uefi-efi-openwrt-target/82740</a></li>
+<li><a href="https://forum.openwrt.org/t/how-to-install-openwrt-as-a-new-os-in-the-grub-menu/97465">https://forum.openwrt.org/t/how-to-install-openwrt-as-a-new-os-in-the-grub-menu/97465</a></li>
+<li><a href="https://wiki.ubuntu.com/ARM64/QEMU">https://wiki.ubuntu.com/ARM64/QEMU</a></li>
+<li><a href="https://wiki.archlinux.org/title/GRUB">https://wiki.archlinux.org/title/GRUB</a></li>
+<li><a href="https://openwrt.org/docs/guide-user/virtualization/qemu">https://openwrt.org/docs/guide-user/virtualization/qemu</a></li>
+<li><a href="https://krinkinmu.github.io/2020/11/21/EFI-aarch64.html">https://krinkinmu.github.io/2020/11/21/EFI-aarch64.html</a></li>
+<li><a href="https://soha.moe/post/make-uefi-compatible-openwrt-disk-image.html">https://soha.moe/post/make-uefi-compatible-openwrt-disk-image.html</a></li>
+<li><a href="https://git.openwrt.org/?p=openwrt/openwrt.git;hb=refs/heads/openwrt-21.02;a=blob;f=package/boot/grub2/Makefile">https://git.openwrt.org/?p=openwrt/openwrt.git;hb=refs/heads/openwrt-21.02;a=blob;f=package/boot/grub2/Makefile</a></li>
+<li><a href="https://www.cxyzjd.com/article/u010875635/74289971">https://www.cxyzjd.com/article/u010875635/74289971</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Design of TensorFlow XLA Sharding System</title>
     <url>/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/</url>
     <content><![CDATA[<p>Recently, a SOTA sharding approach, GSPMD/GShard, was proposed and it provides an intuitive interface to partition a large array on arbitrary dimensions, while utilizing sharding propagation algorithms to automatically infer the partitioning strategy for tensors without user-specified sharding specifications. This document introduces the design and the implementation of XLA Sharding System.</p>
@@ -1181,6 +1382,65 @@
 <h2 id="reference">Reference</h2>
 <ul>
 <li><a href="https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/">https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to resize the root LVM partition of Ubuntu</title>
+    <url>/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</url>
+    <content><![CDATA[<p>When we resize the virtual hard disk of a virtual machine or restore a disk image to a larger disk, the free space of the partition detected by Ubuntu will not increase because the partition table is unchanged. In the past, we could easily resize the ext4 root partition with the help of <code>resize2fs</code>. However, things get complex when Ubuntu utilizes LVM partition as their default root partition.</p>
+<h2 id="quick-intro-to-lvm">Quick Intro to LVM</h2>
+<p>Logical Volume Manager (LVM) is similar to Dynamic Disks under Windows, which can take several GPT / MBR partitions on different hard disks as a storage pool (LVM call it Volume Groups, VG), and allocate spaces from this pool, then Linux will recognize each space (LVM call it Logical Volume, LV) as an useable partition.</p>
+<figure>
+<img data-src="/images/pasted-99.png" alt="Lvm Layout" /><figcaption>Lvm Layout</figcaption>
+</figure>
+<p>Thus, we should modify not only <strong>the GPT / MBR partition table</strong>, but also <strong>the LVM configuration</strong>.</p>
+<h2 id="update-gpt-mbr-partition-table">Update GPT / MBR partition table</h2>
+<p><strong>I suggest all the operations should be done under live CD environment to avoid the occurrence of unpredictable problems.</strong> I didn't test online resizing on the root partition so far.</p>
+<ol type="1">
+<li>The following instructions in this section assume <strong>the last partition on your disk is the LVM Physical Volume</strong>. You could verify this with the command <code>lsblk --fs</code>. <code>nvme0n1p3</code> is the last GPT partition on the disk <code>nvme0n1</code>, and it is easy to identify this partition is a LVM PV, and <code>ubuntu--vg-ubuntu--lv</code> is the corresponding LV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ lsblk --fs</span><br><span class="line">NAME                      FSTYPE      FSVER        </span><br><span class="line">loop3</span><br><span class="line">└─loop3p1                 LVM2_member LVM2 001 </span><br><span class="line">  └─test--vg-test--lv     ext4        1.0      </span><br><span class="line">nvme0n1</span><br><span class="line">├─nvme0n1p1               vfat        FAT32    </span><br><span class="line">├─nvme0n1p2               ext4        1.0      </span><br><span class="line">└─nvme0n1p3               LVM2_member LVM2 001 </span><br><span class="line">  └─ubuntu--vg-ubuntu--lv ext4        1.0      </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note that <code>ubuntu--vg-ubuntu--lv</code> is the root partition of the system here.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -Th</span><br><span class="line">Filesystem                        Type   Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv ext4    78G  7.7G   67G  11% /</span><br><span class="line">/dev/nvme0n1p2                    ext4   974M   87M  820M  10% /boot</span><br><span class="line">/dev/nvme0n1p1                    vfat   511M  3.6M  508M   1% /boot/efi</span><br><span class="line">/dev/mapper/test--vg-test--lv     ext4   464M   24K  429M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
+<p>Also you could check the LVM Volume Group status by <code>vgs</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize   VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 496.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n- &lt;78.50g    0</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ol start="2" type="1">
+<li>Update the GPT / MBR partition table using <code>fdisk</code>. I will use an emulated disk <code>/dev/loop3</code> to demonstrate the whole process. Don't worry, you won't loss your data under normal circumstances. These commands will only modify the partition table, but make sure <strong>DO NOT remove the LVM's signature</strong>, otherwise the system may no longer recognize your LVM PV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo fdisk /dev/loop3 <span class="comment"># replace with your hard disk, such as /dev/nvme0n1p3</span></span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.36.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 1026047 1024000  500M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): d</span><br><span class="line">Selected partition 1</span><br><span class="line">Partition 1 has been deleted.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-2097118, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-2097118, default 2097118):</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 1023 MiB.</span><br><span class="line">Partition <span class="comment">#1 contains a LVM2_member signature.</span></span><br><span class="line"></span><br><span class="line">Do you want to remove the signature? [Y]es/[N]o: N</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line"></span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 2097118 2095071 1023M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
+<h2 id="update-lvm-configuration">Update LVM Configuration</h2>
+<ol type="1">
+<li>Notify LVM there is an update on the partition table.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo partprobe <span class="comment"># ask kernel to read the new partition table</span></span><br><span class="line">tonny@vm:~$ sudo pvresize /dev/loop3p1 <span class="comment"># replace with your partition</span></span><br><span class="line">  Physical volume <span class="string">&quot;/dev/loop3p1&quot;</span> changed</span><br><span class="line">  1 physical volume(s) resized or updated / 0 physical volume(s) not resized</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>At this moment, the LVM Volume Group status has changed to,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m 524.00m</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g      0</span><br></pre></td></tr></table></figure>
+<p>Observe that <code>VFree</code> of <code>test-vg</code> has increased by 524.00 MB.</p>
+</blockquote>
+<ol start="2" type="1">
+<li>Resize LVM Logical Volume. The following command will allocate all the free space of VG to the LV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo lvextend -l +100%FREE /dev/mapper/test--vg-test--lv</span><br><span class="line">  Size of logical volume test-vg/test-lv changed from 496.00 MiB (124 extents) to 1020.00 MiB (255 extents).</span><br><span class="line">  Logical volume test-vg/test-lv successfully resized.</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The free space of VG is used up now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g    0</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="resize-ext4-file-system">Resize ext4 File System</h2>
+<p>Up to now, although LVM LV is resized, the ext4 file system is not aware of the extra available space. Simply run <code>resize2fs</code> to let it know.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo resize2fs /dev/mapper/test--vg-test--lv</span><br><span class="line">resize2fs 1.46.3 (27-Jul-2021)</span><br><span class="line">Filesystem at /dev/mapper/test--vg-test--lv is mounted on /home/tonny/mnt; on-line resizing required</span><br><span class="line">old_desc_blocks = 1, new_desc_blocks = 1</span><br><span class="line">The filesystem on /dev/mapper/test--vg-test--lv is now 261120 (4k) blocks long.</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>We can see the available space of <code>test--vg-test--lv</code> has been enlarged.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/test--vg-test--lv      973M  1.3M  917M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.linuxtechi.com/extend-lvm-partitions/">https://www.linuxtechi.com/extend-lvm-partitions/</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/">https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/</a></li>
+<li><a href="https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png">https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png</a></li>
 </ul>
 ]]></content>
   </entry>

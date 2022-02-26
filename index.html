@@ -161,7 +161,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">Posts</span>
         </a>
       </div>
@@ -234,6 +234,140 @@
 
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/" class="post-title-link" itemprop="url">Building OpenWrt from Scratch for ARM64 UEFI ACPI VM</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2022-02-26 17:34:48 / Modified: 17:39:51" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+08:00">2022-02-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned). Thus, I won't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers. But, we can still make it work by compiling it from source and building a disk image manually.</p>
+          <!--noindex-->
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/" class="post-title-link" itemprop="url">How to resize the root LVM partition of Ubuntu</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2022-02-26 17:32:57 / Modified: 17:36:05" itemprop="dateCreated datePublished" datetime="2022-02-26T17:32:57+08:00">2022-02-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>When we resize the virtual hard disk of a virtual machine or restore a disk image to a larger disk, the free space of the partition detected by Ubuntu will not increase because the partition table is unchanged. In the past, we could easily resize the ext4 root partition with the help of <code>resize2fs</code>. However, things get complex when Ubuntu utilizes LVM partition as their default root partition.</p>
+          <!--noindex-->
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -789,146 +923,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/05/15/ASC20-21%E5%9B%9E%E9%A1%BE-%E5%A4%A7%E5%AE%B6%E9%83%BD%E3%80%87%E7%AD%89%E4%BA%8E%E5%A4%A7%E5%AE%B6%E9%83%BD%E6%B2%A1%E3%80%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="NekoDaemon">
-      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NekoDaemon's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/05/15/ASC20-21%E5%9B%9E%E9%A1%BE-%E5%A4%A7%E5%AE%B6%E9%83%BD%E3%80%87%E7%AD%89%E4%BA%8E%E5%A4%A7%E5%AE%B6%E9%83%BD%E6%B2%A1%E3%80%87/" class="post-title-link" itemprop="url">ASC20-21回顾 - 大家都〇等于大家都没〇</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2021-05-15 22:02:15 / Modified: 22:03:59" itemprop="dateCreated datePublished" datetime="2021-05-15T22:02:15+08:00">2021-05-15</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>ASC20好死不死决赛场地就在妮可，痛失旅游机会。祸不单行，ASC20取消，合并为ASC20-21，公费旅游机会-=2。雪上加霜，疫情还顺手把晚宴给整没了。<del>没有机票，酒店，和大吃大喝的比赛能叫比赛吗！</del></p>
-          <!--noindex-->
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="NekoDaemon">
-      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NekoDaemon's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/" class="post-title-link" itemprop="url">How to make an unattended Ubuntu Server Installation ISO with cloud-init</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-04-27 17:36:02" itemprop="dateCreated datePublished" datetime="2021-04-27T17:36:02+08:00">2021-04-27</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Last updated on</span>
-      <time title="Modified: 2022-01-16 00:58:19" itemprop="dateModified" datetime="2022-01-16T00:58:19+08:00">2022-01-16</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><em>Updated on 16 Jan, 2022</em>. I worte <a href="/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/">a post for Ubuntu 20.04 Server</a>.</p>
-          <!--noindex-->
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
@@ -949,10 +943,10 @@
   <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
 </div>
 
-<div class="copyright">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
 </div>
 
-<div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
 </div>
 
     </div>

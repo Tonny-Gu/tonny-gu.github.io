@@ -1648,7 +1648,6 @@ pre code {
   color: #999;
   display: inline-block;
   margin: 0 5px;
-  animation: icon-animate 1.33s ease-in-out infinite;
 }
 @-moz-keyframes icon-animate {
   0%, 100% {
@@ -3186,6 +3185,18 @@ figure.highlight {
   border-radius: 6px;
   padding: 5px 20px;
 }
+.site-state-item {
+  padding: 0;
+}
+.site-state-item a {
+  padding: 0 10px;
+  border-bottom: 0;
+  border-radius: 4px;
+  transition-duration: 0.2s;
+}
+.site-state-item a:hover {
+  background: var(--body-bg-color);
+}
 .links-of-author {
   padding: 0 20px;
 }
@@ -3193,14 +3204,16 @@ figure.highlight {
   transition-duration: 0.2s;
 }
 .links-of-blogroll-title {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--body-bg-color);
   padding-top: 10px;
-  margin: 0 50px;
 }
 .links-of-blogroll-list {
-  display: grid;
+  display: flex;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  justify-content: center;
   padding: 0 20px;
-  grid-template-columns: repeat(2, 1fr);
 }
 .links-of-blogroll-list a {
   border-bottom: none;
@@ -3209,8 +3222,11 @@ figure.highlight {
   border-bottom: 0;
   border-radius: 4px;
   margin: 0;
-  display: inline-grid;
+  display: inline-flex;
   transition-duration: 0.2s;
+}
+.links-of-blogroll-item a {
+  padding: 0 8px;
 }
 .links-of-blogroll-item:hover {
   background: var(--body-bg-color);
@@ -3241,16 +3257,16 @@ figure.highlight {
 .posts-expand .post-meta-container time {
   border-bottom: none;
 }
-.powered-by a {
+.powered-by-inject a {
   border-bottom: none;
 }
-.powered-by a:hover {
+.powered-by-inject a:hover {
   border-bottom: 1px solid var(--link-hover-color);
 }
-.copyright a {
+.copyright-inject a {
   border-bottom: none;
 }
-.copyright a:hover {
+.copyright-inject a:hover {
   border-bottom: 1px solid var(--link-hover-color);
 }
 /*
@@ -3288,6 +3304,12 @@ figure.highlight {
 .pagination .page-number:hover {
   color: var(--content-bg-color);
   background: #ccc;
+}
+.back-to-top {
+  display: none;
+}
+.back-to-top.back-to-top-on {
+  display: block;
 }
 .main-inner > .pagination {
   background-color: transparent;
