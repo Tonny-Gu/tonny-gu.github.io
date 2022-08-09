@@ -1868,27 +1868,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
-    <title>Ubuntu 学习笔记</title>
-    <url>/2019/06/13/Ubuntu-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h2 id="ubuntu-手动释放获取ip地址">Ubuntu 手动释放获取IP地址</h2>
-<p><a href="https://www.linuxquestions.org/questions/linux-newbie-8/commands-to-request-and-release-of-an-ipv6-address-from-a-dhcp-server-4175469096/">参考文章</a></p>
-<p>不知道电脑搞什么飞机，电脑开机不会获取IPv6地址，导致无法连入IPv6网络。</p>
-<p>释放IPv4地址</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -4 -r eth0 //或 dhclient -r eth0</span><br></pre></td></tr></table></figure>
-<p>获取IPv4地址</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -4 eth0 //或 dhclient eth0</span><br></pre></td></tr></table></figure>
-<p>释放IPv6地址 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -6 -r eth0</span><br></pre></td></tr></table></figure></p>
-<p>获取IPv6地址 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -6 eth0</span><br></pre></td></tr></table></figure></p>
-<p>直接获取IPv6地址即可解决我的问题</p>
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>Ubuntu</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
     <url>/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</url>
     <content><![CDATA[<p>SC21又又又又是在线上打的。第二年痛失美帝免费旅游机会了！！！第二年了！！！<del>没有机票，酒店，和大吃大喝的比赛能叫比赛吗！</del>不过结果还是不错的，远远的超出我的预期（原因请看下文分解）。</p>
@@ -2078,6 +2057,27 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <h2 id="ending">Ending</h2>
 <p>其实这1w字的流水账早就在10月的时候写完了，只不过拖到了第二年才发出来，欸嘿。说起来这也是我最后一次以正式队员/队长的身份打SC比赛了，想想好气啊，因为这破疫情，痛失2x美帝 2x新加坡 2x北京 1x厦门免费旅游机会，没能帮学校花钱，我感到非常的愧疚。果然还是想续一续我的学生身份，继续努力的帮学校花钱。希望今年能以Year 0 PhD Student的身份打ASC22（<del>offer不会下不来了吧</del>），然后在未来某一年以Presenter的身份回到SC的会场，并成为目击证人，亲眼见证在nike的successor在SC SCC把其他队锤爆的那一刻。</p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>Ubuntu 学习笔记</title>
+    <url>/2019/06/13/Ubuntu-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="ubuntu-手动释放获取ip地址">Ubuntu 手动释放获取IP地址</h2>
+<p><a href="https://www.linuxquestions.org/questions/linux-newbie-8/commands-to-request-and-release-of-an-ipv6-address-from-a-dhcp-server-4175469096/">参考文章</a></p>
+<p>不知道电脑搞什么飞机，电脑开机不会获取IPv6地址，导致无法连入IPv6网络。</p>
+<p>释放IPv4地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -4 -r eth0 //或 dhclient -r eth0</span><br></pre></td></tr></table></figure>
+<p>获取IPv4地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -4 eth0 //或 dhclient eth0</span><br></pre></td></tr></table></figure>
+<p>释放IPv6地址 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -6 -r eth0</span><br></pre></td></tr></table></figure></p>
+<p>获取IPv6地址 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">dhclient -6 eth0</span><br></pre></td></tr></table></figure></p>
+<p>直接获取IPv6地址即可解决我的问题</p>
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>Ubuntu</tag>
+      </tags>
   </entry>
   <entry>
     <title>Unattended Ubuntu 20.04 Server Offline Installation</title>
