@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /about/
+Allow: /categories/
+Allow: /tags/
+Sitemap: http://nekodaemon.com/sitemap.xml
+Sitemap: http://nekodaemon.com/baidusitemap.xml

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. But we can stil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Building OpenWrt from Scratch for ARM64 UEFI ACPI VM">
+<meta property="og:url" content="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="OpenWrt doesn&#39;t provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can&#39;t boot in UEFI environment. But we can stil">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-02-26T17:34:48.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/","path":"2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/","title":"Building OpenWrt from Scratch for ARM64 UEFI ACPI VM"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Building OpenWrt from Scratch for ARM64 UEFI ACPI VM | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#compile-kernel-and-rootfs-from-source"><span class="nav-text">Compile Kernel and Rootfs from Source</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#install-dependencies"><span class="nav-text">Install Dependencies</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#download-the-source-code"><span class="nav-text">Download the Source Code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#configure-the-project"><span class="nav-text">Configure the Project</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#build-the-kernel-and-rootfs"><span class="nav-text">Build the Kernel and Rootfs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#verify-the-firmware-image"><span class="nav-text">Verify the Firmware Image</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#build-the-disk-image"><span class="nav-text">Build the Disk Image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#create-an-empty-disk-image"><span class="nav-text">Create an Empty Disk Image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#partition-mount-and-format-the-disk-image"><span class="nav-text">Partition, Mount, and Format the Disk Image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#restore-rootfs-partition-image"><span class="nav-text">Restore Rootfs Partition Image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#install-grub-to-esp-partition"><span class="nav-text">Install GRUB to ESP Partition</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#install-arm64-grub-to-host"><span class="nav-text">Install ARM64 GRUB to Host</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#generate-efi-executable"><span class="nav-text">Generate EFI Executable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#write-second-stage-grub-configuration"><span class="nav-text">Write Second-stage GRUB Configuration</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#copy-linux-kernel"><span class="nav-text">Copy Linux Kernel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#verify-the-disk-image"><span class="nav-text">Verify the Disk Image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-up"><span class="nav-text">Clean up</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch-vm-with-virt-manager"><span class="nav-text">Launch VM with Virt-Manager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Building OpenWrt from Scratch for ARM64 UEFI ACPI VM
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-02-26 17:34:48" itemprop="dateCreated datePublished" datetime="2022-02-26T17:34:48+00:00">2022-02-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. But we can still make it work by compiling it from source and building a disk image manually.</p>
+<p>Since Arm community has various opinions on how to boot an Arm machine, such as UEFI + ACPI (widely used by commercial Arm servers as well as modern x86 systems), U-Boot + Device Tree (mostly used by embedded devices with limited resouces), and even UEFI + Device Tree (like Huawei L420 notebook I owned), I would suggest that don't expect OpenWrt will provide official support for UEFI + ACPI systems in recent days as it is designed to run on tiny routers.</p>
+<h2 id="compile-kernel-and-rootfs-from-source">Compile Kernel and Rootfs from Source</h2>
+<p>Don't be scared. With the help of <code>buildroot</code>, which could automatically prepare the cross-compilation toolchain we need, this step is much simple nowadays.</p>
+<blockquote>
+<p>Note: My test environment is Ubuntu 21.10 ARM64 on Apple M1 Pro. It doesn't matter if you use a machine with a different system or architecture like AMD64, but you may need to take a few extra steps if so.</p>
+</blockquote>
+<h3 id="install-dependencies">Install Dependencies</h3>
+<p>For Debian / Ubuntu users,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install build-essential ccache ecj fastjar file g++ gawk \</span><br><span class="line">gettext git java-propose-classpath libelf-dev libncurses5-dev \</span><br><span class="line">libncursesw5-dev libssl-dev python python2.7-dev python3 unzip wget \</span><br><span class="line">python3-distutils python3-setuptools python3-dev rsync subversion \</span><br><span class="line">swig time xsltproc zlib1g-dev </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: The content of this sub-section is copied from the <a target="_blank" rel="noopener" href="https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem">official guide</a>. Take a look at it if this command is not applicable for your system.</p>
+</blockquote>
+<h3 id="download-the-source-code">Download the Source Code</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.openwrt.org/openwrt/openwrt.git</span><br><span class="line"><span class="built_in">cd</span> openwrt</span><br><span class="line">git tag</span><br><span class="line">git checkout v21.02.2</span><br><span class="line">./scripts/feeds update -a</span><br></pre></td></tr></table></figure>
+<h3 id="configure-the-project">Configure the Project</h3>
+<ol type="1">
+<li>Import the official configuration.</li>
+</ol>
+<p>To save our effort, it is a good idea to modify an existing configuration instead of creating a new one.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://downloads.openwrt.org/releases/21.02.2/targets/armvirt/64/config.buildinfo</span><br><span class="line">cp config.buildinfo .config</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Add UEFI ACPI support.</li>
+</ol>
+<p>Open file <code>target/linux/armvirt/config-5.4</code>, and append the following lines to the end of file.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_EFI_STUB=y</span><br><span class="line">CONFIG_EFI=y</span><br><span class="line">CONFIG_EFI_VARS=y</span><br><span class="line">CONFIG_ARCH_SUPPORTS_ACPI=y</span><br><span class="line">CONFIG_ACPI=y</span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>Launch Memuconfig.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make menuconfig</span><br><span class="line">make kernel_menuconfig</span><br></pre></td></tr></table></figure>
+<p>Tweak the configuration as you like, but you should clearly understand the consequence before you turn on and off something. Keeping default options is also fine.</p>
+<blockquote>
+<p>Note: These commands will build the whole toolchain from source for the first time they are executed. The compilation process is very slow.</p>
+</blockquote>
+<h3 id="build-the-kernel-and-rootfs">Build the Kernel and Rootfs</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j $(nproc) defconfig download clean world</span><br></pre></td></tr></table></figure>
+<p>It will compile the kernel and all of the selected pre-installed utilities, then generate an EFI binary of Linux Kernel and an Ext4 / SquashFS partition image of Rootfs.</p>
+<h3 id="verify-the-firmware-image">Verify the Firmware Image</h3>
+<p>The exciting moment comes. Let's test the kernel and rootfs we just built.</p>
+<ol type="1">
+<li>Install QEMU.</li>
+</ol>
+<p>For Ubuntu users, I would suggest to install virt-manager instead, which offers a helpful GUI wizard for QEMU.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install virt-manager</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Launch a virtual machine.</li>
+</ol>
+<p>The magical QEMU allows virtual machines to boot a kernel without a bootloader. That is a great feature enables us to test the kernel's functionality at the early stage.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-aarch64 -m 512 -nographic -cpu cortex-a72 -smp 1 -M virt -kernel ~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-Image-initramfs -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: <code>Image-initramfs</code> is the kernel binary while it integrates the OpenWrt's Rootfs as <code>initramfs</code>, so this virtual machine will lose data each time it reboots.</p>
+</blockquote>
+<blockquote>
+<p>Note: If you encounter this issue,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EFI stub: Booting Linux Kernel...</span><br><span class="line">EFI stub: ERROR: Failed to relocate kernel</span><br><span class="line">EFI stub: ERROR: Failed to relocate kernel</span><br></pre></td></tr></table></figure>
+<p>The solution is to increase the memory capacity of your virtual machine. Empirically, it should be at least 256 MB.</p>
+</blockquote>
+<h2 id="build-the-disk-image">Build the Disk Image</h2>
+<p>Considered that data loss is not acceptable, while not every hypervisor is capable of launching a kernel directly, we should put everything we built into a disk, or virtual machine's disk image.</p>
+<p>To keep things simple, let's start from building a raw disk image, which is one of the virtual disk formats supported by QEMU.</p>
+<h3 id="create-an-empty-disk-image">Create an Empty Disk Image</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~$ dd <span class="keyword">if</span>=/dev/zero of=disk.img bs=1M count=1024</span><br><span class="line">1024+0 records <span class="keyword">in</span></span><br><span class="line">1024+0 records out</span><br><span class="line">1073741824 bytes (1.1 GB, 1.0 GiB) copied, 0.958229 s, 1.1 GB/s</span><br></pre></td></tr></table></figure>
+<p>This command will create an empty disk image. Feel free to replace the value of <code>count</code> to change the size of the disk. (size = 1 MB * 1024 = 1 GB)</p>
+<h3 id="partition-mount-and-format-the-disk-image">Partition, Mount, and Format the Disk Image</h3>
+<ol type="1">
+<li>Partition the disk.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~$ fdisk disk.img</span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.36.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line">Device does not contain a recognized partition table.</span><br><span class="line">Created a new DOS disklabel with disk identifier 0xb89701e3.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): g</span><br><span class="line">Created a new GPT disklabel (GUID: 43B50BB3-20FD-3D4B-BFE1-50B5016F8059).</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-2097118, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-2097118, default 2097118): +100M</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 100 MiB.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): t</span><br><span class="line">Selected partition 1</span><br><span class="line">Partition <span class="built_in">type</span> or <span class="built_in">alias</span> (<span class="built_in">type</span> L to list all): uefi</span><br><span class="line">Changed <span class="built_in">type</span> of partition <span class="string">&#x27;Linux filesystem&#x27;</span> to <span class="string">&#x27;EFI System&#x27;</span>.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (2-128, default 2):</span><br><span class="line">First sector (206848-2097118, default 206848):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (206848-2097118, default 2097118):</span><br><span class="line"></span><br><span class="line">Created a new partition 2 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 923 MiB.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk disk.img: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: 43B50BB3-20FD-3D4B-BFE1-50B5016F8059</span><br><span class="line"></span><br><span class="line">Device      Start     End Sectors  Size Type</span><br><span class="line">disk.img1    2048  206847  204800  100M EFI System</span><br><span class="line">disk.img2  206848 2097118 1890271  923M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
+<p>A new GPT partition table with two partitions is written to the disk image.</p>
+<ol start="2" type="1">
+<li>Mount the disk image as a logical disk.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~$ sudo losetup -Pf disk.img</span><br><span class="line">tonny@vm:~$ lsblk</span><br><span class="line">NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT</span><br><span class="line">loop5                       7:5    0    1G  0 loop</span><br><span class="line">├─loop5p1                 259:4    0  100M  0 part</span><br><span class="line">└─loop5p2                 259:5    0  923M  0 part</span><br></pre></td></tr></table></figure>
+<p>OS has recognized the two partitions, <code>loop5p1</code> and <code>loop5p2</code>.</p>
+<ol start="3" type="1">
+<li>Format the partitions.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt$ sudo mkfs.vfat /dev/loop5p1</span><br><span class="line">mkfs.fat 4.2 (2021-01-31)</span><br></pre></td></tr></table></figure>
+<p>We don't need to format the second partition (Rootfs) for now, because we can directly restore the partition image of Rootfs instead, which is already formatted with Ext4 File System.</p>
+<ol start="4" type="1">
+<li>Mount ESP partition.</li>
+</ol>
+<p>ESP partition contains the EFI executables of bootloaders (e.g., GRUB), as well as its configuration files. We can also put the kernel binary here.</p>
+<blockquote>
+<p>Note: Some Linux distributions, like Ubuntu, will put their kernel in a third partition.</p>
+</blockquote>
+<p>Unlike Rootfs, OpenWrt Build System won't generate an ESP partition image for ARM64 platform. That means we have to build ESP partition manually.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt$ mkdir -p ~/mnt/esp</span><br><span class="line">tonny@vm:~/mnt$ sudo mount /dev/loop5p1 ~/mnt/esp</span><br></pre></td></tr></table></figure>
+<h3 id="restore-rootfs-partition-image">Restore Rootfs Partition Image</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~$ sudo dd <span class="keyword">if</span>=~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-rootfs-ext4.img of=/dev/loop5p2 bs=1M</span><br><span class="line">104+0 records <span class="keyword">in</span></span><br><span class="line">104+0 records out</span><br><span class="line">109051904 bytes (109 MB, 104 MiB) copied, 0.613318 s, 178 MB/s</span><br><span class="line">tonny@vm:~$ sudo resize2fs /dev/loop5p2</span><br><span class="line">resize2fs 1.46.3 (27-Jul-2021)</span><br><span class="line">Resizing the filesystem on /dev/loop5p2 to 236283 (4k) blocks.</span><br><span class="line">The filesystem on /dev/loop5p2 is now 236283 (4k) blocks long.</span><br></pre></td></tr></table></figure>
+<p>The size of Rootfs image is about 128 MB, which implies that the file system inside will assume the partition size is about 128 MB. The size of our Rootfs partition is likely larger than this number, so we should notify the filesystem there is a change on the partition size.</p>
+<h3 id="install-grub-to-esp-partition">Install GRUB to ESP Partition</h3>
+<h4 id="install-arm64-grub-to-host">Install ARM64 GRUB to Host</h4>
+<p>For Ubuntu users,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install grub-efi-arm64-bin</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: If your Host's architecture isn't ARM64, Apt may fail to find this package. Fortunately, thanks to Multiarch feature, we can easily install a package for other architectures. Take Ubuntu AMD64 as an example.</p>
+<ol type="1">
+<li>Request for ARM64 architecture's packages.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dpkg --add-architecture arm64</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>Add an Apt Repository for ARM64.</li>
+</ol>
+<p>Modify the file <code>/etc/apt/source.list</code> and add a ARM64 repository. Pay attention that ARM64 and AMD64 don't share the same repository, so we also need to add a filter for each repository. Here is an example.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-security main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-security main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-updates main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-updates main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-backports main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=amd64 ] https://mirrors.ustc.edu.cn/ubuntu/ impish-backports main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-security main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-security main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-updates main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-updates main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-backports main restricted universe multiverse</span><br><span class="line"><span class="comment"># deb-src [ arch=arm64 ] https://mirrors.ustc.edu.cn/ubuntu-ports/ impish-backports main restricted universe multiverse</span></span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>Install ARM64 GRUB</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install grub-efi-arm64-bin</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="generate-efi-executable">Generate EFI Executable</h4>
+<ol type="1">
+<li>Check Partition's UUIDs.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~$ lsblk -o PATH,UUID,PARTUUID /dev/loop5</span><br><span class="line">PATH         UUID                                 PARTUUID</span><br><span class="line">/dev/loop5</span><br><span class="line">/dev/loop5p1 CF95-2044                            3754ccb7-1920-2b41-9962-af81ac6a04b2</span><br><span class="line">/dev/loop5p2 ff313567-e9f1-5a5d-9895-3ba130b4a864 e09a20c3-0ea7-0c48-b653-0482facd93db</span><br></pre></td></tr></table></figure>
+<p>Those UUIDs will be referred by the GRUB configurations.</p>
+<ol start="2" type="1">
+<li>Write Early-stage GRUB Configuration.</li>
+</ol>
+<p>Create a new file <code>~/grub-early.cfg</code>, and write the following lines. This configuration will be hardcoded into GRUB's EFI binary.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">search.fs_uuid CF95-2044 root</span><br><span class="line"><span class="built_in">set</span> prefix=(<span class="variable">$root</span>)<span class="string">&#x27;/boot&#x27;</span></span><br><span class="line">configfile <span class="variable">$prefix</span>/grub.cfg</span><br></pre></td></tr></table></figure>
+<p>Replace the UUID with your <code>loop5p1</code>'s.</p>
+<ol start="3" type="1">
+<li>Make GRUB EFI Executable.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># tonny@vm:~$ sudo mount /dev/loop5p1 ~/mnt/esp</span></span><br><span class="line">tonny@vm:~$ sudo mkdir -p ~/mnt/esp/EFI/BOOT/</span><br><span class="line">tonny@vm:~$ <span class="built_in">cd</span> ~/mnt/esp/EFI/BOOT/</span><br><span class="line">tonny@vm:~/mnt/esp/EFI/BOOT$ sudo grub-mkimage -c ~/grub-early.cfg -p /boot -o BOOTAA64.EFI -O arm64-efi boot chain configfile fat linux ls part_gpt reboot serial efi_gop search_fs_uuid</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: It is not recommended to use <code>grub-install</code> here. One of its typical usages is,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo grub-install --target=arm64-efi --efi-directory ~/mnt/esp --bootloader-id=GRUB --boot-directory ~/mnt/esp/boot/</span><br></pre></td></tr></table></figure>
+<p>The hidden disgusting thing is, if you use GRUB provided by Ubuntu, this command will hardcode an important GRUB variable <code>prefix='/EFI/ubuntu'</code> to the EFI binary, and there is no way to change it.</p>
+</blockquote>
+<h4 id="write-second-stage-grub-configuration">Write Second-stage GRUB Configuration</h4>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/EFI/BOOT$ <span class="built_in">cd</span> ../..</span><br><span class="line">tonny@vm:~/mnt/esp$ sudo mkdir boot</span><br><span class="line">tonny@vm:~/mnt/esp$ <span class="built_in">cd</span> boot/</span><br><span class="line">tonny@vm:~/mnt/esp/boot$ sudo nano grub.cfg <span class="comment"># or other text editor you feel comfortable with</span></span><br></pre></td></tr></table></figure>
+<p>The content of <code>grub.cfg</code> is,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1 --rtscts=off</span><br><span class="line">terminal_input console serial; terminal_output console serial</span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> default=<span class="string">&quot;0&quot;</span></span><br><span class="line"><span class="built_in">set</span> timeout=<span class="string">&quot;5&quot;</span></span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;OpenWrt&quot;</span> &#123;</span><br><span class="line">	linux /boot/vmlinuz root=PARTUUID=e09a20c3-0ea7-0c48-b653-0482facd93db rootwait   console=tty0 console=ttyS0,115200n8 noinitrd</span><br><span class="line">&#125;</span><br><span class="line">menuentry <span class="string">&quot;OpenWrt (failsafe)&quot;</span> &#123;</span><br><span class="line">	linux /boot/vmlinuz failsafe=<span class="literal">true</span> root=PARTUUID=e09a20c3-0ea7-0c48-b653-0482facd93db rootwait   console=tty0 console=ttyS0,115200n8 noinitrd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Replace <strong>PARTUUIDs</strong> (not UUIDs) with your <code>loop5p2</code>'s.</p>
+<h3 id="copy-linux-kernel">Copy Linux Kernel</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ sudo cp ~/openwrt/bin/targets/armvirt/64/openwrt-21.02.2-armvirt-64-Image vmlinuz</span><br></pre></td></tr></table></figure>
+<h3 id="verify-the-disk-image">Verify the Disk Image</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ <span class="built_in">cd</span> ~</span><br><span class="line">tonny@vm:~$ qemu-system-aarch64 -m 512 -nographic -cpu cortex-a72 -smp 1 -M virt -bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd -drive format=raw,file=disk.img</span><br></pre></td></tr></table></figure>
+<p>If everything goes well, you could see your kernel is running happily. Enjoy it!</p>
+<blockquote>
+<p>Note: You don't have to unmount the disk before launching the virtual machine. But you should sync the disk to make sure all the data cached in memory is written back.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt/esp/boot$ sync</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="clean-up">Clean up</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt$ sudo umount ~/mnt/esp</span><br><span class="line">tonny@vm:~/mnt$ sudo losetup -d /dev/loop5</span><br></pre></td></tr></table></figure>
+<h2 id="launch-vm-with-virt-manager">Launch VM with Virt-Manager</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tonny@vm:~/mnt$ virt-manager</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: Sometimes <code>vert-manager</code> requires permissions to run.</p>
+</blockquote>
+<p>The recommended configuration:</p>
+<ul>
+<li>Step 1:
+<ul>
+<li>Architecture: <code>aarch64</code></li>
+<li>Machine Type: <code>virt</code></li>
+<li>Import existing disk image</li>
+</ul></li>
+<li>Step 2:
+<ul>
+<li>Browse ➡️ Add pool <code>Home</code> ➡️ Choose Volume <code>disk.img</code></li>
+<li>Choose OS: Generic Linux / OS</li>
+</ul></li>
+<li>Step 3:
+<ul>
+<li>Memory: &gt;= 256 MB</li>
+<li>CPU: Any</li>
+</ul></li>
+<li>Step 4:
+<ul>
+<li><strong>Customize configuration before install</strong></li>
+<li>Network (LAN Port): Bridge / Macvtap Bridge</li>
+</ul></li>
+<li>Configuration
+<ul>
+<li><strong>Overview/Firmware: <code>UEFI aarch64</code></strong></li>
+</ul></li>
+</ul>
+<blockquote>
+<p>Note: You can't change the firmware type after pre-install configuration.</p>
+</blockquote>
+<h2 id="references">References</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://gist.github.com/tstellanova/dea7593a7dfe4f48432a58cb007e7056">https://gist.github.com/tstellanova/dea7593a7dfe4f48432a58cb007e7056</a></li>
+<li><a target="_blank" rel="noopener" href="https://forum.openwrt.org/t/arm64-armvirt64-uefi-efi-openwrt-target/82740">https://forum.openwrt.org/t/arm64-armvirt64-uefi-efi-openwrt-target/82740</a></li>
+<li><a target="_blank" rel="noopener" href="https://forum.openwrt.org/t/how-to-install-openwrt-as-a-new-os-in-the-grub-menu/97465">https://forum.openwrt.org/t/how-to-install-openwrt-as-a-new-os-in-the-grub-menu/97465</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.ubuntu.com/ARM64/QEMU">https://wiki.ubuntu.com/ARM64/QEMU</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.archlinux.org/title/GRUB">https://wiki.archlinux.org/title/GRUB</a></li>
+<li><a target="_blank" rel="noopener" href="https://openwrt.org/docs/guide-user/virtualization/qemu">https://openwrt.org/docs/guide-user/virtualization/qemu</a></li>
+<li><a target="_blank" rel="noopener" href="https://krinkinmu.github.io/2020/11/21/EFI-aarch64.html">https://krinkinmu.github.io/2020/11/21/EFI-aarch64.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://soha.moe/post/make-uefi-compatible-openwrt-disk-image.html">https://soha.moe/post/make-uefi-compatible-openwrt-disk-image.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://git.openwrt.org/?p=openwrt/openwrt.git;hb=refs/heads/openwrt-21.02;a=blob;f=package/boot/grub2/Makefile">https://git.openwrt.org/?p=openwrt/openwrt.git;hb=refs/heads/openwrt-21.02;a=blob;f=package/boot/grub2/Makefile</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cxyzjd.com/article/u010875635/74289971">https://www.cxyzjd.com/article/u010875635/74289971</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/" title="Building OpenWrt from Scratch for ARM64 UEFI ACPI VM">https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

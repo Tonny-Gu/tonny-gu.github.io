@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="网上几乎所有的文章都直接忽悠上CDN的车，难道上CDN就是提升速度的最优解？在CDN这条弯路上折腾了快两年，玩了一圈免备案的CDN，踩了各种各样的坑以后，恍然大悟，茅厕顿开，便在此大放厥词写下此文。本文主要介绍CDN的正确用法，以及性价比爆炸，便宜又效果好的网站加速方案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="个人博客CDN选型和进阶玩法指北">
+<meta property="og:url" content="https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="网上几乎所有的文章都直接忽悠上CDN的车，难道上CDN就是提升速度的最优解？在CDN这条弯路上折腾了快两年，玩了一圈免备案的CDN，踩了各种各样的坑以后，恍然大悟，茅厕顿开，便在此大放厥词写下此文。本文主要介绍CDN的正确用法，以及性价比爆炸，便宜又效果好的网站加速方案。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-08-12T02:49:03.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.931Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/","path":"2021/08/12/个人博客CDN选型和进阶玩法指北/","title":"个人博客CDN选型和进阶玩法指北"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>个人博客CDN选型和进阶玩法指北 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#tldr"><span class="nav-text">TL;DR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8Acdn%E4%B8%80%E5%AE%9A%E6%8F%90%E9%80%9F%E5%90%97"><span class="nav-text">上CDN一定提速吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%AB%99%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-text">源站的选择</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%AB%99%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-text">源站的类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%B0%E7%90%86%E4%BD%8D%E7%BD%AE%E9%80%89%E6%8B%A9"><span class="nav-text">地理位置选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E5%9C%B0%E5%8C%BA%E5%BB%B6%E8%BF%9F%E4%BC%98%E5%8C%96"><span class="nav-text">多地区延迟优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%91%E9%83%BD%E8%A6%81%E4%BD%86%E6%88%91%E6%B2%A1%E9%92%B1%E5%92%8B%E5%8A%9E"><span class="nav-text">我都要！但我没钱咋办</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cdn%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-text">CDN的选择</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BD%E5%86%85%E8%AE%BF%E9%97%AE%E9%80%9F%E5%BA%A6"><span class="nav-text">国内访问速度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%BB%B7"><span class="nav-text">定价</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#summary"><span class="nav-text">Summary</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          个人博客CDN选型和进阶玩法指北
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-12 02:49:03" itemprop="dateCreated datePublished" datetime="2021-08-12T02:49:03+00:00">2021-08-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>网上几乎所有的文章都直接忽悠上CDN的车，难道上CDN就是提升速度的最优解？在CDN这条弯路上折腾了快两年，玩了一圈免备案的CDN，踩了各种各样的坑以后，恍然大悟，茅厕顿开，便在此大放厥词写下此文。本文主要介绍CDN的正确用法，以及性价比爆炸，便宜又效果好的网站加速方案。</p>
+<h2 id="tldr">TL;DR</h2>
+<p>在以下前提下，上CDN不如把网站搬到24块一个月的腾讯云香港轻量服务器</p>
+<ul>
+<li>回源稀烂</li>
+<li>不考虑国外访问</li>
+<li>CDN本身不太行</li>
+<li>腾讯云香港还没有被玩坏</li>
+</ul>
+<p>已知的性价比最高的方案是Azure CDN (Microsoft Standard) + GitHub Pages。但网站本身才是影响访问速度的大头。</p>
+<p>注：本文讨论的前提站长懒得备案。如果备案了，毫无疑问国内回源+国内CDN能吊打上述方案。</p>
+<h2 id="上cdn一定提速吗">上CDN一定提速吗？</h2>
+<p>啊这里有人可能会问了：“这个问题有必要问吗？”但仔细思考一下，免备案的CDN边缘节点最近就在香港，考虑到边缘节点是个公交车，还要服务别人，线路不一定比腾讯云的强。更令人智熄的是，基本上个人博客可以和访问量大不到哪去画个等号，你的网站被挤出Cache可太正常了，Cache Miss一下延迟就更爆炸了。无脑上CDN后发生的大概率事件就是CDN打不过三网直连的24块钱的腾讯云香港。</p>
+<p>那怎么样才能让CDN搞快点呢？当然是头痛医头脚痛医脚，</p>
+<ul>
+<li>回源问题：弄一个好点的源站就好了，当然CDN本身的Cache策略和能力也非常关键</li>
+<li>边缘节点承载能力的问题：弄一个好点的CDN就好了嘛</li>
+</ul>
+<p>所以问题就被简化为回源和CDN的选择问题了。</p>
+<h2 id="源站的选择">源站的选择</h2>
+<p>弄一个好点的源站，说着容易，实际上源站的选择还是很讲究的。</p>
+<h3 id="源站的类型">源站的类型</h3>
+<p>对于静态网站（如Hexo）来说，源站除了可以搭建在VPS上，更建议扔在对象存储上，因为</p>
+<ul>
+<li>更高的SLA：自己的VPS维护不当崩崩崩可太常见了，对象存储的SLA动不动就是99.9%以上</li>
+<li>（可能）更高的性价比：个人博客一般不会太多空间，除非存了一堆视频。性能上可能有大厂的神秘优化
+<ul>
+<li>Azure Blob Storage：实测每天大概0.1-0.2美元，小贵</li>
+<li>AWS S3 Bucket：免费额度应该能cover，计费也比Azure便宜</li>
+</ul></li>
+</ul>
+<p>对象存储的缺点主要是</p>
+<ul>
+<li>第一次配置比较复杂，企业级的云通常需要反复折腾IAM权限</li>
+<li>为了忽悠你买CDN，对象存储对换用自己的域名和HTTPS的支持多少会有问题</li>
+<li>有坑（如果用一个厂家的全家桶的话坑会少一点）
+<ul>
+<li>Azure的官方文档就不会告诉你上传到<span class="math inline">\(web文件夹（容器）的\)</span>在Linux下要转义</li>
+<li>AWS的S3 Bucket不兼容GeoDNS</li>
+<li>...</li>
+</ul></li>
+</ul>
+<p>不过调通了以后同步对象存储数据就像用网盘一样简单（因为这就是个网盘）。</p>
+<h3 id="地理位置选择">地理位置选择</h3>
+<p>之前也提到了，个人博客上CDN就要时刻准备好Cache Miss回源，所以缩短边缘节点从源站下载数据的时间非常的关键。解决这个问题最好的思路应该就是缩短边缘节点到源站的地理距离，最好在同一个地区，因为</p>
+<ul>
+<li>更短的延迟：这个没啥好说的，光速再快，理想情况下数据在中美之间走一圈都140毫秒起步</li>
+<li>更大的带宽：一般来说城域网之间通信的带宽比国际线路的带宽大多了</li>
+</ul>
+<p>另一个好处就是，因为只需要考虑同地区内的通信，所以源站的国际线路质量完全不需要考虑，什么CN2 GIA都完全不需要，源站能通网就行。</p>
+<p>由于一个源站只能照顾一个地区，如果只考虑国内访问的话，一个香港源站应该就足够了。但如果要</p>
+<ul>
+<li>照顾全世界的人民</li>
+<li>照顾开着美国梯子的自己</li>
+<li>刷高PageSpeed分数来优化SEO（谷歌应该是从美国访问你的网站）</li>
+</ul>
+<p>，就可能需要不止一个源站了。</p>
+<h3 id="多地区延迟优化">多地区延迟优化</h3>
+<p>多地区的优化是玩具级解决方案和企业级方案的分水岭之一，为啥这么说呢，因为从相关服务的定价来看，基本上云厂家就没考虑过个人玩家的死活。对于CDN来说，就是配置多个源站（这既是为了降低延迟，也是为了容灾），让CDN能根据访客的位置选择最近的源站。这大致有两种实现</p>
+<ul>
+<li>CDN自身支持多个源站并能选择最优的
+<ul>
+<li>Azure Front Door直接支持多个后端，并且可以自动根据延迟选择后端</li>
+<li>Azure CDN (Standard Microsoft)的Rule Engine可以为不同地区指定一个源站</li>
+</ul></li>
+<li>（GeoDNS）让DNS根据地理位置将域名解析到不同后端，CDN通过这个域名回源。支持这个功能的DNS有
+<ul>
+<li>Azure Traffic Manager：大概4港币增加一个源站，30港币每百万解析</li>
+<li>AWS Route 53：看到每月几十美元一个Policy Record后就没继续了解了</li>
+<li>DNSPod（腾讯云）：360rmb每年，不乐意了</li>
+<li>阿里云：免费版能按国内外区分（可香港也算国外，这没有区分度啊），从198rmb一年的企业版开始可以细分国外的国家地区</li>
+</ul></li>
+</ul>
+<h3 id="我都要但我没钱咋办">我都要！但我没钱咋办</h3>
+<p>多个源站，GeoDNS都是烧钱的东西（企业人傻钱多不在意），那普通人咋办？这里就要介绍这个无敌的存在了，GitHub Pages。这玩意除了能免费给你存东西以外，还安排上了Fastly CDN。GitHub Pages的架构我们不得而知，但从测速结果来看，很多地方的测速点测出的访问延迟都很低，应该是有做数据的geo-replication。也就是说DNS不用买，多地区存储也不要钱，唯一的毛病就是国内访问比较随缘，但作为CDN的源，这个毛病无伤大雅。而且像Hexo这种静态博客，甚至有插件能一键同步博客到GitHub Pages上。</p>
+<h2 id="cdn的选择">CDN的选择</h2>
+<h3 id="国内访问速度">国内访问速度</h3>
+<p>根据我这两年来的观察，我<strong>主观</strong>的将我用过的CDN按照国内访问速度分为几个等级。</p>
+<ul>
+<li>T0：能和腾讯云香港五五开
+<ul>
+<li>Azure CDN：反正就不知道为什么它的香港节点又稳又快</li>
+</ul></li>
+<li>T1：不一定能干过腾讯云，但可能跑得赢CN2美国VPS的
+<ul>
+<li>AWS CloudFront</li>
+<li>UDomain</li>
+<li>CloudCone</li>
+<li>这三家都有香港节点，但是表现属于时好时坏的那种</li>
+</ul></li>
+<li>T1.5：可能跑得赢辣鸡线路美国VPS的
+<ul>
+<li>Cloudflare：免费的还要什么自行车，主要是免费版没给香港节点，但美国节点的表现不算差</li>
+</ul></li>
+</ul>
+<p>至于国外网站访问速度估计大家都差不太多。</p>
+<h3 id="定价">定价</h3>
+<ul>
+<li>T0：看看就好
+<ul>
+<li>Azure Front Door：背靠Azure CDN (Standard Microsoft)，一条Rule也就每月170港币（至少会有一条，躲不掉的）</li>
+</ul></li>
+<li>T0.9：勉强可以接受
+<ul>
+<li>AWS Lightsail Distribution：背靠CloudFront，5美元50GB，但可惜用不完</li>
+</ul></li>
+<li>T1：穷人友好
+<ul>
+<li>Azure CDN (Standard)：真正的按量计费，1港币1GB，5条免费Rules，Azure少数不贵的东西</li>
+<li>CloudFront：按量计费，0.12美元1GB</li>
+<li>UDomain：按量计费，1.2港币1GB，充值的方式很怪，非常不现代</li>
+<li>CloudCone：按量计费，0.045美元1GB，需要首充20美元的样子</li>
+</ul></li>
+<li>T2：博爱
+<ul>
+<li>Cloudflare：套餐0元起步</li>
+</ul></li>
+</ul>
+<h3 id="结论">结论</h3>
+<p>结论其实很明显，我肯定首推Azure CDN (Standard Microsoft)，因为Front Door这个价格就离谱，其他家的CDN会让你怀疑为什么要花这个钱买个减速器（当然CloudFlare配合廉价美国VPS能省钱）。当然Azure确实比较高冷，首先得有张外币卡，然后就是各种问就是企业级的设计，以及莫名其妙的设计，比如说对根域名不友好，CNAME验证各种不通过，官网文档只会让你去买他家DNS，用<code>cdnverify</code>绕过的方法就是不说，也不给根域名自动签TLS证书（AWS就可以）；不可以CDN前端用HTTPS后端HTTP（Front Door倒是可以）等等。但没办法谁让他家CDN国内访问就是快，看在价格不贵的份上原谅他了，免费5条规则也算良心，可以拿来配HTTPS强制跳转和HSTS，虽然这些东西可能在别家CDN面板上一键就能配好。</p>
+<h2 id="summary">Summary</h2>
+<p>Azure CDN (Microsoft Standard) + GitHub Pages这套方案可能比较绕，但一个月花不了几个钱（估计5rmb不到）速度又倍棒。不过还有一个问题值得思考，上这套方案就能让网站访问速度无人能敌？其实不是，从谷歌PageSpeed的分数看来，我从单回源（新加坡）+AWS CDN换到上述这套方案，PageSpeed也就提升了3分左右（国外访问速度）。另外提升的20多分靠的是对网站自身的调整，如减少了外部文件的加载数量。我曾今遇到过一个高度优化的网站，哪怕用的是Cloudflare，走国内国外网络的PageSpeed都是满分（用Chrome Lightroom测试）。</p>
+<p>写到这里我才意识到这套方案最大的意义是给我省了一点钱，比起上腾讯云还便宜了不少，顺便提升了国内访问速度。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/" title="个人博客CDN选型和进阶玩法指北">https://nekodaemon.com/2021/08/12/个人博客CDN选型和进阶玩法指北/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Updated on 16 May, 2021. The quality of the original version is not satisfying. I&#39;ve rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Easy way to build a virtual cluster with KVM">
+<meta property="og:url" content="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Updated on 16 May, 2021. The quality of the original version is not satisfying. I&#39;ve rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.">
+<meta property="og:locale">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-74.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-73.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-75.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-76.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-78.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-77.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-79.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-80.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-81.png">
+<meta property="article:published_time" content="2020-10-25T07:50:31.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-74.png">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","path":"2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","title":"Easy way to build a virtual cluster with KVM"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Easy way to build a virtual cluster with KVM | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-text">Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#software-minimal-requirements"><span class="nav-text">Software (Minimal Requirements)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clusters-vs-pc"><span class="nav-text">Clusters vs PC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-storage"><span class="nav-text">Shared Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh-login-without-password"><span class="nav-text">SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#user-permission"><span class="nav-text">User Permission</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler"><span class="nav-text">Job Scheduler</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-up-kvm-hypervisor-on-host"><span class="nav-text">Set up KVM hypervisor on Host</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#make-sure-virtualization-support-is-enabled"><span class="nav-text">Make sure Virtualization support is enabled</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software"><span class="nav-text">Install necessary software</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch-gui-vm-manager"><span class="nav-text">Launch GUI VM Manager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#for-linux-mac-user"><span class="nav-text">For Linux &#x2F; Mac User</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#for-windows-user"><span class="nav-text">For Windows User</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#create-the-first-virtual-machine"><span class="nav-text">Create the first virtual machine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-1st-time"><span class="nav-text">Configure nodes (1st time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software-1"><span class="nav-text">Install necessary software</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-user-accounts-optional"><span class="nav-text">Create User Accounts (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-opt-directory"><span class="nav-text">Create &#x2F;opt directory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-ssh-login-without-password"><span class="nav-text">Setup SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-sudo-without-password-optional"><span class="nav-text">Setup sudo without Password (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-up"><span class="nav-text">Clean up</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-master---compute-1"><span class="nav-text">Clone nodes (Master -&gt; Compute 1)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-2nd-time"><span class="nav-text">Configure nodes (2nd time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-all-nodes"><span class="nav-text">On All Nodes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#check-ip-address"><span class="nav-text">Check IP address</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-master-node"><span class="nav-text">On Master Node</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#add-a-network-adapter"><span class="nav-text">Add a network adapter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#export-nfs-storage"><span class="nav-text">Export NFS Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-compute-node-1"><span class="nav-text">On Compute Node 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#import-nfs-storage"><span class="nav-text">Import NFS Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#clean-up-again"><span class="nav-text">Clean up again</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-compute-1---compute-n"><span class="nav-text">Clone nodes (Compute 1 -&gt; Compute N)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-hostname-and-hosts"><span class="nav-text">Set Hostname and Hosts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#advanced-topic"><span class="nav-text">Advanced Topic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#os-deployment"><span class="nav-text">OS Deployment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#terminal"><span class="nav-text">Terminal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler-1"><span class="nav-text">Job Scheduler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#account-management"><span class="nav-text">Account Management</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-storage-1"><span class="nav-text">Shared Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#file-system"><span class="nav-text">File System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#environment-management"><span class="nav-text">Environment Management</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#acknowledgment"><span class="nav-text">Acknowledgment</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Easy way to build a virtual cluster with KVM
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-10-25 07:50:31" itemprop="dateCreated datePublished" datetime="2020-10-25T07:50:31+00:00">2020-10-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><em>Updated on 16 May, 2021.</em> The quality of the original version is not satisfying. I've rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.</p>
+<p>This is my first post written in English, and this post is written for my "underboss" and general Linux users who has a little experience on virtual machines. This time, we are going to build our virtual cluster that is similar to old-school supercomputers, which means our configuration will be some kind of outdated and ugly compared to the latest fancy new clusters, but this configuration is much close to mainstream supercomputers in real world.</p>
+<h2 id="overview">Overview</h2>
+<p>This tutorial mainly focuses on building a simple cluster in a simple way. Here is the list about the software we will install, and the architecture we will construct later. But, we will discuss some state-of-art technologies in the last section <a href="#Advanced%20Topic">Advanced Topic</a> to help you build a much powerful cluster in practice.</p>
+<h3 id="software-minimal-requirements">Software (Minimal Requirements)</h3>
+<ul>
+<li>Host
+<ul>
+<li>OS: Ubuntu Server LTS (recommended 18.04 or later)</li>
+<li>Virtual Machine Hypervisor: KVM + QEMU + <code>virt-manager</code></li>
+</ul></li>
+<li>Guest
+<ul>
+<li>OS: Ubuntu Server LTS</li>
+<li>Shared Storage: NFS</li>
+</ul></li>
+</ul>
+<h3 id="architecture">Architecture</h3>
+<p>In real world, there are many ways to categorize the nodes of a cluster. For example,</p>
+<ul>
+<li>Compute Node: Run user applications.</li>
+<li>Storage Node: Provide shared storage</li>
+<li>Master Node: Monitor the cluster and schedule jobs</li>
+<li>Login Node: Provide access points for regular users</li>
+</ul>
+<p>We let the Master Node in our virtual cluster takes the responsibilities of Storage Node and Login Node. It is fine to merge Master Node, Storage Node, and Login Node together if this virtual cluster is not built for production environment.</p>
+<figure>
+<img data-src="/images/pasted-74.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="clusters-vs-pc">Clusters vs PC</h2>
+<p>To let you have a better understanding of the concept of what we called <em>cluster</em>, I would like to introduce several different characteristics of clusters compared to a regular PC.</p>
+<h3 id="shared-storage">Shared Storage</h3>
+<p>Most of the clusters I used before share their storage, because it make the environment consistent. For example, when a user login an arbitrary node, the exact same <code>.bashrc</code> will be loaded. I've listed some important directories that are shared among clusters.</p>
+<ul>
+<li><code>/home</code>: Directory storing user data</li>
+<li><code>/opt</code>: Shared software and libraries (e.g. Intel Compiler)</li>
+</ul>
+<h3 id="ssh-login-without-password">SSH Login without Password</h3>
+<p>Some distributed programs may rely on SSH to control remote machines, such as MPI. Thus, setting up password-less SSH login is required.</p>
+<h3 id="user-permission">User Permission</h3>
+<p>A regular user should not be granted superuser privileges FOREVER if you don't want anybody abuse the permission to crash the system. Therefore, only the administrators can access to the critical system configuration and install software for all users. The regular user should use the preinstalled software or install software in a gentle way. For instance, using Conda to install software to their home directory or compiling the software from source code. As for account management, we will cover this in <a href="#Advanced%20Topic">Advanced Topic</a>.</p>
+<h3 id="job-scheduler">Job Scheduler</h3>
+<p>Sometimes we may face the problem of lacking computational resources. This usually occurs in supercomputers since there are some user applications requesting a large amount of resources at the same time. Thus, a job scheduler will allow users to submit their applications and queue for the resources. Since it is not a mandatory component of our cluster, this topic will be discussed further in <a href="#Advanced%20Topic">Advanced Topic</a>.</p>
+<h2 id="set-up-kvm-hypervisor-on-host">Set up KVM hypervisor on Host</h2>
+<p>You probably have heard <code>VMware</code>, <code>Hyper-V</code> or <code>Virtualbox</code>. <code>KVM</code> is similar to them, which is also capable of creating a highly-isolated virtual environment.</p>
+<h3 id="make-sure-virtualization-support-is-enabled">Make sure Virtualization support is enabled</h3>
+<p>Some manufacturers disabled CPU Virtualization support for security reasons. Please check your BIOS setting and enable CPU Virtualization support. Besides, KVM kernel module is activated on Ubuntu by default. If you are unsure whether everything is correct, this <a target="_blank" rel="noopener" href="https://www.linuxtechi.com/install-configure-kvm-ubuntu-18-04-server/">article</a> will guide you to perform some extra examinations.</p>
+<h3 id="install-necessary-software">Install necessary software</h3>
+<p>The following simple command will install everything we need, including KVM hypervisor. Note that <code>apt</code> is the corresponding packet manager for Ubuntu, just like <code>yum</code> for CentOS.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt install virt-manager</span><br></pre></td></tr></table></figure>
+<h2 id="launch-gui-vm-manager">Launch GUI VM Manager</h2>
+<p>It is quite hard to create virtual machines under command line interface (CLI) because you have to manually specify a bunch of arguments. Luckily, there is a powerful graphical tool to manage virtual machines, and also there is a simple way called X11 forwarding, which could let a graphical application running on the remote server appear on your screen by forwarding and rendering the graphical data on your computer.</p>
+<figure>
+<img data-src="/images/pasted-73.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h3 id="for-linux-mac-user">For Linux / Mac User</h3>
+<p>For Mac User, one additional software <code>XQuartz</code> is required. <a target="_blank" rel="noopener" href="https://www.xquartz.org/">Click here to download</a>.</p>
+<p>Append the flag <code>-X</code> to <code>ssh</code> command, then the function <code>X11 Forwarding</code> will be enabled.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">local</span>$ ssh -X 10.x.x.x <span class="comment"># Your Host&#x27;s IP</span></span><br><span class="line">vmhost$ sudo virt-manager</span><br></pre></td></tr></table></figure>
+<p>Then you will notice <code>virt-manger</code> is already appeared on your screen.</p>
+<h3 id="for-windows-user">For Windows User</h3>
+<p>One additional software called <code>VcXsrv</code> is required. <a href="(https://sourceforge.net/projects/vcxsrv/)">Click here to download</a>. Open it, follow the path <code>Multiple windows</code> -&gt; <code>Start a program</code> -&gt; <code>Start a program on remote computer</code>, and fill in your information. <code>Remote program</code> could be <code>virt-manager</code>.</p>
+<h2 id="create-the-first-virtual-machine">Create the first virtual machine</h2>
+<p>So far, what we have done is colored green, and what we need to configure is colored yellow.</p>
+<figure>
+<img data-src="/images/pasted-75.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>Create a virtual machine by clicking <img data-src="/images/pasted-76.png" alt="upload successful" />, and configure it as what you want. It is recommended that the memory is larger than 1GiB, and the disk is larger than 20GiB. And I prefer to use <a target="_blank" rel="noopener" href="https://ubuntu.com/download/server">CD Image ISO File</a> to install the system. Note that currently this VM should have exact one virtual network adapter working under NAT mode.</p>
+<blockquote>
+<p>Some Optional Configurations</p>
+<ul>
+<li>CPU and Memory
+<ul>
+<li><code>Copy host CPU configuration</code>: helps Guest OS to identify CPU instruction set correctly</li>
+<li><code>Manually set CPU topology</code>: may improve performance on NUMA architecture.</li>
+</ul></li>
+<li>Disk
+<ul>
+<li><code>qcow</code>: will preallocates a lot of space</li>
+<li><code>vmdk</code>: allocates the space on demand</li>
+<li><code>VirtIO</code>: improves IO performance</li>
+</ul></li>
+<li>Network
+<ul>
+<li><code>NAT</code>: connects to the virtual network</li>
+<li><code>macvtap/Bridge</code>: connects to the external network
+<ul>
+<li>A known bug is that</li>
+</ul></li>
+<li><code>VirtIO</code>: improves IO performance</li>
+</ul></li>
+<li>Display VNC
+<ul>
+<li><code>Spice</code> / <code>VNC</code>: may fix the problem if you cannot input anything to virtual machines</li>
+</ul></li>
+</ul>
+</blockquote>
+<p>Then install Ubuntu Server LTS in your favorite way, but don't forget to install OpenSSH Server.</p>
+<h2 id="configure-nodes-1st-time">Configure nodes (1st time)</h2>
+<p>Our approach to create multiple nodes is to clone the existing nodes. Thus, every modification to the configuration of Master Node will be applied to all the nodes we will have in the future.</p>
+<h3 id="install-necessary-software-1">Install necessary software</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node0$ sudo apt install nfs-kernel-server</span><br></pre></td></tr></table></figure>
+<h3 id="create-user-accounts-optional">Create User Accounts (Optional)</h3>
+<p>For now, this step is optional because we could create accounts after cloning nodes.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">node0$ sudo adduser user1 <span class="comment"># Create a user called user1</span></span><br><span class="line">node0$ sudo usermod -aG sudo user1 <span class="comment"># Promote a user as a superuser</span></span><br></pre></td></tr></table></figure>
+<h3 id="create-opt-directory">Create <code>/opt</code> directory</h3>
+<p><code>/opt</code> is a conventional directory that stores the shared software and libraries, but Ubuntu won't create it by default.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkdir -p /opt</span><br></pre></td></tr></table></figure>
+<h3 id="setup-ssh-login-without-password">Setup SSH Login without Password</h3>
+<p>For every user account, execute the following command, and don't forget the <code>root</code> account.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user1@node0$ sudo su - user2 <span class="comment"># Login as user2</span></span><br><span class="line">user2@node0$ ssh-keygen</span><br><span class="line">user2@node0$ cp .ssh/id_rsa.pub .ssh/authorized_keys</span><br><span class="line">user2@node0$ <span class="built_in">exit</span></span><br><span class="line">user1@node0$</span><br></pre></td></tr></table></figure>
+<h3 id="setup-sudo-without-password-optional">Setup sudo without Password (Optional)</h3>
+<p>Perhaps you are tired with typing the password when acquiring superuser permissions. Setting password-less sudo may degrade the security of the system, but it is really convenient.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node0$ sudo visudo</span><br></pre></td></tr></table></figure>
+<p>And replace this line with the content below.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># %sudo   ALL=(ALL:ALL) ALL</span></span><br><span class="line">%sudo   ALL=(ALL:ALL) NOPASSWD:ALL</span><br></pre></td></tr></table></figure>
+<h3 id="clean-up">Clean up</h3>
+<p><code>/etc/machine-id</code> might be generated when you install some software or do something else. However, this ID should vary from machine to machine. If two machines share the same ID, they may get the same IP address from the DHCP server. Therefore, this file should keep empty. Additionally, we utilize <code>cloud-init</code> to generate a new SSH ID for the new machine.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node0$ sudo su</span><br><span class="line">node0<span class="comment"># echo -n &gt; /etc/machine-id</span></span><br><span class="line">node0<span class="comment"># cloud-init clean</span></span><br></pre></td></tr></table></figure>
+<p>Then shutdown Master Node.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node0<span class="comment"># shutdown now</span></span><br></pre></td></tr></table></figure>
+<h2 id="clone-nodes-master---compute-1">Clone nodes (Master -&gt; Compute 1)</h2>
+<figure>
+<img data-src="/images/pasted-78.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>As we mentioned earlier, all the nodes except Master Node is made by cloning. <code>virt-clone</code> is a good utility to clone virtual machines. Here is the usage.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vmhost$ sudo virt-clone -o node0 -n node1 --auto-clone</span><br></pre></td></tr></table></figure>
+<p>After that, we can notice <code>node1</code> shown in the window.</p>
+<figure>
+<img data-src="/images/pasted-77.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="configure-nodes-2nd-time">Configure nodes (2nd time)</h2>
+<h3 id="on-all-nodes">On All Nodes</h3>
+<h4 id="check-ip-address">Check IP address</h4>
+<p>Check IP addresses of all the existing nodes.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ip a</span><br></pre></td></tr></table></figure>
+<p>And write them to the file <code>hosts.txt</code> on Master Node.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.168.122.154 node0</span><br><span class="line">192.168.122.186 node1</span><br></pre></td></tr></table></figure>
+<p>Note that all nodes will share the same hostname with Master Node temporarily, and you should specify the hostnames in <code>hosts.txt</code> manually.</p>
+<h3 id="on-master-node">On Master Node</h3>
+<h4 id="add-a-network-adapter">Add a network adapter</h4>
+<p>So far, all the virtual machines have connected to the virtual network (192.168.122.x), but this subnet cannot be accessed by external machines in other subnet (e.g. our campus network 10.x.x.x). Thus, we need to add another adapter to expose our Master Node as the login node.</p>
+<p>Click <img data-src="/images/pasted-79.png" alt="upload successful" /> to modify the hardware configuration of Master Node. Then click <code>Add Hardware</code>, select <code>Network</code>, then change the network source from <code>NAT</code> to <code>macvtap</code>. Make sure you choose the correct host adapter, which should connect to external network, like campus network.</p>
+<figure>
+<img data-src="/images/pasted-80.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>However, the stupid Ubuntu will not automatically initialize the new virtual adapter like Windows. Therefore, we have to manually configure this adapter.</p>
+<p>First, figure out what is the name of the new adapter.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">node0$ ip a</span><br><span class="line">1: lo: ...</span><br><span class="line">2: ens3: ...</span><br><span class="line">3: ens9: ...</span><br></pre></td></tr></table></figure>
+<p>Our new adapter is called <code>ens9</code>. Then modify the file <code>/etc/netplan/xxx.yaml</code> to add the configuration of <code>ens9</code>.</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">network:</span></span><br><span class="line">  <span class="attr">ethernets:</span></span><br><span class="line">    <span class="attr">ens3:</span></span><br><span class="line">      <span class="attr">dhcp4:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">ens9:</span></span><br><span class="line">    	<span class="attr">dhcp4:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>Finally, reboot to apply the new configuration.</p>
+<h4 id="export-nfs-storage">Export NFS Storage</h4>
+<p>Modify the file <code>/etc/exports</code> (<code>sudo</code> required), add the following lines.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/home 192.168.122.0/24(rw,sync,no_root_squash,no_subtree_check)</span><br><span class="line">/opt 192.168.122.0/24(rw,sync,no_root_squash,no_subtree_check)</span><br></pre></td></tr></table></figure>
+<p>Then restart <code>NFS</code> service.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo service nfs-kernel-server restart</span><br></pre></td></tr></table></figure>
+<h3 id="on-compute-node-1">On Compute Node 1</h3>
+<h4 id="import-nfs-storage">Import NFS Storage</h4>
+<p>Add the following lines at the end of <code>/etc/fstab</code> (<code>sudo</code> required), then reboot.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.168.122.154:/home /home nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0</span><br><span class="line">192.168.122.154:/opt  /opt nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note that this configuration is permanent. The temporary approach is listed here.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mount 192.168.122.10:/home /tmp/home</span><br><span class="line">$ sudo mount 192.168.122.10:/opt /tmp/opt</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="clean-up-again">Clean up again</h4>
+<p>Refer to <a href="#Clean%20up">Clean up</a> section to clean up Compute Node 1.</p>
+<h2 id="clone-nodes-compute-1---compute-n">Clone nodes (Compute 1 -&gt; Compute N)</h2>
+<figure>
+<img data-src="/images/pasted-81.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>Refer to <a href="#Clone%20nodes%20(Master%20-%3E%20Compute%201)">Clone nodes (Master -&gt; Compute 1)</a> section and make remaining nodes.</p>
+<h2 id="set-hostname-and-hosts">Set Hostname and Hosts</h2>
+<p>This is the final step of building our virtual cluster. Do you remember the file <code>hosts.txt</code>, which contains all the IP addresses and the new hostnames? Now it is time to utilize that file to set hostnames and <code>/etc/hosts</code> file. Assume the content of <code>hosts.txt</code> is,</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">192.168.122.154 node0</span><br><span class="line">192.168.122.186 node1</span><br><span class="line">192.168.122.31  node2</span><br><span class="line">192.168.122.129 node3</span><br></pre></td></tr></table></figure>
+<p>The magic command below will automatically set the correct hostname and <code>hosts</code> file for each node listed in <code>hosts.txt</code>. Note that this command <strong>must be</strong> executed by <code>root</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TMP=$(mktemp) &amp;&amp; cat hosts.txt | awk -v hosts=<span class="string">&quot;<span class="subst">$(base64 -w 0 hosts.txt)</span>&quot;</span> <span class="string">&#x27;&#123;printf &quot;ssh -o StrictHostKeyChecking=no %s \&quot;echo %s | base64 -d &gt;&gt; /etc/hosts\&quot; &amp; \nssh -o StrictHostKeyChecking=no %s \&quot;hostnamectl set-hostname %s\&quot; &amp; \n&quot;, $1, hosts, $1, $2&#125;&#x27;</span> &gt; <span class="variable">$TMP</span> &amp;&amp; bash <span class="variable">$TMP</span> &amp;&amp; rm <span class="variable">$TMP</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;OK&quot;</span></span><br></pre></td></tr></table></figure>
+<p>This is the end of the primary part of this tutorial. You have completed all necessary steps to build your toy cluster. Enjoy it!</p>
+<h2 id="advanced-topic">Advanced Topic</h2>
+<h3 id="os-deployment">OS Deployment</h3>
+<ul>
+<li>cloud-init</li>
+</ul>
+<h3 id="terminal">Terminal</h3>
+<ul>
+<li>Terminator / iTerm</li>
+<li>ClusterSSH / csshX</li>
+<li>tmux-cssh</li>
+<li>ClusterShell</li>
+</ul>
+<h3 id="job-scheduler-1">Job Scheduler</h3>
+<ul>
+<li>IBM Platform LSF</li>
+<li>Slurm</li>
+</ul>
+<h3 id="account-management">Account Management</h3>
+<ul>
+<li>Kerberos + LDAP</li>
+</ul>
+<h3 id="shared-storage-1">Shared Storage</h3>
+<ul>
+<li>BeeGFS</li>
+<li>Ceph</li>
+</ul>
+<h3 id="file-system">File System</h3>
+<ul>
+<li>Ext4</li>
+<li>XFS</li>
+<li>Btrfs</li>
+<li>ZFS</li>
+</ul>
+<h3 id="environment-management">Environment Management</h3>
+<ul>
+<li>Environment Modules</li>
+<li>Spack</li>
+<li>Conda</li>
+</ul>
+<p>(To be continued)</p>
+<h2 id="acknowledgment">Acknowledgment</h2>
+<ul>
+<li>Tsinghua student supercomputing team / TUNA</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/" title="Easy way to build a virtual cluster with KVM">https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

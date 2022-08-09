@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="实际上这次的情况有一些复杂，首先这个集群上跑的是活化石Cent OS，也就是说环境非常的古老（硬件倒是最新的），GCC还是4.8.5，甚至编译不了最新的DGL库。更悲伤的是我并没有这个公用集群的管理员权限，只能想方设法去绕开权限去安装软件，因此我用Conda装了CMake，GCC和G++。所以解决version GLIBCXX_3.4.20 not found这个问题就更加麻烦了，因此这篇文章的解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="修复错误version GLIBCXX_3.4.20 not found的思路">
+<meta property="og:url" content="https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="实际上这次的情况有一些复杂，首先这个集群上跑的是活化石Cent OS，也就是说环境非常的古老（硬件倒是最新的），GCC还是4.8.5，甚至编译不了最新的DGL库。更悲伤的是我并没有这个公用集群的管理员权限，只能想方设法去绕开权限去安装软件，因此我用Conda装了CMake，GCC和G++。所以解决version GLIBCXX_3.4.20 not found这个问题就更加麻烦了，因此这篇文章的解">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-01-22T21:08:39.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.931Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/","path":"2021/01/22/修复错误version-GLIBCXX-3-4-20-not-found的思路/","title":"修复错误version GLIBCXX_3.4.20 not found的思路"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>修复错误version GLIBCXX_3.4.20 not found的思路 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%A7%8B%E6%AF%9B%E7%97%85"><span class="nav-text">原始毛病</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E6%9F%A5"><span class="nav-text">排查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          修复错误version GLIBCXX_3.4.20 not found的思路
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-22 21:08:39" itemprop="dateCreated datePublished" datetime="2021-01-22T21:08:39+00:00">2021-01-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>实际上这次的情况有一些复杂，首先这个集群上跑的是<strong>活化石</strong>Cent OS，也就是说环境非常的古老（硬件倒是最新的），GCC还是4.8.5，甚至编译不了最新的DGL库。更悲伤的是我并没有这个公用集群的管理员权限，只能想方设法去绕开权限去安装软件，因此我用<strong>Conda</strong>装了CMake，GCC和G++。所以解决<code>version GLIBCXX_3.4.20 not found</code>这个问题就更加麻烦了，因此这篇文章的解决方法并不适用所有的情况，但可以作为一个参考。</p>
+<p>注：用Conda无权限安装GCC等软件的方式非常简单</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create and activate a Conda environment named DGL</span></span><br><span class="line">conda create -n dgl </span><br><span class="line">conda activate dgl </span><br><span class="line"></span><br><span class="line"><span class="comment"># Add a channel called Conda-Forge</span></span><br><span class="line">conda config --add channels conda-forge</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install the software</span></span><br><span class="line">conda install gxx_linux-64 gcc_linux-64 cmake</span><br><span class="line"></span><br><span class="line"><span class="comment"># Verify whether GCC is working</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$CC</span> <span class="comment"># Should not be the default one (like /usr/bin/gcc)</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$CXX</span></span><br></pre></td></tr></table></figure>
+<h2 id="原始毛病">原始毛病</h2>
+<p>在编译的时候并不会出现问题，当执行<code>import dgl</code>（载入了DGL的动态链接库）的时候，就会报错，信息如下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Traceback (most recent call last):</span><br><span class="line">  File <span class="string">&quot;&lt;string&gt;&quot;</span>, line 1, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/__init__.py&quot;</span>, line 13, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">    from .backend import load_backend, backend_name</span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/backend/__init__.py&quot;</span>, line 96, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">    load_backend(get_preferred_backend())</span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/backend/__init__.py&quot;</span>, line 41, <span class="keyword">in</span> load_backend</span><br><span class="line">    from .._ffi.base import load_tensor_adapter <span class="comment"># imports DGL C library</span></span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/_ffi/base.py&quot;</span>, line 45, <span class="keyword">in</span> &lt;module&gt;</span><br><span class="line">    _LIB, _LIB_NAME, _DIR_NAME = _load_lib()</span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/_ffi/base.py&quot;</span>, line 35, <span class="keyword">in</span> _load_lib</span><br><span class="line">    lib = ctypes.CDLL(lib_path[0])</span><br><span class="line">  File <span class="string">&quot;/work/gutz/miniconda3/envs/dgl/lib/python3.8/ctypes/__init__.py&quot;</span>, line 381, <span class="keyword">in</span> __init__</span><br><span class="line">    self._handle = _dlopen(self._name, mode)</span><br><span class="line">OSError: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.20<span class="string">&#x27; not found (required by /work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/libdgl.so)</span></span><br></pre></td></tr></table></figure>
+<h2 id="排查">排查</h2>
+<p>在错误信息中值得关注的有三点，一是错误是由<code>libdgl.so</code>造成的，二是在试图加载<code>/lib64/libstdc++.so.6</code>时候出错，三是错误原因是<code>/lib64/libstdc++.so.6</code>这个东西太老了。</p>
+<p>仔细一想事情其实非常不对，用Conda的G++编译出来的东西应该会调用Conda里面的C++库而不是古老的系统自带的那个。顺手用<code>ldd</code>和<code>readelf</code>去分析<code>libdgl.so</code>可以得到如下信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ldd /work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/libdgl.so</span></span><br><span class="line">        linux-vdso.so.1 =&gt;  (0x00007ffde9722000)</span><br><span class="line">        libdl.so.2 =&gt; /lib64/libdl.so.2 (0x00002aac0673e000)</span><br><span class="line">        librt.so.1 =&gt; /lib64/librt.so.1 (0x00002aac06942000)</span><br><span class="line">        libgomp.so.1 =&gt; /work/gutz/miniconda3/envs/dgl/lib/libgomp.so.1 (0x00002aac05929000)</span><br><span class="line">        libpthread.so.0 =&gt; /lib64/libpthread.so.0 (0x00002aac06b4a000)</span><br><span class="line">        libstdc++.so.6 =&gt; /work/gutz/miniconda3/envs/dgl/lib/libstdc++.so.6 (0x00002aac05957000)</span><br><span class="line">        libm.so.6 =&gt; /lib64/libm.so.6 (0x00002aac06d66000)</span><br><span class="line">        libgcc_s.so.1 =&gt; /work/gutz/miniconda3/envs/dgl/lib/libgcc_s.so.1 (0x00002aac05acb000)</span><br><span class="line">        libc.so.6 =&gt; /lib64/libc.so.6 (0x00002aac07068000)</span><br><span class="line">        /lib64/ld-linux-x86-64.so.2 (0x00002aac058f6000)</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># readelf -d /work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/libdgl.so</span></span><br><span class="line"></span><br><span class="line">Dynamic section at offset 0xc14ef8 contains 32 entries:</span><br><span class="line">  Tag        Type                         Name/Value</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [librt.so.1]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libgomp.so.1]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libstdc++.so.6]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]</span><br><span class="line"> 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]</span><br><span class="line"> 0x000000000000000e (SONAME)             Library soname: [libdgl.so]</span><br><span class="line"> 0x000000000000000f (RPATH)              Library rpath: [/work/gutz/miniconda3/envs/dgl/lib]</span><br><span class="line"> 0x000000000000000c (INIT)               0x19f000</span><br><span class="line"> 0x000000000000000d (FINI)               0xaae9c0</span><br><span class="line"> 0x0000000000000019 (INIT_ARRAY)         0xc10280</span><br><span class="line"> 0x000000000000001b (INIT_ARRAYSZ)       960 (bytes)</span><br><span class="line"> 0x0000000000000004 (HASH)               0x238</span><br><span class="line"> 0x000000006ffffef5 (GNU_HASH)           0xa0e8</span><br><span class="line"> 0x0000000000000005 (STRTAB)             0x45460</span><br><span class="line"> 0x0000000000000006 (SYMTAB)             0x15af0</span><br><span class="line"> 0x000000000000000a (STRSZ)              1191101 (bytes)</span><br><span class="line"> 0x000000000000000b (SYMENT)             24 (bytes)</span><br><span class="line"> 0x0000000000000003 (PLTGOT)             0xc16138</span><br><span class="line"> 0x0000000000000007 (RELA)               0x16c318</span><br><span class="line"> 0x0000000000000008 (RELASZ)             204672 (bytes)</span><br><span class="line"> 0x0000000000000009 (RELAENT)            24 (bytes)</span><br><span class="line"> 0x0000000000000018 (BIND_NOW)</span><br><span class="line"> 0x000000006ffffffb (FLAGS_1)            Flags: NOW</span><br><span class="line"> 0x000000006ffffffe (VERNEED)            0x16c098</span><br><span class="line"> 0x000000006fffffff (VERNEEDNUM)         9</span><br><span class="line"> 0x000000006ffffff0 (VERSYM)             0x16811e</span><br><span class="line"> 0x000000006ffffff9 (RELACOUNT)          1435</span><br><span class="line"> 0x0000000000000000 (NULL)               0x0</span><br></pre></td></tr></table></figure>
+<p>这就很奇怪了，明明<code>libdgl.so</code>已经指明了使用这个C++库<code>/work/gutz/miniconda3/envs/dgl/lib/libstdc++.so.6</code>，而不是系统的<code>/lib64/libstdc++.so.6</code>。更奇怪的事是在<code>readelf</code>的结果中，<code>RPATH</code>项（run-time search path）已经指定了所需的库的位置<code>/work/gutz/miniconda3/envs/dgl/lib</code>，也就是说将要加载的动态链接库的<strong>绝对路径</strong>都已经<strong>写死在文件里了</strong>。而且对<code>/work/gutz/miniconda3/envs/dgl/lib/libstdc++.so.6</code>稍加验证一下，可以看出来这个库是支持<code>GLIBCXX_3.4.20</code>的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># strings /work/gutz/miniconda3/envs/dgl/lib/libstdc++.so.6 | grep GLIBCXX</span></span><br><span class="line">...</span><br><span class="line">GLIBCXX_3.4.18</span><br><span class="line">GLIBCXX_3.4.19</span><br><span class="line">GLIBCXX_3.4.20</span><br><span class="line">GLIBCXX_3.4.21</span><br><span class="line">GLIBCXX_3.4.22</span><br><span class="line">GLIBCXX_3.4.23</span><br><span class="line">GLIBCXX_3.4.24</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>那么是什么原因导致了DGL加载了错误的C++库？我并没有什么头绪，甚至去翻了源代码去看看DGL有没有做什么手动指定库加载路径的呆逼操作，结果发现并没有，加载库的代码只有两行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_load_lib</span>():</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;Load libary by searching possible path.&quot;&quot;&quot;</span></span><br><span class="line">    lib_path = libinfo.find_lib_path()</span><br><span class="line">    lib = ctypes.CDLL(lib_path[<span class="number">0</span>]) <span class="comment"># lib_path[0] = &#x27;/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/dgl-0.6-py3.8-linux-x86_64.egg/dgl/libdgl.so&#x27;</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>一筹莫展之际，随便试了试网上强烈推荐的调试方法<code>export LD_DEBUG=libs</code>，输出加载动态链接库时的额外信息。尽管信息很多，但还是发现加载了<code>/lib64/libstdc++.so.6</code>的罪魁祸首不是DGL，而是PyTorch。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">197196:      search path=/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/torch/lib               (RUNPATH from file /work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/torch/lib/libtorch_global_deps.so)</span><br><span class="line">197196:       trying file=/work/gutz/miniconda3/envs/dgl/lib/python3.8/site-packages/torch/lib/libgcc_s.so.1</span><br><span class="line">197196:      search cache=/etc/ld.so.cache</span><br><span class="line">197196:       trying file=/lib64/libgcc_s.so.1</span><br><span class="line">197196:</span><br><span class="line">197196:</span><br><span class="line">197196:     calling init: /lib64/libgcc_s.so.1</span><br><span class="line">197196:</span><br><span class="line">197196:</span><br><span class="line">197196:     calling init: /lib64/libstdc++.so.6</span><br></pre></td></tr></table></figure>
+<p>用<code>ldd</code>看看就可以发现<code>libtorch_global_deps.so</code>这个死东西会去加载<code>/lib64/libstdc++.so.6</code>。在<code>libdgl.so</code>加载前就把<code>/lib64/libstdc++.so.6</code>加载进内存了，<code>rpath</code>指定的C++库就不会被载入了。</p>
+<p>用<code>readelf</code>分析<code>libtorch_global_deps.so</code>，发现其<code>rpath</code>指定为<code>$ORIGIN</code>，也就是<code>libtorch_global_deps.so</code>所在的目录。当然这个目录有PyTorch依赖的其他库，如Profiling用的<code>libnvToolsExt</code>，显然这里并没有C++库，系统就自动去搜寻默认路径，就把<code>/lib64/libstdc++.so.6</code>加载了。</p>
+<h2 id="解决方案">解决方案</h2>
+<p>如果对自己的技术充分自信并有大量空闲时间，可以用Conda的G++把PyTorch重新编译就可以解决这个问题。</p>
+<p>如果想试试花里胡哨的，可以试试<code>patchelf</code>去给<code>libtorch_global_deps.so</code>加一个指向新C++库的<code>rpath</code>。</p>
+<p>像我懒狗就直接在<code>LD_LIBRARY_PATH</code>这个环境变量里指定一下默认搜索路径就完事了。当然这样非常的不优雅就是了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/work/gutz/miniconda3/envs/dgl/lib:<span class="variable">$LD_LIBRARY_PATH</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://shibing.github.io/2016/08/20/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%8Erpath/">http://shibing.github.io/2016/08/20/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E4%B8%8Erpath/</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/12851184/dlopen-failed-cannot-open-shared-object-file-no-such-file-or-directory">https://stackoverflow.com/questions/12851184/dlopen-failed-cannot-open-shared-object-file-no-such-file-or-directory</a></li>
+<li><a target="_blank" rel="noopener" href="https://nehckl0.medium.com/creating-relocatable-linux-executables-by-setting-rpath-with-origin-45de573a2e98">https://nehckl0.medium.com/creating-relocatable-linux-executables-by-setting-rpath-with-origin-45de573a2e98</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/01/22/%E4%BF%AE%E5%A4%8D%E9%94%99%E8%AF%AFversion-GLIBCXX-3-4-20-not-found%E7%9A%84%E6%80%9D%E8%B7%AF/" title="修复错误version GLIBCXX_3.4.20 not found的思路">https://nekodaemon.com/2021/01/22/修复错误version-GLIBCXX-3-4-20-not-found的思路/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

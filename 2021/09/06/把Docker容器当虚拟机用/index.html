@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="滥用Docker容器当作虚拟机的方法">
+<meta property="og:url" content="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-09-06T15:01:43.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.931Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/","path":"2021/09/06/把Docker容器当虚拟机用/","title":"滥用Docker容器当作虚拟机的方法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>滥用Docker容器当作虚拟机的方法 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-text">注意事项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#best-practice"><span class="nav-text">Best Practice</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98"><span class="nav-text">权限问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E4%B8%8E%E9%95%9C%E5%83%8F"><span class="nav-text">容器与镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E5%90%8D"><span class="nav-text">命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%AE%9E%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-text">其他实用命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dockerhub%E4%B8%8B%E8%BD%BD%E5%8A%A0%E9%80%9F"><span class="nav-text">DockerHub下载加速</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%AE%B9%E5%99%A8"><span class="nav-text">创建容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E5%85%A5%E5%AE%B9%E5%99%A8%E4%BA%A4%E4%BA%92%E5%BC%8Fbash"><span class="nav-text">进入容器（交互式bash）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E6%96%87%E4%BB%B6%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-text">容器、镜像、文件的转换</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          滥用Docker容器当作虚拟机的方法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-09-06 15:01:43" itemprop="dateCreated datePublished" datetime="2021-09-06T15:01:43+00:00">2021-09-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。</p>
+<h2 id="注意事项">注意事项</h2>
+<h3 id="best-practice">Best Practice</h3>
+<p>理想情况下Docker Image最好使用Dockerfile来构建。把Docker Container当做虚拟机来构建Docker Image这个方法虽然非常省事，但该方法很容易做出来很大一坨镜像，很不轻量，所以仅推荐在测试时使用，不推荐在正式场合（如企业的生产环境）使用。</p>
+<h3 id="权限问题">权限问题</h3>
+<p>Docker的安装和使用（创建销毁容器等）都需要超级用户权限。若非系统管理员，务必确认环境里已经安装了Docker和拥有Docker的使用权限（已加入<code>docker</code>用户组）</p>
+<p>注：Docker也有Rootless模式，但需要额外的配置。</p>
+<h2 id="基础知识">基础知识</h2>
+<h3 id="容器与镜像">容器与镜像</h3>
+<p>镜像可以说是容器在某一个时刻的所有文件数据，包括运行环境，程序，临时文件等。而容器才是能产生进程运行程序的东西。所以镜像是静态的，容器是动态的。他们的生命周期和转换关系如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">      |---------push--&gt; (Docker Hub)</span><br><span class="line">      |---------save--&gt; (tar File)</span><br><span class="line">      |</span><br><span class="line">Docker Image----run---&gt; Docker Container    </span><br><span class="line">      ↑                       |</span><br><span class="line">      |---------commit--------|</span><br><span class="line">      |---------pull----(Docker Hub)</span><br><span class="line">      |---------load----(tar File)</span><br><span class="line">      |---------build---(Dockerfile)</span><br></pre></td></tr></table></figure>
+<h3 id="命名">命名</h3>
+<p>容器的名字没有太多讲究，镜像名字的构成是：<code>镜像名:Tag</code>，如<code>Ubuntu:18.04</code>的镜像名是<code>Ubuntu</code>，Tag是<code>18.04</code>。</p>
+<h3 id="其他实用命令">其他实用命令</h3>
+<ul>
+<li><code>docker ps</code> 查看运行中的容器
+<ul>
+<li><code>docker ps -a</code> 查看所有容器（包含未运行的容器）</li>
+</ul></li>
+<li><code>docker rm -f</code> 删除容器</li>
+<li><code>docker images</code> 查看已下载的镜像</li>
+<li><code>docker pull</code> 下载镜像</li>
+<li><code>docker rmi</code> 删除镜像</li>
+</ul>
+<h3 id="dockerhub下载加速">DockerHub下载加速</h3>
+<p>暂未找到什么很好的加速方法</p>
+<h2 id="创建容器">创建容器</h2>
+<p>推荐命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always ubuntu:18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-d</code> + <code>-i</code> + <code>bash</code> 组合会启动容器里的<code>bash</code>，目的是让容器挂在后台</li>
+<li><code>--restart always</code> 主机重启后自动启动容器，挂在后台</li>
+<li><code>ubuntu:18.04</code> 推荐使用Ubuntu 18.04镜像</li>
+<li><code>--privileged</code> 允许容器使用更多的内核功能</li>
+<li><code>--network host</code> 使用主机网络（禁用网络空间隔离）</li>
+</ul>
+</blockquote>
+<p>也可以使用老黄家的CUDA开发环境镜像：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always --gpus all nvidia/cuda:11.0.3-devel-ubuntu18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>nvidia/cuda:11.0.3-devel-ubuntu18.04</code> 是包含CUDA 11.0.3对应工具链的Ubuntu 18.04镜像
+<ul>
+<li>镜像的CUDA版本需要和驱动支持的版本对应，<code>nvidia-smi</code> 右上角会显示最高支持的CUDA版本</li>
+<li><code>devel</code>版镜像包含<code>nvcc</code>编译器等工具链，<code>runtime</code>版不含工具链</li>
+</ul></li>
+<li><code>--gpus all</code> 使用所有可用的GPU</li>
+</ul>
+</blockquote>
+<p>所有黄家容器列表：<a target="_blank" rel="noopener" href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
+<h2 id="进入容器交互式bash">进入容器（交互式bash）</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-i</code> + <code>-t</code> 启动交互式模式</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>进入容器后如果想换apt源，建议使用下面的命令来换，因为镜像为了节约空间，往往不包含文字编辑器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s#archive.ubuntu.com#mirrors.sustech.edu.cn#g&quot;</span> /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="容器镜像文件的转换">容器、镜像、文件的转换</h2>
+<p>容器到镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit your_ct_name your_images_name:your_tag</span><br></pre></td></tr></table></figure>
+<p>镜像到文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker save your_images_name:your_tag -o your_file.tar</span><br></pre></td></tr></table></figure>
+<p>文件到镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker load -i your_file.tar</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/" title="滥用Docker容器当作虚拟机的方法">https://nekodaemon.com/2021/09/06/把Docker容器当虚拟机用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="CPU端序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="神威太湖之光上机摸索记录">
+<meta property="og:url" content="https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="CPU端序">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-05-25T18:24:09.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.931Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/","path":"2020/05/25/神威太湖之光上机摸索记录/","title":"神威太湖之光上机摸索记录"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>神威太湖之光上机摸索记录 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#cpu%E7%AB%AF%E5%BA%8F"><span class="nav-text">CPU端序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E7%9B%B8%E5%85%B3"><span class="nav-text">编译相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E5%A4%B4%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84"><span class="nav-text">输出头文件路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%9A%84%E5%A4%B4%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84"><span class="nav-text">关键的头文件路径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E7%9B%B8%E5%85%B3"><span class="nav-text">调试相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E4%B8%9A%E7%B3%BB%E7%BB%9F"><span class="nav-text">作业系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AElog-level"><span class="nav-text">设置Log Level</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#system%E7%9B%B8%E5%85%B3"><span class="nav-text">System相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#raiseos"><span class="nav-text">RaiseOS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#runtime%E7%9B%B8%E5%85%B3"><span class="nav-text">Runtime相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E6%A0%B8"><span class="nav-text">从核</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A5%87%E6%80%AA%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">奇怪的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%91%BD%E5%90%8D%E9%97%AE%E9%A2%98"><span class="nav-text">函数命名问题</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          神威太湖之光上机摸索记录
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-05-25 18:24:09" itemprop="dateCreated datePublished" datetime="2020-05-25T18:24:09+00:00">2020-05-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="cpu端序">CPU端序</h2>
+<p>sw26010和x86一样都是小端序。测试程序如下，输出均为1</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">is_little_endian</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">short</span> s = <span class="number">0x0110</span>;</span><br><span class="line">   <span class="keyword">char</span> *p = (<span class="keyword">char</span> *) &amp;s;</span><br><span class="line">   <span class="keyword">return</span> (p[<span class="number">0</span>] == <span class="number">0x10</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, is_little_endian() );</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="编译相关">编译相关</h2>
+<h3 id="输出头文件路径">输出头文件路径</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> | sw5cc -host -E -Wp,-v -</span><br><span class="line"><span class="built_in">echo</span> | sw5cc -slave -E -Wp,-v -</span><br></pre></td></tr></table></figure>
+<h3 id="关键的头文件路径">关键的头文件路径</h3>
+<ul>
+<li><code>/usr/sw-mpp/swcc/lib/gcc-lib/sw_64-swcc-linux/5.421-sw-500/include</code> 包含<code>SIMD</code>，<code>DMA</code>相关函数</li>
+<li><code>/usr/sw-mpp/swcc/sw5gcc-binary/include</code> 包含<code>LDM</code>，<code>FFT</code>，<code>Athread</code>相关函数</li>
+</ul>
+<h2 id="调试相关">调试相关</h2>
+<h3 id="作业系统">作业系统</h3>
+<h4 id="设置log-level">设置Log Level</h4>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RMS_DEBUG=7</span><br></pre></td></tr></table></figure>
+<h2 id="system相关">System相关</h2>
+<p>x86节点系统：<code>Red Hat Enterprise Linux Server release 6.6</code> sw节点系统：<code>RaiseOS</code></p>
+<h3 id="raiseos">RaiseOS</h3>
+<p>大家都觉得这系统应该跟Busybox构建的rootfs差不多，也就是说整个申威节点就是大号开发板。下面是申威节点上某时刻的进程列表。顺带一提，这系统连<code>bash</code>都没有。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">PID   USER     TIME   COMMAND</span><br><span class="line">    1 root       0:16 init</span><br><span class="line">    2 root       0:00 [kthreadd]</span><br><span class="line">    3 root       0:00 [ksoftirqd/0]</span><br><span class="line">    5 root       0:00 [kworker/0:0H]</span><br><span class="line">    6 root       0:00 [kworker/u:0]</span><br><span class="line">    7 root       0:00 [kworker/u:0H]</span><br><span class="line">    8 root       0:00 [migration/0]</span><br><span class="line">    9 root       0:00 [rcu_bh]</span><br><span class="line">   10 root       0:26 [rcu_sched]</span><br><span class="line">   11 root       0:00 [ksoftirqd/4]</span><br><span class="line">   12 root       0:02 [migration/4]</span><br><span class="line">   13 root       0:00 [kworker/4:0]</span><br><span class="line">   14 root       0:00 [kworker/4:0H]</span><br><span class="line">   15 root       0:00 [ksoftirqd/8]</span><br><span class="line">   16 root       0:00 [migration/8]</span><br><span class="line">   17 root       0:00 [kworker/8:0]</span><br><span class="line">   18 root       0:00 [kworker/8:0H]</span><br><span class="line">   19 root       0:00 [ksoftirqd/12]</span><br><span class="line">   20 root       0:00 [migration/12]</span><br><span class="line">   21 root       0:00 [kworker/12:0]</span><br><span class="line">   22 root       0:00 [kworker/12:0H]</span><br><span class="line">   23 root       0:00 [cpuset]</span><br><span class="line">   24 root       0:00 [khelper]</span><br><span class="line">   25 root       0:00 [netns]</span><br><span class="line">   26 root       0:00 [bdi-default]</span><br><span class="line">   27 root       0:00 [kblockd]</span><br><span class="line">   28 root       0:00 [rpciod]</span><br><span class="line">   29 root       0:06 [kworker/12:1]</span><br><span class="line">   30 root       0:01 [kswapd0]</span><br><span class="line">   31 root       0:00 [kswapd1]</span><br><span class="line">   32 root       0:00 [kswapd2]</span><br><span class="line">   33 root       0:00 [kswapd3]</span><br><span class="line">   34 root       0:00 [nfsiod]</span><br><span class="line">   35 root       0:00 [mlx4]</span><br><span class="line">   36 root       0:06 [kworker/8:1]</span><br><span class="line">   37 root       0:08 [kworker/4:1]</span><br><span class="line">   38 root       0:00 [kworker/0:1]</span><br><span class="line">   39 root       0:00 [ib_mcast]</span><br><span class="line">   40 root       0:00 [ib_cm]</span><br><span class="line">   41 root       0:00 [iw_cm_wq]</span><br><span class="line">   42 root       0:00 [ib_addr]</span><br><span class="line">   43 root       0:00 [rdma_cm]</span><br><span class="line">   44 root       0:00 [mthca_catas]</span><br><span class="line">   45 root       0:00 [mlx4_ib]</span><br><span class="line">   46 root       0:00 [mlx4_ib_mcg]</span><br><span class="line">   47 root       0:00 [ib_mad1]</span><br><span class="line">   48 root       0:00 [deferwq]</span><br><span class="line">   49 root       0:00 [kworker/u:1]</span><br><span class="line">   50 root       0:00 &#123;rcS&#125; /bin/sh /etc/init.d/rcS</span><br><span class="line">  120 root       0:00 /usr/sbin/telnetd</span><br><span class="line">  127 root       0:02 /usr/sw-mpp/sbin/rmsd_100p_std</span><br><span class="line">  130 root       0:00 /usr/sw-mpp/sbin/swres -c</span><br><span class="line">  135 root       0:00 sh /sbin/start_online1.sh</span><br><span class="line">  136 root       0:00 /sbin/ntpd -p *** -Nn</span><br><span class="line">  148 root       1:13 /usr/local/sbin/lwfs -f /etc/lwfs/lwfs.vol -l /dev/shm/lw</span><br><span class="line">  187 root       0:00 sh</span><br><span class="line">  197 root       0:41 /sbin/sotailf_brief -t *** -p *** /dev/shm/lwfs_onl</span><br><span class="line">  206 root       0:32 [kworker/0:2]</span><br><span class="line"> 3406 root       0:00 sleep 600</span><br><span class="line"> 3413 root       0:00 [flush-0:14]</span><br><span class="line"> 3420 root       0:00 /usr/sw-mpp/sbin/taskstarter -jobid 49200448 -rh mn005 -r</span><br><span class="line"> 3421 *       0:00 /bin/ps -ef</span><br></pre></td></tr></table></figure>
+<p>顺带放出来cpuinfo和meminfo的信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">cpu                     : SW_64</span><br><span class="line">cpu model               : SW5</span><br><span class="line">cpu variation           : 1</span><br><span class="line">cpu revision            : 0</span><br><span class="line">cpu serial number       :</span><br><span class="line">system type             : shenwei</span><br><span class="line">system variation        : 0</span><br><span class="line">system revision         : 0</span><br><span class="line">system serial number    :</span><br><span class="line">cycle frequency [Hz]    : 1450000000</span><br><span class="line">timer frequency [Hz]    : 0.24</span><br><span class="line">page size [bytes]       : 8192</span><br><span class="line">phys. address bits      : 44</span><br><span class="line">max. addr. space #      : 255</span><br><span class="line">BogoMIPS                : 0.81</span><br><span class="line">kernel unaligned acc    : 0 (pc=0,va=0)</span><br><span class="line">user unaligned acc      : 88465541 (pc=4ff0423298,va=5000281dcc)</span><br><span class="line">platform string         : N/A</span><br><span class="line">cpus detected           : 4</span><br><span class="line">cpus active             : 4</span><br><span class="line">cpu active mask         : 0000000000001111</span><br><span class="line">cpus core_start         : 000000000000000f</span><br><span class="line">mem cycle freq          : 500</span><br><span class="line">L1 Icache               : 64K, 2-way, 64b line</span><br><span class="line">L1 Dcache               : 64K, 2-way, 64b line</span><br><span class="line">L2 cache                : n/a</span><br><span class="line">L3 cache                : n/a</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">MemTotal:        2038472 kB</span><br><span class="line">MemFree:          582544 kB</span><br><span class="line">Buffers:               0 kB</span><br><span class="line">Cached:          1199688 kB</span><br><span class="line">SwapCached:            0 kB</span><br><span class="line">Active:           830256 kB</span><br><span class="line">Inactive:         429920 kB</span><br><span class="line">Active(anon):     133568 kB</span><br><span class="line">Inactive(anon):     1120 kB</span><br><span class="line">Active(file):     696688 kB</span><br><span class="line">Inactive(file):   428800 kB</span><br><span class="line">Unevictable:       70912 kB</span><br><span class="line">Mlocked:            2904 kB</span><br><span class="line">SwapTotal:             0 kB</span><br><span class="line">SwapFree:              0 kB</span><br><span class="line">Dirty:                 0 kB</span><br><span class="line">Writeback:             0 kB</span><br><span class="line">AnonPages:        131376 kB</span><br><span class="line">Mapped:             4224 kB</span><br><span class="line">Shmem:              3888 kB</span><br><span class="line">Slab:              22480 kB</span><br><span class="line">SReclaimable:       6392 kB</span><br><span class="line">SUnreclaim:        16088 kB</span><br><span class="line">KernelStack:        1808 kB</span><br><span class="line">PageTables:          352 kB</span><br><span class="line">NFS_Unstable:          0 kB</span><br><span class="line">Bounce:                0 kB</span><br><span class="line">WritebackTmp:          0 kB</span><br><span class="line">CommitLimit:     1019232 kB</span><br><span class="line">Committed_AS:     201832 kB</span><br><span class="line">VmallocTotal:    8388608 kB</span><br><span class="line">VmallocUsed:       12208 kB</span><br><span class="line">VmallocChunk:    8376400 kB</span><br><span class="line">AnonHugePages:         0 kB</span><br><span class="line">HugePages_Total:       0</span><br><span class="line">HugePages_Free:        0</span><br><span class="line">HugePages_Rsvd:        0</span><br><span class="line">HugePages_Surp:        0</span><br><span class="line">Hugepagesize:       8192 kB</span><br><span class="line">======================= cg0 =====================</span><br><span class="line">UserPages_Mem_size:     8192 MB</span><br><span class="line">UserPages_Conti_Total:  7680 MB</span><br><span class="line">UserPages_Conti_Free:   7680 MB</span><br><span class="line">UserPages_Conti_Used:   0 MB</span><br><span class="line">UserPages_Cross_Size:   0 MB</span><br><span class="line">======================= cg1 =====================</span><br><span class="line">UserPages_Mem_size:     8192 MB</span><br><span class="line">UserPages_Conti_Total:  7680 MB</span><br><span class="line">UserPages_Conti_Free:   7680 MB</span><br><span class="line">UserPages_Conti_Used:   0 MB</span><br><span class="line">UserPages_Cross_Size:   0 MB</span><br><span class="line">======================= cg2 =====================</span><br><span class="line">UserPages_Mem_size:     8192 MB</span><br><span class="line">UserPages_Conti_Total:  7680 MB</span><br><span class="line">UserPages_Conti_Free:   7680 MB</span><br><span class="line">UserPages_Conti_Used:   0 MB</span><br><span class="line">UserPages_Cross_Size:   0 MB</span><br><span class="line">======================= cg3 =====================</span><br><span class="line">UserPages_Mem_size:     8192 MB</span><br><span class="line">UserPages_Conti_Total:  7680 MB</span><br><span class="line">UserPages_Conti_Free:   7680 MB</span><br><span class="line">UserPages_Conti_Used:   0 MB</span><br><span class="line">UserPages_Cross_Size:   0 MB</span><br></pre></td></tr></table></figure>
+<h2 id="runtime相关">Runtime相关</h2>
+<h3 id="从核">从核</h3>
+<p>从核可以直接调用C语言的函数，这点比CUDA Kernel强不少。一个简单的测试程序，发现<code>printf</code>，<code>rand</code>，<code>memset</code>函数可以正常调用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// host.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;athread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">SLAVE_FUN</span><span class="params">(cpe_func)</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello world from MPE.\n&quot;</span>);</span><br><span class="line">    athread_init();</span><br><span class="line">    athread_spawn(cpe_func, <span class="literal">NULL</span>);</span><br><span class="line">    athread_join();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// slave.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;slave.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">cpe_func</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> thread_id;</span><br><span class="line">    thread_id = athread_get_id(<span class="number">-1</span>);</span><br><span class="line">    srand(time(<span class="literal">NULL</span>));</span><br><span class="line">    <span class="keyword">int</span> arr[<span class="number">10</span>], i;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">10</span>; ++i) &#123; arr[i] = rand(); &#125;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;arr[<span class="number">5</span>], <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">int</span>)*<span class="number">3</span>);</span><br><span class="line">    <span class="keyword">if</span>(thread_id==<span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Hello World from CPE. Generating Array:\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">10</span>; ++i) &#123; <span class="built_in">printf</span>(<span class="string">&quot;%d &quot;</span>, arr[i]); &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="奇怪的问题">奇怪的问题</h2>
+<h3 id="函数命名问题">函数命名问题</h3>
+<p>函数名字不要以<code>slave_</code>开头，否则会引发<code>undefined reference to slave_slave_***</code>的错误。从核函数在编译过程中会被重命名为<code>slave_</code>加原名的函数。从编译器内置的一些宏可以看出来这点。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SLAVE_FUN(x)        slave_##x</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> athread_spawn(y,z) __real_athread_spawn(slave_##y,z)</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2020/05/25/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89%E4%B8%8A%E6%9C%BA%E6%91%B8%E7%B4%A2%E8%AE%B0%E5%BD%95/" title="神威太湖之光上机摸索记录">https://nekodaemon.com/2020/05/25/神威太湖之光上机摸索记录/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

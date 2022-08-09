@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace X">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Easy way to debug TensorFlow XLA Compiler using VSCode">
+<meta property="og:url" content="https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace X">
+<meta property="og:locale">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-82.png">
+<meta property="article:published_time" content="2021-08-04T21:26:12.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-82.png">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/","path":"2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/","title":"Easy way to debug TensorFlow XLA Compiler using VSCode"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Easy way to debug TensorFlow XLA Compiler using VSCode | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#preparing-environment"><span class="nav-text">Preparing Environment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compile-the-source-code"><span class="nav-text">Compile the source code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pick-a-unit-test-to-compile"><span class="nav-text">Pick a unit test to compile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fix-broken-dependency-optional"><span class="nav-text">Fix broken dependency (Optional)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configuring-vscode"><span class="nav-text">Configuring VSCode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Easy way to debug TensorFlow XLA Compiler using VSCode
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-04 21:26:12" itemprop="dateCreated datePublished" datetime="2021-08-04T21:26:12+00:00">2021-08-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
+<figure>
+<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="preparing-environment">Preparing Environment</h2>
+<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
+<h2 id="compile-the-source-code">Compile the source code</h2>
+<p>First of all, configure the project and build it.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
+<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a target="_blank" rel="noopener" href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
+<p>As for the bazel build flag,</p>
+<ul>
+<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
+<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
+</ul>
+<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
+<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
+<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
+<p>Let pick a simple test first to validate the code is compiled correctly.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
+<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
+<p>Then pick a test you interest, and repeat the steps above.</p>
+<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
+<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
+<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
+<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="configuring-vscode">Configuring VSCode</h2>
+<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
+<blockquote>
+<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/" title="Easy way to debug TensorFlow XLA Compiler using VSCode">https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

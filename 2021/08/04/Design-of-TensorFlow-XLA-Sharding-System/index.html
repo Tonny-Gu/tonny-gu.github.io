@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Recently, a SOTA sharding approach, GSPMD&#x2F;GShard, was proposed and it provides an intuitive interface to partition a large array on arbitrary dimensions, while utilizing sharding propagation algorithm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Design of TensorFlow XLA Sharding System">
+<meta property="og:url" content="https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Recently, a SOTA sharding approach, GSPMD&#x2F;GShard, was proposed and it provides an intuitive interface to partition a large array on arbitrary dimensions, while utilizing sharding propagation algorithm">
+<meta property="og:locale">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-92.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-93.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-94.png">
+<meta property="article:published_time" content="2021-08-04T21:47:59.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-92.png">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/","path":"2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/","title":"Design of TensorFlow XLA Sharding System"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Design of TensorFlow XLA Sharding System | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#hlosharding-object"><span class="nav-text">HloSharding Object</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#extended-hlo-ir-attribute"><span class="nav-text">Extended HLO IR Attribute</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spmd-partitioner"><span class="nav-text">SPMD Partitioner</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sharding-propagation-algorithm"><span class="nav-text">Sharding Propagation Algorithm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Design of TensorFlow XLA Sharding System
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-08-04 21:47:59" itemprop="dateCreated datePublished" datetime="2021-08-04T21:47:59+00:00">2021-08-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Recently, a SOTA sharding approach, GSPMD/GShard, was proposed and it provides an intuitive interface to partition a large array on arbitrary dimensions, while utilizing sharding propagation algorithms to automatically infer the partitioning strategy for tensors without user-specified sharding specifications. This document introduces the design and the implementation of XLA Sharding System.</p>
+<figure>
+<img data-src="/images/pasted-92.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="hlosharding-object"><code>HloSharding</code> Object</h2>
+<p>First of all, <strong>we need a way to represent sharding specifications</strong> using programming language. XLA designed an object to do such a thing, and this object contains numerous variables and a set of supporting functions to configure itself. Some attributes of <code>HloSharding</code> are listed below.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// File: tensorflow/compiler/xla/service/hlo_sharding.h</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HloSharding</span> &#123;</span></span><br><span class="line">  <span class="keyword">bool</span> replicated_;</span><br><span class="line">  <span class="keyword">bool</span> maximal_;</span><br><span class="line">  <span class="keyword">bool</span> tuple_;</span><br><span class="line">  <span class="keyword">bool</span> manual_;</span><br><span class="line">  <span class="comment">// This field is only used if replicated_ is false. If maximal_ is true, then</span></span><br><span class="line">  <span class="comment">// the field contains a rank 1 array with a single element, which is the</span></span><br><span class="line">  <span class="comment">// device the HLO is assigned to. If maximal_ is false, the field contains an</span></span><br><span class="line">  <span class="comment">// array with the same rank as the corresponding HLO. The dimension sizes of</span></span><br><span class="line">  <span class="comment">// the array describe the number of ways the HLO is partitioned along each</span></span><br><span class="line">  <span class="comment">// dimension. The values of the array specify which device each tile of</span></span><br><span class="line">  <span class="comment">// the HLO is assigned to. The index of each value determines which tile it</span></span><br><span class="line">  <span class="comment">// takes.</span></span><br><span class="line">  <span class="comment">// For example, &#123;&#123;&#123;2, 3&#125;&#125;, &#123;&#123;5, 7&#125;&#125;&#125; (whose ToString representation is</span></span><br><span class="line">  <span class="comment">// &quot;&#123;devices=[2,1,2]2,3,5,7&#125;&quot;), means that dimension 1 is split two way and</span></span><br><span class="line">  <span class="comment">// dimension 3 is split 2 way. Core 5, whose index is [2,1,1] will take the</span></span><br><span class="line">  <span class="comment">// tile that contains the 2nd half of dimension 1 and the 1st half of</span></span><br><span class="line">  <span class="comment">// dimension 3.</span></span><br><span class="line">  Array&lt;int64&gt; tile_assignment_;</span><br><span class="line">  <span class="comment">// Only non-empty when tuple_ is true. If a tuple is empty then one entry is</span></span><br><span class="line">  <span class="comment">// present for the root. This is a flattened list of all the leaf shardings in</span></span><br><span class="line">  <span class="comment">// a tuple shape, by pre-order walk (ShapeTree iterator order).</span></span><br><span class="line">  std::vector&lt;HloSharding&gt; tuple_elements_;</span><br><span class="line">  <span class="comment">// This flag is to support partial replication and partial sharding. If it is</span></span><br><span class="line">  <span class="comment">// true, tile_assignment_ will have an extra dimension in addition to the data</span></span><br><span class="line">  <span class="comment">// shape rank, and the added last dimension represents the subgroups of</span></span><br><span class="line">  <span class="comment">// replications, i.e., elements in slice [..., :] will be replicated.</span></span><br><span class="line">  <span class="keyword">bool</span> replicate_on_last_tile_dim_;</span><br><span class="line">  <span class="comment">// This field is used to track the source of this sharding, usually derived</span></span><br><span class="line">  <span class="comment">// from instructions. Multiple metadata may be populated if sharding is</span></span><br><span class="line">  <span class="comment">// combined with other shardings. Metadata are to not be populated when</span></span><br><span class="line">  <span class="comment">// tuple_ == true and instead metadata should be set on individual tuple</span></span><br><span class="line">  <span class="comment">// elements.</span></span><br><span class="line">  std::vector&lt;OpMetadata&gt; metadata_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>Array&lt;int64&gt; tile_assignment_</code> here is multi-dimensional with arbitrary shape. <code>&#123;devices=[2,1,2]2,3,5,7&#125;</code> means the shape of <code>tile_assignment_</code> is <code>[2,1,2]</code>, while the values are <code>&#123;2,3,5,7&#125;</code>.</p>
+<p><code>std::vector&lt;HloSharding&gt; tuple_elements_</code> probably was designed to specify the sharding specifications of outputs.</p>
+<p><em>I am not aware of what the roles of <code>maximal_</code>, <code>tuple_elements_</code> are. Is there any body know that?</em></p>
+<p>Note that each single object could be shared by multiple instructions. By doing this, the cost of creating and maintaining several instances with the exact same contents could be eliminated.</p>
+<h2 id="extended-hlo-ir-attribute">Extended HLO IR Attribute</h2>
+<p>The original implementation of XLA added the attribute <code>std::shared_ptr&lt;const HloSharding&gt; sharding_</code> to the class <code>xla::HloInstruction</code>, which is declared in <code>tensorflow/compiler/xla/service/hlo_instruction.h</code>. A common usage of this HLO Instruction Attribute is to <strong>declare sharded tensors</strong>. Here is a sample HLO IR code with sharding attributes. Note that the Propagation Algorithm may fill in this attribute for those instructions without it.</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">primitive_computation_add.<span class="number">6</span> &#123;</span><br><span class="line">  parameter.<span class="number">7</span> = <span class="built_in">f32</span>[] parameter(<span class="number">0</span>)</span><br><span class="line">  parameter.<span class="number">8</span> = <span class="built_in">f32</span>[] parameter(<span class="number">1</span>)</span><br><span class="line">  ROOT add.<span class="number">9</span> = <span class="built_in">f32</span>[] add(parameter.<span class="number">7</span>, parameter.<span class="number">8</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ENTRY xmap__lambda_.<span class="number">12</span> &#123;</span><br><span class="line">  constant.<span class="number">2</span> = pred[] constant(<span class="literal">false</span>)</span><br><span class="line">  parameter.<span class="number">1</span> = <span class="built_in">f32</span>[<span class="number">8</span>]&#123;<span class="number">0</span>&#125; parameter(<span class="number">0</span>), parameter_replication=&#123;<span class="literal">false</span>&#125;, sharding=&#123;replicated&#125;</span><br><span class="line">  custom-call.<span class="number">3</span> = <span class="built_in">f32</span>[<span class="number">8</span>]&#123;<span class="number">0</span>&#125; custom-call(parameter.<span class="number">1</span>), custom_call_target=<span class="string">&quot;Sharding&quot;</span>, sharding=&#123;devices=[<span class="number">4</span>]<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;</span><br><span class="line">  sine.<span class="number">4</span> = <span class="built_in">f32</span>[<span class="number">8</span>]&#123;<span class="number">0</span>&#125; sine(custom-call.<span class="number">3</span>)</span><br><span class="line">  constant.<span class="number">5</span> = <span class="built_in">f32</span>[] constant(<span class="number">0</span>)</span><br><span class="line">  reduce.<span class="number">10</span> = <span class="built_in">f32</span>[] reduce(sine.<span class="number">4</span>, constant.<span class="number">5</span>), dimensions=&#123;<span class="number">0</span>&#125;, to_apply=primitive_computation_add.<span class="number">6</span></span><br><span class="line">  ROOT tuple.<span class="number">11</span> = (<span class="built_in">f32</span>[]) tuple(reduce.<span class="number">10</span>), sharding=&#123;&#123;replicated&#125;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Note: this HLO IR code is compiled from this JAX Frontend code</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@jtu.with_mesh(<span class="params">[(<span class="params"><span class="string">&#x27;x&#x27;</span>, <span class="number">4</span></span>)]</span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span>():</span></span><br><span class="line">    f = pjit(<span class="keyword">lambda</span> x: jnp.sin(x).<span class="built_in">sum</span>(),</span><br><span class="line">             in_axis_resources=(P(<span class="string">&#x27;x&#x27;</span>),),</span><br><span class="line">             out_axis_resources=<span class="literal">None</span>)</span><br><span class="line">    x = jnp.arange(<span class="number">8</span>, dtype=jnp.float32)</span><br><span class="line">    f(x)</span><br></pre></td></tr></table></figure>
+<p>This example illustrates a lambda function takes a replicated tensor as the input, and splits this tensor by invoking <code>custom-call</code>, then performs the calculation.</p>
+<h2 id="spmd-partitioner">SPMD Partitioner</h2>
+<p>You might notice that in the previous example, the instructions invoking operators (e.g. reduce.10) don’t contain sharding attributes. That leads to a critical question, <strong>how a regular operator reacts to sharded tensors</strong>. The solution of XLA is introducing SPMD Partitioner, which is mainly responsible for converting a full-sized operator into a partition-sized operator by adding necessary collective communication primitives to lower-layer IR code, and the partitioner also converts the inputs of operators from global tensor symbols with sharding to local tensor symbols without sharding specifications.</p>
+<p>We could find some clues in <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code>.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">TEST_F</span>(SpmdPartitioningTest, DotPartialContracting2) &#123;</span><br><span class="line">  absl::string_view hlo_string = <span class="string">R&quot;(</span></span><br><span class="line"><span class="string">HloModule module</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ENTRY entry &#123;</span></span><br><span class="line"><span class="string">  %lhs = f32[24,100] parameter(0),</span></span><br><span class="line"><span class="string">    sharding=&#123;devices=[1,2,2]0,1,2,3 last_tile_dim_replicate&#125;</span></span><br><span class="line"><span class="string">  %rhs = f32[32,100] parameter(1),</span></span><br><span class="line"><span class="string">    sharding=&#123;devices=[1,2,2]0,1,2,3 last_tile_dim_replicate&#125;</span></span><br><span class="line"><span class="string">  ROOT %dot = f32[24,32] dot(%lhs, %rhs),</span></span><br><span class="line"><span class="string">    lhs_batch_dims=&#123;&#125;, rhs_batch_dims=&#123;&#125;,</span></span><br><span class="line"><span class="string">    lhs_contracting_dims=&#123;1&#125;, rhs_contracting_dims=&#123;1&#125;,</span></span><br><span class="line"><span class="string">    sharding=&#123;devices=[2,1,2]0,2,1,3 last_tile_dim_replicate&#125;</span></span><br><span class="line"><span class="string">&#125;)&quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">TF_ASSERT_OK_AND_ASSIGN</span>(<span class="keyword">auto</span> <span class="keyword">module</span>,</span><br><span class="line">                          <span class="built_in">PartitionComputation</span>(hlo_string, <span class="comment">/*num_devices=*/</span><span class="number">4</span>));</span><br><span class="line">  <span class="built_in">VLOG</span>(<span class="number">1</span>) &lt;&lt; <span class="keyword">module</span>-&gt;<span class="built_in">ToString</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">auto</span> lhs = <span class="built_in">AllOf</span>(op::<span class="built_in">Shape</span>(<span class="string">&quot;f32[24,50]&quot;</span>), op::<span class="built_in">Parameter</span>(<span class="number">0</span>));</span><br><span class="line">  <span class="keyword">auto</span> rhs = <span class="built_in">AllOf</span>(op::<span class="built_in">Shape</span>(<span class="string">&quot;f32[32,50]&quot;</span>), op::<span class="built_in">Parameter</span>(<span class="number">1</span>));</span><br><span class="line">  <span class="keyword">auto</span> dot =</span><br><span class="line">      <span class="built_in">AllOf</span>(op::<span class="built_in">Shape</span>(<span class="string">&quot;f32[12,32]&quot;</span>),</span><br><span class="line">            op::<span class="built_in">Dot</span>(<span class="built_in">AllOf</span>(op::<span class="built_in">Shape</span>(<span class="string">&quot;f32[12,50]&quot;</span>), op::<span class="built_in">DynamicSlice</span>(lhs, _, _)),</span><br><span class="line">                    rhs));</span><br><span class="line">  <span class="keyword">auto</span> root = <span class="keyword">module</span>-&gt;<span class="built_in">entry_computation</span>()-&gt;<span class="built_in">root_instruction</span>();</span><br><span class="line">  <span class="built_in">EXPECT_THAT</span>(root, op::<span class="built_in">AllReduce</span>(dot));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Two inputs, <code>lhs</code> and <code>rhs</code>, are tensors partitioned in the way that the figure describes. Thus, after partitioning the computation, the <code>lhs</code> is unwarpped, and its shape changed from <code>f32[24, 100]</code> to <code>f32[24,50]</code>. And at the end of file, <code>AllReduce</code> was added to collect the partial results.</p>
+<figure>
+<img data-src="/images/pasted-93.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="sharding-propagation-algorithm">Sharding Propagation Algorithm</h2>
+<p>The system should be able to figure out an optimal sharding specifications for the remaining tensors without user’s annotations. An ideal partitioning plan can reduce the communication amount, reduce memory footprint, and improve the performance.</p>
+<figure>
+<img data-src="/images/pasted-94.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>Some unit tests written in <code>tensorflow/compiler/xla/service/sharding_propagation_test.cc</code> are intuitive examples.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">TEST_P</span>(ParameterizedMetadataTest, BroadcastForwardPass) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span>* <span class="keyword">const</span> hlo_string = <span class="string">R&quot;(</span></span><br><span class="line"><span class="string">HloModule module</span></span><br><span class="line"><span class="string">ENTRY %broadcast &#123;</span></span><br><span class="line"><span class="string">  %param0 = f32[3,2048,2048]&#123;2,1,0&#125; parameter(0),</span></span><br><span class="line"><span class="string">    sharding=&#123;devices=[1,2,2]0,1,2,3 metadata=&#123;op_name=&quot;a&quot;&#125;&#125;</span></span><br><span class="line"><span class="string">  %broadcast = f32[3,2048,2048,3]&#123;3,2,1,0&#125; broadcast(%param0), dimensions=&#123;0,1,2&#125;</span></span><br><span class="line"><span class="string">  ROOT %copy = f32[3,2048,2048,3]&#123;3,2,1,0&#125; copy(%broadcast)</span></span><br><span class="line"><span class="string">&#125;)&quot;</span>;</span><br><span class="line">  <span class="built_in">TF_ASSERT_OK_AND_ASSIGN</span>(<span class="keyword">auto</span> <span class="keyword">module</span>,</span><br><span class="line">                          <span class="built_in">ParseAndReturnVerifiedModule</span>(hlo_string));</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">GetParam</span>().clear_metadata) &#123;</span><br><span class="line">    <span class="built_in">ClearMetadata</span>(<span class="keyword">module</span>.<span class="built_in">get</span>());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">TF_ASSERT_OK_AND_ASSIGN</span>(</span><br><span class="line">      <span class="keyword">bool</span> changed,</span><br><span class="line">      <span class="built_in">ShardingPropagation</span>(<span class="comment">/*is_spmd=*/</span><span class="literal">false</span>, <span class="built_in">GetParam</span>().propagate_metadata)</span><br><span class="line">          .<span class="built_in">Run</span>(<span class="keyword">module</span>.<span class="built_in">get</span>()));</span><br><span class="line">  <span class="built_in">EXPECT_TRUE</span>(changed);</span><br><span class="line">  <span class="keyword">auto</span>* instruction = <span class="built_in">FindInstruction</span>(<span class="keyword">module</span>.<span class="built_in">get</span>(), <span class="string">&quot;broadcast&quot;</span>);</span><br><span class="line">  <span class="built_in">ASSERT_NE</span>(instruction, <span class="literal">nullptr</span>);</span><br><span class="line">  <span class="built_in">EXPECT_THAT</span>(instruction, op::<span class="built_in">Sharding</span>(<span class="string">&quot;&#123;devices=[1,2,2,1]0,1,2,3&#125;&quot;</span>));</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">GetParam</span>().propagate_metadata &amp;&amp; !<span class="built_in">GetParam</span>().clear_metadata) &#123;</span><br><span class="line">    <span class="built_in">EXPECT_THAT</span>(instruction-&gt;<span class="built_in">sharding</span>(),</span><br><span class="line">                <span class="built_in">ShardingMetadata</span>(&#123;<span class="built_in">CreateMetadata</span>(<span class="string">&quot;a&quot;</span>)&#125;));</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">EXPECT_THAT</span>(instruction-&gt;<span class="built_in">sharding</span>(), <span class="built_in">ShardingMetadata</span>(&#123;&#125;));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>It clearly shows that the system inferred the sharding specification of <code>broadcast</code> is <code>&#123;devices=[1,2,2,1]0,1,2,3&#125;</code>according to its input with the attribute <code>&#123;devices=[1,2,2]0,1,2,3&#125;</code>. Note that this test is called <code>BroadcastForwardPass</code>, there also exists a test named <code>BroadcastBackwardPass</code>, which is to say the propagation should be on both directions.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><p>GShard: https://arxiv.org/abs/2006.16668</p></li>
+<li><p>GSPMD: https://arxiv.org/abs/2105.04663</p></li>
+<li><p>Julia DistributedArrays.jl: https://juliaparallel.github.io/DistributedArrays.jl/latest/index.html</p></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/" title="Design of TensorFlow XLA Sharding System">https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

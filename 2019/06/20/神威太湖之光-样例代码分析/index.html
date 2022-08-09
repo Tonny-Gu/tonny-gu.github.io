@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Example 1: MPI-Athread Clang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="神威太湖之光 样例代码分析">
+<meta property="og:url" content="https://nekodaemon.com/2019/06/20/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E6%A0%B7%E4%BE%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Example 1: MPI-Athread Clang">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-06-20T13:09:00.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.931Z">
+<meta property="article:author" content="NekoDaemon">
+<meta property="article:tag" content="HPC">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2019/06/20/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E6%A0%B7%E4%BE%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2019/06/20/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E6%A0%B7%E4%BE%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/","path":"2019/06/20/神威太湖之光-样例代码分析/","title":"神威太湖之光 样例代码分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>神威太湖之光 样例代码分析 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#example-1-mpi-athread-clang"><span class="nav-text">Example 1: MPI-Athread Clang</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#master.c"><span class="nav-text">master.c：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E8%AE%A1%E7%AE%97%E8%A7%84%E6%A8%A1"><span class="nav-text">定义计算规模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E%E4%BB%8E%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="nav-text">声明从核函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E6%97%B6%E9%97%B4"><span class="nav-text">获取当前时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96mpi%E7%8E%AF%E5%A2%83"><span class="nav-text">初始化MPI环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96a%E5%92%8Cb%E6%95%B0%E7%BB%84"><span class="nav-text">初始化a和b数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%B2%E8%A1%8C%E8%AE%A1%E7%AE%97%E5%B9%B6%E7%BB%9F%E8%AE%A1%E6%97%B6%E9%97%B4"><span class="nav-text">串行计算，并统计时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97%E9%83%A8%E5%88%86"><span class="nav-text">并行计算部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%97%ADmpi-athread%E7%8E%AF%E5%A2%83"><span class="nav-text">关闭MPI Athread环境</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#slave.c"><span class="nav-text">slave.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%A3%B0%E6%98%8E"><span class="nav-text">变量声明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E9%83%A8%E5%88%86"><span class="nav-text">计算部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%8A%E8%AE%A1%E7%AE%97%E7%BB%93%E6%9E%9C%E4%BC%A0%E5%9B%9E%E4%B8%BB%E5%AD%98"><span class="nav-text">把计算结果传回主存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%91%BD%E4%BB%A4"><span class="nav-text">编译命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E8%BF%90%E8%A1%8C"><span class="nav-text">提交运行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#example-2-mpi-athread-c"><span class="nav-text">Example 2: MPI-Athread C++</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#master.c-1"><span class="nav-text">master.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%A6%E5%AE%9A%E4%BB%8E%E6%A0%B8%E5%87%BD%E6%95%B0%E6%8E%A5%E5%8F%A3"><span class="nav-text">约定从核函数接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97%E9%83%A8%E5%88%86-1"><span class="nav-text">并行计算部分</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#slave.c-1"><span class="nav-text">slave.c</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%91%BD%E4%BB%A4-1"><span class="nav-text">编译命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E5%91%BD%E4%BB%A4"><span class="nav-text">提交命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#example-4-mpi-athread-allshare"><span class="nav-text">Example 4: MPI-Athread Allshare</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#master.c-2"><span class="nav-text">master.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E6%95%B0%E6%8D%AE%E8%A7%84%E6%A8%A1"><span class="nav-text">定义数据规模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="nav-text">声明变量和接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E5%88%9D%E5%A7%8B%E5%8C%96%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4"><span class="nav-text">分配&amp;初始化内存空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%89%E5%BE%85%E5%85%B6%E4%BB%96mpi%E7%BA%BF%E7%A8%8B%E5%AE%8C%E6%88%90%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-text">等待其他MPI线程完成初始化</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#example-5-mpi-athread-allshare-master"><span class="nav-text">Example 5: MPI-Athread Allshare-Master</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2019/06/20/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E6%A0%B7%E4%BE%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          神威太湖之光 样例代码分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-06-20 13:09:00" itemprop="dateCreated datePublished" datetime="2019-06-20T13:09:00+00:00">2019-06-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="example-1-mpi-athread-clang">Example 1: MPI-Athread Clang</h1>
+<h2 id="master.c">master.c：</h2>
+<h3 id="定义计算规模">定义计算规模</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define J 64</span><br><span class="line">#define I 1000</span><br></pre></td></tr></table></figure>
+<h3 id="声明从核函数">声明从核函数</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">extern</span> <span class="title">SLAVE_FUN</span><span class="params">(func)</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这一句对应<code>slave.c</code>中的 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;...&#125; ```</span><br><span class="line"></span><br><span class="line">### 创建数组</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line"><span class="keyword">double</span> a[J][I], b[J][I], c[J][I], cc[J][I];</span><br><span class="line"><span class="keyword">double</span> check[J];</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> counter[J];</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<blockquote>
+<p>因为这个程序运行在主核上，声明变量无修饰，故该数组实际存放在<code>用户共享连续</code>空间中<a target="_blank" rel="noopener" href="http://tonny.icu/2019/06/19/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F/">更多信息</a></p>
+</blockquote>
+<h3 id="获取当前时间">获取当前时间</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="title">rpcc</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> time;</span><br><span class="line">        <span class="keyword">asm</span>(<span class="string">&quot;rtc %0&quot;</span></span><br><span class="line">            : <span class="string">&quot;=r&quot;</span>(time)</span><br><span class="line">            :);</span><br><span class="line">        <span class="keyword">return</span> time;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是一段内联汇编的炫技代码，看看就好了，反正申威也没给指令手册</p>
+<h3 id="初始化mpi环境">初始化MPI环境</h3>
+<p>跳过一段变量的定义，看到main函数里</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">int</span> myid, numprocs;</span><br><span class="line"></span><br><span class="line">        MPI_Init(&amp;argc, &amp;argv);</span><br><span class="line">        MPI_Comm_size(MPI_COMM_WORLD, &amp;numprocs);</span><br><span class="line">        MPI_Comm_rank(MPI_COMM_WORLD, &amp;myid);</span><br></pre></td></tr></table></figure>
+<p>主核输出信息，并刷新缓冲区保证文字能被显示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        <span class="keyword">if</span> (myid == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;!!!!!! C-EXAMPLE TOTAL PROCS is %d !!!!!!\n&quot;</span>, numprocs);</span><br><span class="line">                fflush(<span class="literal">NULL</span>);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="初始化a和b数组">初始化a和b数组</h3>
+<blockquote>
+<p><code>master.c</code>中定义全局变量 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> a[J][I], b[J][I], c[J][I], cc[J][I]; ```</span><br><span class="line"></span><br><span class="line">```<span class="function">c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; J; j++)</span><br><span class="line">               <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; I; i++)</span><br><span class="line">               &#123;</span><br><span class="line">                       a[j][i] = (i + j + <span class="number">0.5</span>);</span><br><span class="line">                       b[j][i] = (i + j + <span class="number">1.0</span>);</span><br><span class="line">               &#125;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h3 id="串行计算并统计时间">串行计算，并统计时间</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        st = rpcc();</span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; J; j++)</span><br><span class="line">                <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; I; i++)</span><br><span class="line">                &#123;</span><br><span class="line">                        cc[j][i] = (a[j][i]) / (b[j][i]);</span><br><span class="line">                &#125;</span><br><span class="line">        ed = rpcc();</span><br></pre></td></tr></table></figure>
+<h3 id="并行计算部分">并行计算部分</h3>
+<p>好了，关键的部分开始了</p>
+<ul>
+<li>初始化Athread库</li>
+<li>使用从核进行计算</li>
+<li>等待从核计算完毕</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        athread_init();</span><br><span class="line">        </span><br><span class="line">        st = rpcc();</span><br><span class="line"></span><br><span class="line">        athread_spawn(func, <span class="number">0</span>);</span><br><span class="line">        athread_join();</span><br><span class="line"></span><br><span class="line">        ed = rpcc();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>athread_spawn</code>创建线程组</p>
+<p>参数说明: <code>start_routine fpc</code>函数指针 <code>void * arg</code>函数 <code>f</code> 的参数起始地址</p>
+</blockquote>
+<p>因为<code>fun</code>没有参数，干脆指定个0</p>
+<blockquote>
+<p><code>athread_join</code>等待线程组终止</p>
+</blockquote>
+<blockquote>
+<p>在<code>slave.c</code>中, <code>func</code>的定义如下 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">       ...</span><br><span class="line">       my_id = athread_get_id(<span class="number">-1</span>);</span><br><span class="line">       athread_get(...&amp;a[my_id][<span class="number">0</span>], &amp;a_slave[<span class="number">0</span>]...);</span><br><span class="line">       athread_get(...&amp;b[my_id][<span class="number">0</span>], &amp;b_slave[<span class="number">0</span>]...);</span><br><span class="line">       ...</span><br><span class="line">       <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; I; i++)</span><br><span class="line">       &#123;</span><br><span class="line">               c_slave[i] = a_slave[i] / b_slave[i];</span><br><span class="line">       &#125;</span><br><span class="line">       ...</span><br><span class="line">       athread_put(...&amp;c_slave[<span class="number">0</span>], &amp;c[my_id][<span class="number">0</span>]..);</span><br><span class="line">&#125; ```</span><br><span class="line"></span><br><span class="line">很显然，计算的工作被全部抛给了从核</span><br><span class="line"></span><br><span class="line">### 计算Checksum</span><br><span class="line"></span><br><span class="line">```<span class="function">c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">       checksum = <span class="number">0.0</span>;</span><br><span class="line">       checksum2 = <span class="number">0.0</span>;</span><br><span class="line">       <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; J; j++)</span><br><span class="line">               <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; I; i++)</span><br><span class="line">               &#123;</span><br><span class="line">                       checksum = checksum + c[j][i];</span><br><span class="line">                       checksum2 = checksum2 + cc[j][i];</span><br><span class="line">               &#125;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h3 id="关闭mpi-athread环境">关闭MPI Athread环境</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        athread_halt();</span><br><span class="line">        MPI_Finalize();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="slave.c">slave.c</h2>
+<h3 id="变量声明">变量声明</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__thread_local <span class="keyword">volatile</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> get_reply, put_reply;</span><br><span class="line">__thread_local <span class="keyword">volatile</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> start, end;</span><br><span class="line"></span><br><span class="line">__thread_local <span class="keyword">int</span> my_id;</span><br><span class="line"></span><br><span class="line">__thread_local <span class="keyword">double</span> a_slave[I], b_slave[I], c_slave[I];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>声明<code>volatile</code>的变量可能指向一个随时都能被计算机系统其他部分修改的地址，例如一个连接到中央处理器的设备的硬件寄存器，上面的代码永远检测不到这样的修改。如果不使用<code>volatile</code>关键字，编译器将假设当前程序是系统中唯一能改变这个值部分（这是到目前为止最广泛的一种情况）。 为了阻止编译器像上面那样优化代码，需要使用<code>volatile</code>关键字 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Volatile%E5%8F%98%E9%87%8F">更多信息</a></p>
+</blockquote>
+<blockquote>
+<p><code>__thread_local</code>指把变量扔到LDM里(Scratch Pad Memory) <a target="_blank" rel="noopener" href="http://tonny.icu/2019/06/19/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F/">更多信息</a></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">double</span> a[J][I], b[J][I], c[J][I];</span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> counter[<span class="number">64</span>];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在<code>master.c</code>中声明了a,b,c数组 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> a[J][I], b[J][I], c[J][I], cc[J][I];</span><br><span class="line"><span class="keyword">double</span> check[J];</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> counter[J]; ```</span><br><span class="line"></span><br><span class="line">[Extern关键字的更多信息](https:<span class="comment">//zh.wikipedia.org/wiki/%E5%A4%96%E9%83%A8%E5%8F%98%E9%87%8F)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 从主存中分割数据并储存到LDM</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line"><span class="keyword">void</span> func()</span><br><span class="line">&#123;</span><br><span class="line">       <span class="keyword">int</span> i, j;</span><br><span class="line"></span><br><span class="line">       my_id = athread_get_id(<span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">       get_reply = <span class="number">0</span>;</span><br><span class="line">       athread_get(PE_MODE, &amp;a[my_id][<span class="number">0</span>], &amp;a_slave[<span class="number">0</span>], I * <span class="number">8</span>, &amp;get_reply, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">       athread_get(PE_MODE, &amp;b[my_id][<span class="number">0</span>], &amp;b_slave[<span class="number">0</span>], I * <span class="number">8</span>, &amp;get_reply, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">while</span>(get_reply!=<span class="number">2</span>);</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<blockquote>
+<p><code>athread_get_id</code>获得线程逻辑标识号</p>
+</blockquote>
+<blockquote>
+<p><code>athread_get</code>运算核心<code>局存LDM</code>接收<code>主存MEM</code>数据</p>
+<p>参数说明: <code>dma_mode mode</code>DMA<code>传输命令模式</code>； <code>void *src</code>DMA传输<code>主存源地址</code>； <code>void *dest</code>DMA传输<code>本地局存目标地址</code>； <code>int len</code>DMA传输<code>数据量</code>，以字节为单位； <code>void *reply</code>DMA传输<code>回答字地址</code>，必须为局存地址，地址4B对界； <code>char mask</code>DMA传输<code>广播有效向量</code>，有效粒度为核组中<code>一行</code>，某位为<code>1</code>表示对应的<code>行传输有效</code>，作用于<code>广播模式</code>和<code>广播行模式</code>； <code>int stride</code>主存<code>跨步</code>，以字节为单位； <code>int bsize</code>行集合模式下，必须配置，用于指示在每个运算核心上的<code>数据粒度大小</code>；其它模式下，在DMA跨步传输时有效，表示DMA传输的跨步向量块大小，以字节为单位。</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="http://tonny.icu/2019/06/19/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F/">关于DMA模式的更多信息</a></p>
+<p>这里可以看出来，DMA传输用了最简单的<code>PE_MODE</code>，也就是自己单干，传输的时候不管其他从核的模式，只把主存上的两行数据(a, b各一行)复制到LDM上。</p>
+<p><code>I*8</code>，其实就是因为a, b是double类型的，double是64bit长，也就是8byte长，<code>I*8</code>就是一行double(I个变量)实际占用的空间(byte为单位)</p>
+<p>最后一句的<code>get_reply</code>，实际上是DMA传输完成后会给<code>get_reply</code>自动加上1，这个while循环就是在等待DMA传输完成</p>
+<h3 id="计算部分">计算部分</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;I;i++)&#123;</span><br><span class="line">                c_slave[i]=a_slave[i]/b_slave[i];</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>这里没啥好看的</p>
+<h3 id="把计算结果传回主存">把计算结果传回主存</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        put_reply=<span class="number">0</span>;</span><br><span class="line">        athread_put(PE_MODE,&amp;c_slave[<span class="number">0</span>],&amp;c[my_id][<span class="number">0</span>],I*<span class="number">8</span>,&amp;put_reply,<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">while</span>(put_reply!=<span class="number">1</span>);	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>athread_put</code>运算核心<code>局存LDM</code>往<code>主存MEM</code>发送数据，不支持<code>广播模式</code>和<code>广播行模式</code></p>
+<p>参数说明: <code>dma_mode mode</code>DMA<code>传输命令模式</code>； <code>void *src</code>DMA传输<code>主存源地址</code>； <code>void *dest</code>DMA传输<code>本地局存目标地址</code>； <code>int len</code>DMA传输<code>数据量</code>，以字节为单位； <code>void *reply</code>DMA传输<code>回答字地址</code>，必须为局存地址，地址4B对界； <code>char mask</code>DMA传输<code>广播有效向量</code>，有效粒度为核组中<code>一行</code>，某位为<code>1</code>表示对应的<code>行传输有效</code>，作用于<code>广播模式</code>和<code>广播行模式</code>； <code>int stride</code>主存<code>跨步</code>，以字节为单位； <code>int bsize</code>行集合模式下，必须配置，用于指示在每个运算核心上的<code>数据粒度大小</code>；其它模式下，在DMA跨步传输时有效，表示DMA传输的跨步向量块大小，以字节为单位。</p>
+</blockquote>
+<p>这参数表其实是一样的，<code>put_reply</code>，因为只有一次DMA操作，所以只需要等待到其值为1的时候</p>
+<h3 id="编译命令">编译命令</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sw5cc -host -I/usr/sw-mpp/mpi2/include -c master.c</span><br><span class="line">sw5cc -slave -c slave.c</span><br><span class="line">mpicc master.o slave.o -o example-c</span><br></pre></td></tr></table></figure>
+<p>注意主从核程序分开编译，然后用mpicc链接(ld乙烷)</p>
+<h3 id="提交运行">提交运行</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bsub -b -I -q q_sw_expr -n 2 -cgsp 64 -host_stack 256 -share_size 4096 ./example-c</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>-I</code>选项表示提交交互式作业，使作业输出在作业提交窗口； <code>-b</code>表示从核函数栈变量放在从核局部存储上，该选项为获取加速性能必须的提交选项； <code>-q</code>向指定的队列中提交作业； <code>-n</code>指定需要的所有主核数； <code>-cgsp</code>指定每个核组内需要的从核个数，指定时该参数必须&lt;=64； <code>-share_size</code>指定核组共享空间大小，一般最大可以用到7600MB； <code>-host_stack</code>指定主核栈空间大小，默认为8M，一般设置为128MB以上。</p>
+</blockquote>
+<h1 id="example-2-mpi-athread-c">Example 2: MPI-Athread C++</h1>
+<h2 id="master.c-1">master.c</h2>
+<p>其实这个与Example 1的区别不大</p>
+<h3 id="约定从核函数接口">约定从核函数接口</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;athread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">slave_func</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>extern "C"的真实目的是实现类C和C++的混合编程。在C++源文件中的语句前面加上extern "C"，表明它按照类C的编译和连接规约来编译和连接，而不是C++的编译的连接规约。这样在类C的代码中就可以调用C++的函数or变量等。 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/skynet/archive/2010/07/10/1774964.html">更多信息</a></p>
+</blockquote>
+<h3 id="并行计算部分-1">并行计算部分</h3>
+<blockquote>
+<p>Example 1下面这句代码 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">athread_spawn(func, <span class="number">0</span>); ```</span><br><span class="line"></span><br><span class="line">被替换成了</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line">__real_athread_spawn((<span class="keyword">void</span> *)slave_func,<span class="number">0</span>);</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h2 id="slave.c-1">slave.c</h2>
+<p>因为从核只支持C语言，所以这里的<code>slave.c</code>文件内容其实和Example 1是一样的</p>
+<h2 id="编译命令-1">编译命令</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sw5CC -host -I/usr/sw-mpp/mpi2/include -c master.cpp</span><br><span class="line">sw5cc -slave -c slave.c</span><br><span class="line">mpiCC master.o slave.o -lstdc++ -o example-cpp</span><br></pre></td></tr></table></figure>
+<p>注意一个坑爹的地方，在神威上，cc指C语言编译器，CC是C++的编译器，嗯就是大小写的区别</p>
+<h2 id="提交命令">提交命令</h2>
+<p>一样一样的，就是这次要运行example-cpp文件而不是example-c</p>
+<h1 id="example-4-mpi-athread-allshare">Example 4: MPI-Athread Allshare</h1>
+<p>Example 3是Fortran，暂时跳过不看</p>
+<h2 id="master.c-2">master.c</h2>
+<h3 id="定义数据规模">定义数据规模</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DIM_I 1024 </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DIM_J 1024</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DIM_K 512</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> J 64</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> I 1000</span></span><br></pre></td></tr></table></figure>
+<h3 id="声明变量和接口">声明变量和接口</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> a1[J][I], b1[J][I], c1[J][I], cc1[J][I];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> *a, *b, *c, *d;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> sum_total, size1;</span><br><span class="line">        ...</span><br><span class="line">        <span class="function"><span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">slave_func</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="分配初始化内存空间">分配&amp;初始化内存空间</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        size1 = DIM_I * DIM_J * DIM_K;</span><br><span class="line">        a = (<span class="keyword">unsigned</span> <span class="keyword">long</span> *)<span class="built_in">malloc</span>(size1 * <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>));</span><br><span class="line">        b = (<span class="keyword">unsigned</span> <span class="keyword">long</span> *)<span class="built_in">malloc</span>(size1 * <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>));</span><br><span class="line">        c = (<span class="keyword">unsigned</span> <span class="keyword">long</span> *)<span class="built_in">malloc</span>(size1 * <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>));</span><br><span class="line">        d = (<span class="keyword">unsigned</span> <span class="keyword">long</span> *)<span class="built_in">malloc</span>(size1 * <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>));</span><br></pre></td></tr></table></figure>
+<p>size1 = 512M</p>
+<p>sizeof(ulong) = 8Byte</p>
+<p>a, b, c, d每个分配512M*8B=4GB的内存，属实嚣张</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; size1; i++)</span><br><span class="line">        &#123;</span><br><span class="line">                a[i] = <span class="number">1</span>;</span><br><span class="line">                b[i] = <span class="number">2</span>;</span><br><span class="line">                c[i] = <span class="number">3</span>;</span><br><span class="line">                d[i] = <span class="number">4</span>;</span><br><span class="line">                sum_total = sum_total + a[i] + b[i] / <span class="number">2</span> + c[i] / <span class="number">3</span> + d[i] / <span class="number">4</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        sum_total = sum_total / <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<p>a, b, c, d全部初始化为1, 2, 3, 4, 然后<code>sum_total</code>统计4个数组总共有多少个变量，除4就意味着1个数组有多少个变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        <span class="keyword">if</span> (sum_total == size1)</span><br><span class="line">        &#123;</span><br><span class="line">                size1 = <span class="number">4</span> * <span class="number">8</span> * size1 / (<span class="number">1024</span> * <span class="number">1024</span> * <span class="number">1024</span>);                        <span class="comment">/* a/b/c/d size is 4GB(8*512*1024*1024)*/</span></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;Process %d Memery size is more than: %dGB \n&quot;</span>, myid, size1); <span class="comment">/*total size is 4*4GB=16GB*/</span></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>不太清楚为什么要比较<code>sum_total</code>和<code>size1</code>，这两个应该是一样的啊，否则就Rumtime Error了</p>
+<h3 id="等待其他mpi线程完成初始化">等待其他MPI线程完成初始化</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123; ...</span><br><span class="line">        MPI_Barrier(MPI_COMM_WORLD);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>MPI_Barrier</code>阻塞线程，直到Communicator范围内所有线程都执行完Barrier前的程序<a target="_blank" rel="noopener" href="https://www.mpich.org/static/docs/latest/www3/MPI_Barrier.html">更多信息</a></p>
+</blockquote>
+<p>说起来你可能不信，下面的程序和Example 1真的是一毛一样，也就是说创建的abcd数组没有任何luan用，这个程序大概就是告诉你如何开这么大的内存空间</p>
+<h1 id="example-5-mpi-athread-allshare-master">Example 5: MPI-Athread Allshare-Master</h1>
+<p>不说了，这个其实就是给MPI第0线程开了个比其他线程都大的数组，其他和Example 4都是一样的</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>Tonny
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2019/06/20/%E7%A5%9E%E5%A8%81%E5%A4%AA%E6%B9%96%E4%B9%8B%E5%85%89-%E6%A0%B7%E4%BE%8B%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/" title="神威太湖之光 样例代码分析">https://nekodaemon.com/2019/06/20/神威太湖之光-样例代码分析/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/HPC/" rel="tag"># HPC</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenWRT路由器加速Switch联机的方案">
+<meta property="og:url" content="https://nekodaemon.com/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。">
+<meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif">
+<meta property="og:image" content="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-63.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-64.png">
+<meta property="article:published_time" content="2021-03-02T00:37:09.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/","path":"2021/03/02/OpenWRT路由器加速Switch联机的方案/","title":"OpenWRT路由器加速Switch联机的方案"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OpenWRT路由器加速Switch联机的方案 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E"><span class="nav-text">声明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nat-type"><span class="nav-text">NAT Type</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E9%80%9F%E7%9A%84%E6%80%9D%E8%B7%AF"><span class="nav-text">加速的思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dmz%E6%B3%95"><span class="nav-text">DMZ法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#http%E4%BB%A3%E7%90%86%E6%B3%95"><span class="nav-text">HTTP代理法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%8F%E6%98%8E%E4%BB%A3%E7%90%86%E6%B3%95"><span class="nav-text">透明代理法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E9%80%8F%E6%98%8E%E4%BB%A3%E7%90%86"><span class="nav-text">部署透明代理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-text">软件的选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="nav-text">服务端配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="nav-text">路由器配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%BF%E6%8D%A2%E8%B7%AF%E7%94%B1%E5%99%A8v2ray%E7%89%88%E6%9C%AC"><span class="nav-text">替换路由器V2Ray版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE"><span class="nav-text">验证配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0%E5%BC%BA%E7%83%88%E5%BB%BA%E8%AE%AE%E5%8E%BB%E7%9C%8B%E7%9C%8B"><span class="nav-text">参考文章（强烈建议去看看）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenWRT路由器加速Switch联机的方案
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-03-02 00:37:09" itemprop="dateCreated datePublished" datetime="2021-03-02T00:37:09+00:00">2021-03-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Switch的NAT Type是一个很迷惑的东西，因为似乎没有人能够解释清楚NAT Type的每个类别对应什么意思，又会有什么影响，但是这玩意似乎又能决定一些游戏能否成功联机，比如喷喷。网络上什么说法都有，不过经过我一段时间的摸索，终于理解一丝丝Switch联机的秘密，并找到了不依靠商用加速器提升NAT Type的方法。</p>
+<h2 id="声明">声明</h2>
+<p>这篇文章适合对计算机网络有一定了解的（至少得知道NAT，TCP，UDP这些词），乐于请教搜索引擎，也有兴趣和能力部署爬墙工具的玩家，因为大家都知道的原因，本文将不会包含手把手部署爬墙工具的内容。实施这个方案也需要时间，耐心和勇气，有可能在部署过程中就把家里网弄塌了，而且大概还是要花点钱，折腾完了发现还是商用加速器香。</p>
+<h2 id="nat-type">NAT Type</h2>
+<p>一般来说，NAT Type可以分为很多种，最经典的分类是RFC 3489里的，其中最受限的是对称形（Symmetric），最开放的是完全锥形（Full Cone）（注：无NAT的公网也可以被认为是完全锥形网络），简单来说就是联机双方网络受限程度越重，双方能够直接通信的可能性越小，也就是UDP打洞的成功率越低，因此NAT类型会对某些游戏的联机产生影响。<del>这里还是得喷任天堂，明明只要像CF一样弄个公共服务器辅助双方的通信就没这么多破事了，就算双方都是对称形都没关系。</del></p>
+<p>根据我的观察和网上的资料，Switch的NAT Type A差不多等同于RFC 3489中定义的<strong>完全锥形（Full Cone）</strong>。不过很遗憾，出于安全考虑，<del>以及封杀P2P的需要</del>，大部分国内网络别说各种受限的锥形了，基本上都是对称形，大多数玩家裸连都能喜提一个Type C或者D。还好，拯救对称形网络是完全可行的。</p>
+<figure>
+<img data-src="https://user-images.githubusercontent.com/63339210/107102123-5ed9d900-6811-11eb-9c00-6165ed9c18a2.gif" alt="img" /><figcaption>img</figcaption>
+</figure>
+<h2 id="加速的思路">加速的思路</h2>
+<p>通常网上常见的思路有两种，<del>DMZ法</del>，HTTP代理法，和透明代理法。<strong>这篇文章是基于透明代理的思路实现Switch联机加速</strong>。</p>
+<h3 id="dmz法"><del>DMZ法</del></h3>
+<p>这种方法通常没什么luan用，能通过DMZ提升NAT Type，仅适用于以下情况：</p>
+<ul>
+<li>运营商（ISP）给你家整了公网IP地址</li>
+<li>你给你家整了路由器</li>
+<li>同时路由器的防火墙设置比较严格</li>
+</ul>
+<p>考虑到绝大部分的人拿不到公网IP地址，这方法几乎不适用于绝大部分人群。就算有你家有公网IP地址，考虑到一般情况下你的数据包都会走稀烂的国际出口，你的Switch也不能稳定连接到其他玩家的设备。</p>
+<h3 id="http代理法">HTTP代理法</h3>
+<p>这个方法有一点luan用，确实能加速下载游戏（因为下载是TCP通信），但不能提升NAT Type，原因非常简单，<strong>HTTP代理不能处理UDP包</strong>，也就是对于一些游戏来说，开和没开代理没有任何区别，因为那部分游戏的联机依赖UDP通信。</p>
+<h3 id="透明代理法">透明代理法</h3>
+<p>这个基本上就是最后的大招了。参考下图，电脑手机游戏机的数据包其实是先发送给网关（Gateway）来处理（一般路由器充当了网关Gateway，交换机Switch，和猫Modem），也就是说<strong>网关会拿到所有的数据，包括TCP包和UDP包</strong>。</p>
+<p>已知所有问题都是因为NAT，缺少公网IP造成的，那么如果我们刚好有一个有公网IP地址的VPS，能不能让Switch借用我们的VPS服务器的公网IP地址当作自己的IP地址完成通信？「借用身份」这个思想，其实就是「代理」这个词的含义，最初用于保护隐私，只不过我们通常用代理去干了一些别的事情。</p>
+<p>因此，<strong>这篇文章的主要就是让你折腾一个透明代理</strong>，所谓透明代理，在这篇文章里就是路由器拿着Switch的数据包，先传送到VPS上，以VPS的公网IP地址完成收发，而不是直接用路由器的IP地址收发。</p>
+<p>题外话，我还购买了腾讯加速器的服务，它要求修改Switch上的网关地址，本质上也是一种透明代理，而且也能提升到Type A，<del>不过感觉只有SVIP才能保证喷喷不掉线</del>。</p>
+<figure>
+<img data-src="https://www.globalspec.com/ImageRepository/LearnMore/20164/556af08d5e43aa768260f9e589dc547f-30246b5198cb214841beb88cefade318458a.png" alt="Network Diagram with Gateway Server via HowToForge" /><figcaption>Network Diagram with Gateway Server via HowToForge</figcaption>
+</figure>
+<h2 id="部署透明代理">部署透明代理</h2>
+<p>可能你会说，说了大半天，不就是要上透明代理嘛，这种教程到处都是。确实，不过这篇文章不会过多的深入配置的细节。</p>
+<h3 id="软件的选择">软件的选择</h3>
+<p>一般的透明代理常用以下几种软件：</p>
+<ul>
+<li>Shadowsocks系：包括SS，SSR，SSRR等等</li>
+<li>V2Ray系：包括V2Ray，V2Fly，和Xray</li>
+<li>Trojan</li>
+</ul>
+<p>我个人倾向于使用V2Ray系，可玩性非常高，支持的协议非常的全面，同时一些分支（如Xray）迭代的速度非常快，大量引入新特性。此外，据Xray作者所述，V2Ray原版UDP代理的实现一言难尽，可以欣赏这篇文章<a target="_blank" rel="noopener" href="https://v2xtls.org/进阶必读：代理协议-udp-全方位透彻解析/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a>感受Xray作者的无奈。所以本文将会使用<strong>Xray</strong>这个实现，而不是原版V2Ray。</p>
+<p>Shadowsocks系和Trojan当然没啥问题，只不过本文不会介绍它罢了。</p>
+<h3 id="服务端配置">服务端配置</h3>
+<p>略，可参考V2Ray的配置教程，毕竟这里老司机任意发挥各显神通的地方，我就不插嘴了，注意服务端和客户端<strong>一定都要用Xray</strong>，否则最后配置成的网络不是Full Cone的NAT，也会有UDP断流的问题（参见issue：<a target="_blank" rel="noopener" href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a>），推荐使用Docker部署。</p>
+<h3 id="路由器配置">路由器配置</h3>
+<p>推荐按照先这篇文章<a target="_blank" rel="noopener" href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a>部署。注意最好使用<strong>官方原版OpenWRT</strong>，基于某个Snapshot构建的同时打包了一堆插件的OpenWRT可能会产生兼容问题，当然刚好集成了文章中提及的插件的包可以试着用用。</p>
+<h3 id="替换路由器v2ray版本">替换路由器V2Ray版本</h3>
+<p>由于原版V2Ray在处理UDP包的流程上有严重缺陷，所以必须要替换路由器上的V2Ray版本。首先在<a target="_blank" rel="noopener" href="https://github.com/XTLS/Xray-core/releases">https://github.com/XTLS/Xray-core/releases</a>上下载Xray，注意区分路由器CPU指令集，如<code>armv7a</code>或者<code>x64</code>什么的。在电脑上下载再用<code>scp</code>上传，或者直接在路由器上<code>wget</code>都可以。将压缩包解压后，用解压出来的<code>xray</code>文件替换路由器上的<code>/usr/bin/v2ray</code>文件，再在OpenWRT网页端重载V2Ray服务即可，看到网页上显示V2Ray版本为Xray即可。</p>
+<figure>
+<img data-src="/images/pasted-63.png" alt="img" /><figcaption>img</figcaption>
+</figure>
+<h3 id="验证配置">验证配置</h3>
+<p>当然用Switch直接做测试就可以了，不出意外的话能看到NAT Type A了，如果不是，可以检查VPS的防火墙配置。</p>
+<p>Windows下测试推荐使用<a target="_blank" rel="noopener" href="https://github.com/HMBSbige/NatTypeTester">NatTypeTester</a>，注意关闭Windows防火墙以免其影响测试结果。</p>
+<figure>
+<img data-src="/images/pasted-64.png" alt="img" /><figcaption>img</figcaption>
+</figure>
+<h2 id="结论">结论</h2>
+<p>不是吃饱了撑着或是有特殊需求，如用Switch看YouTube，建议还是上个加速器吧，VPS也是要钱的啊，而且人家付费加速器的线路大概率会比你随手买的VPS更好。</p>
+<h2 id="参考文章强烈建议去看看">参考文章（强烈建议去看看）</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://v2xtls.org/进阶必读：代理协议-udp-全方位透彻解析/">进阶必读：代理协议 UDP 全方位透彻解析 - V2Ray XTLS黑科技 (v2xtls.org)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.solarck.com/openwrt-V2Ray.html">一文玩转V2Ray 透明代理 | Solarck</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/V2Ray/V2Ray-core/issues/1614">玩彩6或者开Origin时，断流严重</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/03/02/OpenWRT%E8%B7%AF%E7%94%B1%E5%99%A8%E5%8A%A0%E9%80%9FSwitch%E8%81%94%E6%9C%BA%E7%9A%84%E6%96%B9%E6%A1%88/" title="OpenWRT路由器加速Switch联机的方案">https://nekodaemon.com/2021/03/02/OpenWRT路由器加速Switch联机的方案/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

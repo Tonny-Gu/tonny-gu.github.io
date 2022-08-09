@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="MPI allows to create a new communicator by splitting an existing one into a sub-communicator, which can make our program dynamically select a subset of computing nodes to involve in the collective com">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Everything you need to know about Splitting NCCL Communicators">
+<meta property="og:url" content="https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="MPI allows to create a new communicator by splitting an existing one into a sub-communicator, which can make our program dynamically select a subset of computing nodes to involve in the collective com">
+<meta property="og:locale">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-95.png">
+<meta property="article:published_time" content="2021-12-15T02:47:00.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-95.png">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/","path":"2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/","title":"Everything you need to know about Splitting NCCL Communicators"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Everything you need to know about Splitting NCCL Communicators | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#tldr"><span class="nav-text">TL;DR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#usage-of-ncclcomminitrank"><span class="nav-text">Usage of ncclCommInitRank</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#performance"><span class="nav-text">Performance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Everything you need to know about Splitting NCCL Communicators
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-12-15 02:47:00" itemprop="dateCreated datePublished" datetime="2021-12-15T02:47:00+00:00">2021-12-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>MPI allows to create a new communicator by splitting an existing one into a sub-communicator, which can make our program dynamically select a subset of computing nodes to involve in the collective communication operations, such as all-reduce and all-gather operations. NCCL also has a similar feature, but it is not well-documented yet.</p>
+<h2 id="tldr">TL;DR</h2>
+<p>Since NCCL relies on MPI to run on multiple nodes, the following example code is based on MPI Programming Model. Assume there are 4 CUDA GPUs and 4 corresponding MPI ranks. This code performs all-reduce operation within the first two and the last two ranks simultaneously.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;nccl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mpi.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thrust/device_ptr.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thrust/fill.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">MPI_Init</span>(<span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">int</span> world_size, world_rank;</span><br><span class="line">  <span class="built_in">MPI_Comm_size</span>(MPI_COMM_WORLD, &amp;world_size);</span><br><span class="line">  <span class="built_in">MPI_Comm_rank</span>(MPI_COMM_WORLD, &amp;world_rank);</span><br><span class="line">  <span class="built_in">assert</span>(world_size == <span class="number">4</span>);</span><br><span class="line">  <span class="built_in">cudaSetDevice</span>(world_rank); <span class="comment">// GPU N binds to MPI rank N</span></span><br><span class="line"></span><br><span class="line">  ncclUniqueId nccl_id, nccl_ids[<span class="number">4</span>];</span><br><span class="line">  <span class="keyword">size_t</span> id_size = <span class="built_in"><span class="keyword">sizeof</span></span>(ncclUniqueId);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Generate Unique ID */</span></span><br><span class="line">  <span class="comment">// nccl_id is a simple struct with the size of exact 128 bytes</span></span><br><span class="line">  <span class="comment">// so it can be transferred over MPI</span></span><br><span class="line">  <span class="built_in">ncclGetUniqueId</span>(&amp;nccl_id);</span><br><span class="line">  <span class="built_in">MPI_Allgather</span>(&amp;nccl_id, id_size, MPI_UINT8_T,</span><br><span class="line">                &amp;nccl_ids[<span class="number">0</span>], id_size, MPI_UINT8_T, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Create a sub-communicator */</span></span><br><span class="line">  ncclComm_t nccl_comm;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (world_rank &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="built_in">ncclCommInitRank</span>(&amp;nccl_comm, <span class="number">2</span>, nccl_ids[<span class="number">0</span>], world_rank);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (world_rank &gt;= <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="built_in">ncclCommInitRank</span>(&amp;nccl_comm, <span class="number">2</span>, nccl_ids[<span class="number">2</span>], world_rank - <span class="number">2</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Test */</span></span><br><span class="line">  <span class="keyword">constexpr</span> <span class="keyword">size_t</span> N = (<span class="keyword">size_t</span>)<span class="number">1e3</span>;</span><br><span class="line">  <span class="keyword">constexpr</span> <span class="keyword">size_t</span> arr_size = <span class="built_in"><span class="keyword">sizeof</span></span>(<span class="keyword">int64_t</span>) * N;</span><br><span class="line">  <span class="keyword">void</span> *arr, *arr_host;</span><br><span class="line">  <span class="built_in">cudaMalloc</span>(&amp;arr, arr_size);</span><br><span class="line">  <span class="built_in">cudaMallocHost</span>(&amp;arr_host, arr_size);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* Init the array on local GPU */</span></span><br><span class="line">  <span class="function">thrust::device_ptr&lt;<span class="keyword">int64_t</span>&gt; <span class="title">arr_ptr</span><span class="params">((<span class="keyword">int64_t</span>*)arr)</span></span>;</span><br><span class="line">  thrust::<span class="built_in">fill</span>(arr_ptr, arr_ptr + N, world_rank);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">ncclAllReduce</span>(arr, arr, N, ncclInt64, ncclSum, nccl_comm, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="built_in">cudaMemcpy</span>(arr_host, arr, arr_size, cudaMemcpyDeviceToHost);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;[rank%d] result: %ld\n&quot;</span>, world_rank, ((<span class="keyword">int64_t</span>*)arr_host)[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">MPI_Finalize</span>();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>This code can be compiled and run on my machine with these commands,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nvcc -ccbin mpic++ test.cu -o <span class="built_in">test</span> -L/usr/<span class="built_in">local</span>/cuda/lib -lnccl</span><br><span class="line">mpirun -n 4 ./<span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: Using <code>nvcc</code> to compile MPI code is not a common practice. It is recommended to compile it with <code>mpic++</code> from a CUDA-Aware MPI variant.</p>
+</blockquote>
+<p>The output of this program should be,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[rank0] result: 1 <span class="comment"># 0 + 1 = 1</span></span><br><span class="line">[rank1] result: 1</span><br><span class="line">[rank2] result: 5 <span class="comment"># 2 + 3 = 5</span></span><br><span class="line">[rank3] result: 5</span><br></pre></td></tr></table></figure>
+<p><strong>The key is <code>ncclCommInitRank</code>. Suppose only a subset of ranks initializes the communicator with the same unique ID belonging to one of them. In that case, this communicator will ignore other ranks that are not in this subset.</strong></p>
+<h2 id="usage-of-ncclcomminitrank">Usage of ncclCommInitRank</h2>
+<blockquote>
+<p>Official API explanation:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ncclResult_t <span class="title">ncclCommInitRank</span><span class="params">(ncclComm_t *comm, <span class="keyword">int</span> nranks, ncclUniqueId commId, <span class="keyword">int</span> rank)</span></span></span><br></pre></td></tr></table></figure>
+<p>Creates a new communicator (multi thread/process version). rank must be between <code>0</code> and <code>nranks-1</code> and unique within a communicator clique. Each rank is associated to a CUDA device, which has to be set before calling <code>ncclCommInitRank</code>. <code>ncclCommInitRank</code> implicitly synchronizes with other ranks, so it must be called by different threads/processes or use <code>ncclGroupStart</code>/<code>ncclGroupEnd</code>.</p>
+</blockquote>
+<p>In addition to the official instructions, we should also know,</p>
+<ul>
+<li>Each unique ID should only be used once.</li>
+<li><code>ncclGetUniqueId</code> can be invoked multiple times, and it will return a different unique ID each time. Meanwhile, the unique ID generated before is still working.</li>
+<li>It is safe to communicate within disjoint subsets of nodes simultaneously.</li>
+<li>Using NCCL to perform inter-GPU communication concurrently with CUDA-aware MPI may create deadlocks.</li>
+</ul>
+<h2 id="performance">Performance</h2>
+<p>Moreover, I also evaluate the influence on performance bring by sub-grouping.</p>
+<p>The testbed is,</p>
+<ul>
+<li>AWS <code>g4dn.metal</code> instance with 8x NVIDIA Tesla T4 GPUs.</li>
+<li>Shipped with AWS Deep Learning AMI
+<ul>
+<li>OS: Ubuntu 18.04 (Kernel Version: Linux 5.4)</li>
+<li>CUDA Toolkit: 11.0 (Driver Version: 450.119.03 )</li>
+</ul></li>
+</ul>
+<p>First of all, I would like to emphasize the GPU topology of this bare-metal machine.</p>
+<blockquote>
+<p>Note: We should extract the topology information from physical machines instead of virtual machines since the hypervisor may fuzz the result due to security reasons.</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># nvidia-smi topo -m</span></span><br><span class="line">        GPU0    GPU1    GPU2    GPU3    GPU4    GPU5    GPU6    GPU7    CPU Affinity    NUMA Affinity</span><br><span class="line">GPU0     X      PHB     NODE    NODE    SYS     SYS     SYS     SYS     0-23,48-71      0</span><br><span class="line">GPU1    PHB      X      NODE    NODE    SYS     SYS     SYS     SYS     0-23,48-71      0</span><br><span class="line">GPU2    NODE    NODE     X      PHB     SYS     SYS     SYS     SYS     0-23,48-71      0</span><br><span class="line">GPU3    NODE    NODE    PHB      X      SYS     SYS     SYS     SYS     0-23,48-71      0</span><br><span class="line">GPU4    SYS     SYS     SYS     SYS      X      PHB     NODE    NODE    24-47,72-95     1</span><br><span class="line">GPU5    SYS     SYS     SYS     SYS     PHB      X      NODE    NODE    24-47,72-95     1</span><br><span class="line">GPU6    SYS     SYS     SYS     SYS     NODE    NODE     X      PHB     24-47,72-95     1</span><br><span class="line">GPU7    SYS     SYS     SYS     SYS     NODE    NODE    PHB      X      24-47,72-95     1</span><br></pre></td></tr></table></figure>
+<p>It looks like a balanced tree topology. We could expect two neighbor GPUs will have higher communication efficiency.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">UPI                   </span><br><span class="line"> |--CPU0              </span><br><span class="line"> |   |--PCIe Switch   </span><br><span class="line"> |   |   |--GPU0      </span><br><span class="line"> |   |   |--GPU1      </span><br><span class="line"> |   |--PCIe Switch   </span><br><span class="line"> |       |--GPU2      </span><br><span class="line"> |       |--GPU3      </span><br><span class="line"> |--CPU1              </span><br><span class="line">     |--PCIe Switch   </span><br><span class="line">     |   |--GPU4      </span><br><span class="line">     |   |--GPU5      </span><br><span class="line">     |--PCIe Switch   </span><br><span class="line">         |--GPU6      </span><br><span class="line">         |--GPU7      </span><br></pre></td></tr></table></figure>
+<p>The result below is measured on the root rank, and each experiment is repeated 5 times. Meanwhile, the environment <code>CUDA_VISIBLE_DEVICES</code> was set to reorder GPUs binded to MPI ranks. CPU binding remains unset.</p>
+<p>And the meaning of the notations on communicators is,</p>
+<ul>
+<li><code>0/1</code>: Only one communicator performing all-reduce on physical GPU 0/1.</li>
+<li><code>0/1 + 2/3</code>: Two communicators are working at the same time, and each of them perform all-reduce on two GPUs independently.</li>
+<li><code>0-7</code>: Equivalent to <code>0/1/2/.../6/7</code>.</li>
+</ul>
+<figure>
+<img data-src="/images/pasted-95.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>From the result above, we can conclude that,</p>
+<ul>
+<li>GPUs are working at PCIe Gen3 x8 mode as the PCIe Switch splits one PCIe x16 slot into two x8 slots.
+<ul>
+<li>Double checked by <code>nvidia-smi --query-gpu=pcie.link.gen.current --format=csv</code> and <code>sudo lspci -vvv</code></li>
+</ul></li>
+<li>The GPU Topology will significantly affect the performance of all-reduce.
+<ul>
+<li>The topology that NVIDIA DGX adopt should obviously accelerate collective communication operations.</li>
+</ul></li>
+<li>The interference between two concurrent communicators is not quite noticeable.</li>
+<li>UPI bus is not a bottleneck when two PCIe Gen3 x16 devices (PCIe Switches) transmit a large data chunk over UPI bus.</li>
+</ul>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/mpi.html#inter-gpu-communication-with-cuda-aware-mpi">NCCL and MPI — NCCL 2.11.4 documentation (nvidia.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/fast-multi-gpu-collectives-nccl/">Fast Multi-GPU collectives with NCCL</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/" title="Everything you need to know about Splitting NCCL Communicators">https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

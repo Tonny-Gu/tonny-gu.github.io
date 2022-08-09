@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="This tutorial will introduce how to utilize map-by option to deal with many complex scenarios such as running a hybrid MPI program (mixture of OpenMP and MPI).">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Understanding MPI map-by and bind-to option">
+<meta property="og:url" content="https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="This tutorial will introduce how to utilize map-by option to deal with many complex scenarios such as running a hybrid MPI program (mixture of OpenMP and MPI).">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-02-05T18:47:19.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/","path":"2021/02/05/Understanding-MPI-map-by-and-bind-to-option/","title":"Understanding MPI map-by and bind-to option"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Understanding MPI map-by and bind-to option | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#before-starting"><span class="nav-text">Before starting</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#test-environment"><span class="nav-text">Test Environment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map-by-unit"><span class="nav-text">map-by unit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#map-by-numa"><span class="nav-text">map-by numa</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#map-by-hwthread"><span class="nav-text">map-by hwthread</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#map-by-core"><span class="nav-text">map-by core</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bind-to-unit"><span class="nav-text">bind-to unit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-hwthread"><span class="nav-text">bind-to hwthread</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core"><span class="nav-text">bind-to core</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-numa"><span class="nav-text">bind-to numa</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map-by-unitpen"><span class="nav-text">map-by unit:pe&#x3D;n</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core-pe1"><span class="nav-text">bind-to core, PE&#x3D;1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core-pe2"><span class="nav-text">bind-to core, PE&#x3D;2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-hwthread-pe1"><span class="nav-text">bind-to hwthread, PE&#x3D;1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-hwthread-pe2"><span class="nav-text">bind-to hwthread, PE&#x3D;2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map-by-pprnunit"><span class="nav-text">map-by ppr:n:unit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core-ppr4"><span class="nav-text">bind-to core, ppr:4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core-ppr2"><span class="nav-text">bind-to core, ppr:2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-to-core-ppr1"><span class="nav-text">bind-to core, ppr:1</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map-by-pprnunitpen"><span class="nav-text">map-by ppr:n:unit:pe&#x3D;n</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#appendix"><span class="nav-text">Appendix</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#report-bindings"><span class="nav-text">Report bindings</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Understanding MPI map-by and bind-to option
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-02-05 18:47:19" itemprop="dateCreated datePublished" datetime="2021-02-05T18:47:19+00:00">2021-02-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>This tutorial will introduce how to utilize <code>map-by</code> option to deal with many complex scenarios such as running a hybrid MPI program (mixture of OpenMP and MPI).</p>
+<h2 id="before-starting">Before starting</h2>
+<p>The behavior of MPI varies significantly if the environment changes (including MPI version and implementations, dependent libraries, and job schedulers). All the experiments mentioned in this article are conducted on <strong>OpenMPI 4.0.2</strong>, which means if you use different implementations or versions of MPI, you may encounter unexpected problems. For example, OpenMPI 2.1.1, the default version bundled in Ubuntu 18.04, will behave strangely and fail to control the number of OpenMP threads when running a hybrid program. Thus I strongly recommended to download the latest version of MPI.</p>
+<h2 id="test-environment">Test Environment</h2>
+<p>On the test platform, each machine contains <strong>2 NUMA nodes, 36 physical cores, 72 hardware threads</strong> overall. The test hybrid program could be downloaded from <a target="_blank" rel="noopener" href="https://rcc.uchicago.edu/docs/running-jobs/hybrid/index.html">https://rcc.uchicago.edu/docs/running-jobs/hybrid/index.html</a>, and <strong>OpenMPI 4.0.2 and GCC 7.3.0</strong> are downloaded from Anaconda.</p>
+<h2 id="map-by-unit">map-by unit</h2>
+<p>This is the most fundamental syntax. And <code>unit</code> can be filled in <code>hwthread</code>, <code>core</code>, <code>L1cache</code>, <code>L2cache</code>, <code>L3cache</code>, <code>socket</code>, <code>numa</code>, <code>board</code>, <code>node</code>. Note that <code>hwthread</code> means hardware thread, while <code>core</code> means physical core. <code>numa</code> option is commonly used.</p>
+<p>The following example illustrates the differences of each option. To make output clear, <code>PE=1</code> was added to limit thread numbers, and we will introduce it in the section <a href="#map-by%20unit:pe=n">map-by unit:pe=n</a>. <code>--report-bindings</code> is a proprietary option of OpenMPI to visualize bindings, and you can check <a href="#Appendix">Appendix</a> to figure out the similar usage of other MPI implementations.</p>
+<h3 id="map-by-numa">map-by numa</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --map-by numa:PE=1 --report-bindings ./a.out</span><br><span class="line">[asialab-01:69587] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69587] MCW rank 1 bound to socket 1[core 18[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69587] MCW rank 2 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69587] MCW rank 3 bound to socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][../BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 3 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="map-by-hwthread">map-by hwthread</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --map-by hwthread:PE=1 --report-bindings ./a.out</span><br><span class="line">[asialab-01:69621] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69621] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69621] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69621] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 1 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 1 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="map-by-core">map-by core</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --map-by core:PE=1 --report-bindings ./a.out</span><br><span class="line">[asialab-01:69653] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69653] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69653] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:69653] MCW rank 3 bound to socket 0[core 3[hwt 0-1]]: [../../../BB/../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 3 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<p>Observe that when we set to <code>map-by numa</code>, MPI will take NUMA architecture into consideration and balance the workload of two NUMA nodes. Otherwise, MPI will ignore NUMA.</p>
+<p>You may notice that when <code>map-by</code> is set to <code>hwthread</code>, only one thread is allocated to OpenMP in each rank. The section <a href="#bind-to%20unit">bind-to unit</a> explains this to some degree.</p>
+<h2 id="bind-to-unit">bind-to unit</h2>
+<p>The default option is core if we didn't specify this option. Although this option is not so important, but there are several interesting concepts to learn. You may have heard the word <strong>slot</strong>, and you can imagine each slot will hold one rank at most. My understanding is that it is <strong>slot</strong> will be <strong>bound to</strong> specified units such as hardware threads or physical cores. Let us go through some examples.</p>
+<h3 id="bind-to-hwthread">bind-to hwthread</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --bind-to hwthread --map-by numa --report-bindings ./a.out</span><br><span class="line">[asialab-01:71905] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71905] MCW rank 1 bound to socket 1[core 18[hwt 0]]: [../../../../../../../../../../../../../../../../../..][B./../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71905] MCW rank 2 bound to socket 0[core 0[hwt 1]]: [.B/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71905] MCW rank 3 bound to socket 1[core 18[hwt 1]]: [../../../../../../../../../../../../../../../../../..][.B/../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 1 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 0 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-core">bind-to core</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --bind-to core --map-by numa --report-bindings ./a.out</span><br><span class="line">[asialab-01:71922] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71922] MCW rank 1 bound to socket 1[core 18[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71922] MCW rank 2 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:71922] MCW rank 3 bound to socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][../BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 3 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-numa">bind-to numa</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 2 --bind-to numa --map-by numa --report-bindings ./a.out</span><br><span class="line">[asialab-01:72100] MCW rank 0 bound to socket 0[core 0[hwt 0-1]], socket 0[core 1[hwt 0-1]], socket 0[core 2[hwt 0-1]], socket 0[core 3[hwt 0-1]], socket 0[core 4[hwt 0-1]], socket 0[core 5[hwt 0-1]], socket 0[core 6[hwt 0-1]], socket 0[core 7[hwt 0-1]], socket 0[core 8[hwt 0-1]], socket 0[core 9[hwt 0-1]], socket 0[core 10[hwt 0-1]], socket 0[core 11[hwt 0-1]], socket 0[core 12[hwt 0-1]], socket 0[core 13[hwt 0-1]], socket 0[core 14[hwt 0-1]], socket 0[core 15[hwt 0-1]], socket 0[core 16[hwt 0-1]], socket 0[core 17[hwt 0-1]]: [BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:72100] MCW rank 1 bound to socket 1[core 18[hwt 0-1]], socket 1[core 19[hwt 0-1]], socket 1[core 20[hwt 0-1]], socket 1[core 21[hwt 0-1]], socket 1[core 22[hwt 0-1]], socket 1[core 23[hwt 0-1]], socket 1[core 24[hwt 0-1]], socket 1[core 25[hwt 0-1]], socket 1[core 26[hwt 0-1]], socket 1[core 27[hwt 0-1]], socket 1[core 28[hwt 0-1]], socket 1[core 29[hwt 0-1]], socket 1[core 30[hwt 0-1]], socket 1[core 31[hwt 0-1]], socket 1[core 32[hwt 0-1]], socket 1[core 33[hwt 0-1]], socket 1[core 34[hwt 0-1]], socket 1[core 35[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB/BB]</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>If each slot is bound to a hardware thread, only one thread could be allocated to OpenMP in each rank. If each slot is bound to a physical core, all the threads in a physical core could be allocated. If each slot is bound to a NUMA node, all the threads in a NUMA node could be allocated.</p>
+<h2 id="map-by-unitpen">map-by unit:pe=n</h2>
+<p>In the previous section we introduce the concept <strong>slot</strong>. By default, each slot is bound to one physical core. This section we will dig deep into <code>pe</code>, and it may refer to <code>processing element</code> according to a website. This concept is ambiguous, and my understanding is that <code>pe=n</code> determines the number of units that each slot will occupy. Here are some examples.</p>
+<h3 id="bind-to-core-pe1">bind-to core, PE=1</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 2 --bind-to core --map-by numa:PE=1 --report-bindings ./a.out</span><br><span class="line">[asialab-01:72668] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:72668] MCW rank 1 bound to socket 1[core 18[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 2 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-core-pe2">bind-to core, PE=2</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 2 --bind-to core --map-by numa:PE=2 --report-bindings ./a.out</span><br><span class="line">[asialab-01:72700] MCW rank 0 bound to socket 0[core 0[hwt 0-1]], socket 0[core 1[hwt 0-1]]: [BB/BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:72700] MCW rank 1 bound to socket 1[core 18[hwt 0-1]], socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 4 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 2 out of 4 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 3 out of 4 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 4 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 2 out of 4 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 0 out of 4 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 4 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 3 out of 4 from process 1 out of 2 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-hwthread-pe1">bind-to hwthread, PE=1</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 2 --bind-to hwthread --map-by numa:PE=1 --report-bindings ./a.out</span><br><span class="line">[asialab-01:72729] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:72729] MCW rank 1 bound to socket 1[core 18[hwt 0]]: [../../../../../../../../../../../../../../../../../..][B./../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 1 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 0 out of 1 from process 0 out of 2 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-hwthread-pe2">bind-to hwthread, PE=2</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 2 --bind-to hwthread --map-by numa:PE=2 --report-bindings ./a.out</span><br><span class="line">[asialab-01:72740] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:72740] MCW rank 1 bound to socket 1[core 18[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 2 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 2 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 2 on asialab-01</span><br></pre></td></tr></table></figure>
+<p>However, I failed to launch with the setting <code>-n 1 --bind-to numa --map-by node:PE=2</code>, and I expect that only one rank consumes all the resources (equivalent to <code>bind-to core, PE=36</code>, or <code>bind-to hwthread, PE=72</code>). Anyway, <code>pe=n</code> will work well when combining with <code>bind-to core</code> or <code>bind-to hwthread</code>.</p>
+<h2 id="map-by-pprnunit">map-by ppr:n:unit</h2>
+<p><code>ppr</code> is short for <code>processes per resource</code>. The <code>processes</code> here basically are equivalent to MPI Rank. This option actually limits the maximum number of ranks (number of slots) that each unit can hold. Let us verify this.</p>
+<h3 id="bind-to-core-ppr4">bind-to core, ppr:4</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> mpirun -n 4 --bind-to core --map-by ppr:4:numa --report-bindings ./a.out</span><br><span class="line">[asialab-01:00520] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00520] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00520] MCW rank 2 bound to socket 0[core 2[hwt 0-1]]: [../../BB/../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00520] MCW rank 3 bound to socket 0[core 3[hwt 0-1]]: [../../../BB/../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 3 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-core-ppr2">bind-to core, ppr:2</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 --bind-to core --map-by ppr:2:numa --report-bindings ./a.out</span><br><span class="line">[asialab-01:00541] MCW rank 0 bound to socket 0[core 0[hwt 0-1]]: [BB/../../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00541] MCW rank 1 bound to socket 0[core 1[hwt 0-1]]: [../BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00541] MCW rank 2 bound to socket 1[core 18[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00541] MCW rank 3 bound to socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][../BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 2 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 3 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 2 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 2 from process 0 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h3 id="bind-to-core-ppr1">bind-to core, ppr:1</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> mpirun -n 4 --bind-to core --map-by ppr:1:numa --report-bindings ./a.out</span><br><span class="line">--------------------------------------------------------------------------</span><br><span class="line">Your job has requested more processes than the ppr <span class="keyword">for</span></span><br><span class="line">this topology can support:</span><br><span class="line"></span><br><span class="line">  App: ./a.out</span><br><span class="line">  Number of procs:  4</span><br><span class="line">  PPR: 1:numa</span><br><span class="line"></span><br><span class="line">Please revise the conflict and try again.</span><br><span class="line">--------------------------------------------------------------------------</span><br></pre></td></tr></table></figure>
+<p>Since each NUMA node is limited to hold one MPI process at most, and there are two NUMA nodes overall, it is reasonable to fail to run the program with four ranks.</p>
+<h2 id="map-by-pprnunitpen">map-by ppr:n:unit:pe=n</h2>
+<p>This is complete form of <code>map-by</code>. There is nothing new, so you should be able to explain the following complex example. Hint: <code>-host hostname:-1</code> will let MPI detect the number of available slots on the remote machine automatically.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mpirun -n 4 -host asialab-01:-1,asialab-03:-1 --bind-to hwthread --map-by ppr:1:numa:pe=4 --report-bindings ./a.out</span><br><span class="line">[asialab-01:00614] MCW rank 0 bound to socket 0[core 0[hwt 0-1]], socket 0[core 1[hwt 0-1]]: [BB/BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-01:00614] MCW rank 1 bound to socket 1[core 18[hwt 0-1]], socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-03:73603] MCW rank 2 bound to socket 0[core 0[hwt 0-1]], socket 0[core 1[hwt 0-1]]: [BB/BB/../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../..]</span><br><span class="line">[asialab-03:73603] MCW rank 3 bound to socket 1[core 18[hwt 0-1]], socket 1[core 19[hwt 0-1]]: [../../../../../../../../../../../../../../../../../..][BB/BB/../../../../../../../../../../../../../../../..]</span><br><span class="line">Hello from thread 0 out of 4 from process 2 out of 4 on asialab-03</span><br><span class="line">Hello from thread 2 out of 4 from process 2 out of 4 on asialab-03</span><br><span class="line">Hello from thread 3 out of 4 from process 2 out of 4 on asialab-03</span><br><span class="line">Hello from thread 0 out of 4 from process 3 out of 4 on asialab-03</span><br><span class="line">Hello from thread 2 out of 4 from process 3 out of 4 on asialab-03</span><br><span class="line">Hello from thread 1 out of 4 from process 3 out of 4 on asialab-03</span><br><span class="line">Hello from thread 3 out of 4 from process 3 out of 4 on asialab-03</span><br><span class="line">Hello from thread 1 out of 4 from process 2 out of 4 on asialab-03</span><br><span class="line">Hello from thread 0 out of 4 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 3 out of 4 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 4 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 2 out of 4 from process 0 out of 4 on asialab-01</span><br><span class="line">Hello from thread 1 out of 4 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 0 out of 4 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 2 out of 4 from process 1 out of 4 on asialab-01</span><br><span class="line">Hello from thread 3 out of 4 from process 1 out of 4 on asialab-01</span><br></pre></td></tr></table></figure>
+<h2 id="appendix">Appendix</h2>
+<h3 id="report-bindings">Report bindings</h3>
+<ul>
+<li>Intel MPI: <code>-print-rank-map</code></li>
+<li>MVAPICH2: <code>MV2_SHOW_CPU_BINDING=1</code></li>
+<li>OpenMPI: <code>--report-bindings</code></li>
+</ul>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/support/knowledgecenter/SSZTET_10.2/admin/smpi02_proc_affinity_mapping.html">https://www.ibm.com/support/knowledgecenter/SSZTET_10.2/admin/smpi02_proc_affinity_mapping.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/28216897/syntax-of-the-map-by-option-in-openmpi-mpirun-v1-8">https://stackoverflow.com/questions/28216897/syntax-of-the-map-by-option-in-openmpi-mpirun-v1-8</a></li>
+<li><a target="_blank" rel="noopener" href="https://rcc.uchicago.edu/docs/running-jobs/hybrid/index.html">https://rcc.uchicago.edu/docs/running-jobs/hybrid/index.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.intel.com/content/dam/www/public/us/en/documents/presentation/things-mpi-library.pdf">https://www.intel.com/content/dam/www/public/us/en/documents/presentation/things-mpi-library.pdf</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/" title="Understanding MPI map-by and bind-to option">https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

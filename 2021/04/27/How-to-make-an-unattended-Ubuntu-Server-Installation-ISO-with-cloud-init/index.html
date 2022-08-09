@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="Updated on 16 Jan, 2022. I worte a post for Ubuntu 20.04 Server.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to make an unattended Ubuntu Server Installation ISO with cloud-init">
+<meta property="og:url" content="https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="Updated on 16 Jan, 2022. I worte a post for Ubuntu 20.04 Server.">
+<meta property="og:locale">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-69.png">
+<meta property="og:image" content="https://nekodaemon.com/images/pasted-68.png">
+<meta property="article:published_time" content="2021-04-27T17:36:02.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-69.png">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/","path":"2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/","title":"How to make an unattended Ubuntu Server Installation ISO with cloud-init"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>How to make an unattended Ubuntu Server Installation ISO with cloud-init | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#before-getting-hands-dirty"><span class="nav-text">Before getting hands dirty</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#download-iso-and-tools"><span class="nav-text">Download ISO and Tools</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#modify-root-filesystem"><span class="nav-text">Modify Root Filesystem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#install-and-upgrade-software"><span class="nav-text">Install and Upgrade Software</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#write-post-installation-script"><span class="nav-text">Write Post-Installation Script</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#optional-configure-dhcp-for-all-network-interfaces-after-installation"><span class="nav-text">Optional: Configure DHCP for all network interfaces after installation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-up"><span class="nav-text">Clean up</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#write-preseed-file"><span class="nav-text">Write Preseed File</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#add-boot-arguments"><span class="nav-text">Add Boot Arguments</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bootgrubgrub.cfg"><span class="nav-text">boot&#x2F;grub&#x2F;grub.cfg</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#isolinuxtxt.cfg"><span class="nav-text">isolinux&#x2F;txt.cfg</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-text">Reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          How to make an unattended Ubuntu Server Installation ISO with cloud-init
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-04-27 17:36:02" itemprop="dateCreated datePublished" datetime="2021-04-27T17:36:02+00:00">2021-04-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><em>Updated on 16 Jan, 2022</em>. I worte <a href="/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/">a post for Ubuntu 20.04 Server</a>.</p>
+<p>It will be convenient if the installation is fully automated when configuring multiple nodes at the same time. However, I believe Ubuntu doesn't care about unattended installation via the CD image. Its developers seem to be unwilling to write a detailed tutorial about that, even some changes they made make trouble unintentionally. Note that installing via PXE Network Boot is a good alternative.</p>
+<h2 id="before-getting-hands-dirty">Before getting hands dirty</h2>
+<p>An unnoticeable fact is that Ubuntu Server replaced its installer silently, which means some tutorials are actually not applicable for specific versions of Ubuntu. According to my observation, we have two installers so far,</p>
+<ul>
+<li>Before Ubuntu 18.04.3: <code>Debian-Installer</code>, a non-live installer</li>
+<li>Ubuntu 18.04.4~18.04.5: <del>Old version of <code>subiquity</code>, a live installer, <strong>without unattended installation support</strong></del>
+<ul>
+<li>There are two varients, (thanks for jack's comment)
+<ul>
+<li>one is called <code>non-live</code> version with <code>Debian-Installer</code></li>
+<li>another is called <code>live</code> version with old version of <code>subiquity</code>, which doesn't have unattended installation support</li>
+</ul></li>
+</ul></li>
+<li>Ubuntu 20.04: <code>subiquity</code>, a live installer, with unattended installation support</li>
+</ul>
+<p>Consider that Ubuntu 18.04 has excellent compatibility, this tutorial aims at <strong>making Ubuntu 18.04.5 Installation ISO</strong>. As for Ubuntu 20.04 users, please refer to this tutorial <a target="_blank" rel="noopener" href="https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e">https://gist.github.com/s3rj1k/55b10cd20f31542046018fcce32f103e</a> or <a href="/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/">my newer blog post</a> for your information, and you can still read this tutorial because some approaches mentioned in this article also work.</p>
+<h2 id="download-iso-and-tools">Download ISO and Tools</h2>
+<p><del>Since Ubuntu 18.04.4~18.04.5 doesn't support unattended installation, we have to use Ubuntu 18.04.3 as the original version. Note that this version is deprecated. Thus it can only be downloaded from <code>old-releases</code> site.</del> Make sure what you download is a <code>non-live</code> version, such as,</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://old-releases.ubuntu.com/releases/18.04.3/ubuntu-18.04.3-server-amd64.iso</span><br></pre></td></tr></table></figure>
+<p>There is an excellent tool called <code>cubic</code>, which helps us decompress and repack the ISO file and <code>rootfs</code> image. Also, it will automatically set up the virtual environment (<code>chroot</code>), where modifying the root filesystem is quite easy, just like operating a regular Ubuntu.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:cubic-wizard/release</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cubic</span><br></pre></td></tr></table></figure>
+<p>Run <code>cubic</code> command in the terminal to launch this program.</p>
+<h2 id="modify-root-filesystem">Modify Root Filesystem</h2>
+<p>Generally speaking, all the files existing in the virtual environment will be directly copied to the machine where this system is installed, except several files generated during installation. Thus, you can preinstall some software in this step.</p>
+<figure>
+<img data-src="/images/pasted-69.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h3 id="install-and-upgrade-software">Install and Upgrade Software</h3>
+<p>Consider that Ubuntu 18.04.3 is a bit outdated, so some build-in software should be upgraded.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt update &amp;&amp; apt upgrade -y</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note:</p>
+<ul>
+<li>The Linux Kernel has been installed in this stage, and it will be installed by <code>Debian-installer</code> during installation. Therefore, you still need to perform <code>apt upgrade</code> after installation.</li>
+<li>You can change an APT repository in the virtual environment, but the file <code>/etc/apt/source.list</code> will be replaced by <code>Debian-installer</code> or <code>cloud-init</code> eventually.</li>
+<li>SSH server could be installed in advance to save some time in installing OS, and <code>cloud-init</code> will regenerate SSH-key during the first boot.</li>
+</ul>
+</blockquote>
+<h3 id="write-post-installation-script">Write Post-Installation Script</h3>
+<p><code>cloud-init</code> is widely used in the cloud industry to initialize the system during the first boot. In fact, we could utilize it to do post-installation configuration. It is recommended to refer to these examples to customize your script: <a target="_blank" rel="noopener" href="https://cloudinit.readthedocs.io/en/latest/topics/examples.html">https://cloudinit.readthedocs.io/en/latest/topics/examples.html</a>.</p>
+<p>I attach my script located at <code>/etc/cloud/cloud.cfg.d/20-asc-init.cfg</code> here for your reference.</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cloud-config</span></span><br><span class="line"></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">  <span class="attr">config:</span> <span class="string">disabled</span></span><br><span class="line"><span class="attr">bootcmd:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">/usr/bin/asc_init_net</span></span><br><span class="line"><span class="attr">ntp:</span></span><br><span class="line">  <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">apt:</span></span><br><span class="line">  <span class="attr">primary:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">arches:</span> [<span class="string">default</span>]</span><br><span class="line">      <span class="attr">uri:</span> <span class="string">http://mirrors.sustech.edu.cn/ubuntu/</span></span><br><span class="line"></span><br><span class="line"><span class="attr">package_update:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">package_upgrade:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">power_state:</span></span><br><span class="line">  <span class="attr">mode:</span> <span class="string">reboot</span></span><br></pre></td></tr></table></figure>
+<h3 id="optional-configure-dhcp-for-all-network-interfaces-after-installation">Optional: Configure DHCP for all network interfaces after installation</h3>
+<p><code>Debian-installer</code> has a known bug: <code>netcfg/choose_interface=auto</code> fails to pick the functional network interface from many ones. Meanwhile, <code>cloud-init</code> also only configure one interface since most of the cloud instances only have one. If your machine happens to have one interface, you can skip this part. Otherwise, you need a workaround.</p>
+<p>I wrote a script <code>/usr/bin/asc_init_net</code> to automatically generate configuration file for <code>Netplan</code> during post-installation. All interfaces will contact the DHCP server to get available IP addresses simultaneously. Of course, this script should be executed by <code>cloud-init</code> as <code>bootcmd</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">find /sys/class/net -<span class="built_in">type</span> l -not -lname <span class="string">&#x27;*virtual*&#x27;</span> -<span class="built_in">printf</span> <span class="string">&#x27;%f\n&#x27;</span> | python3 -c <span class="string">&quot;</span></span><br><span class="line"><span class="string">import sys</span></span><br><span class="line"><span class="string">import yaml</span></span><br><span class="line"><span class="string">c = &#123;</span></span><br><span class="line"><span class="string">    &#x27;network&#x27;: &#123;</span></span><br><span class="line"><span class="string">        &#x27;version&#x27;: 2,</span></span><br><span class="line"><span class="string">        &#x27;ethernets&#x27;: &#123;&#125;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">for i in sys.stdin.readlines():</span></span><br><span class="line"><span class="string">    c[&#x27;network&#x27;][&#x27;ethernets&#x27;][i.strip()] = &#123;&#x27;dhcp4&#x27;: True, &#x27;optional&#x27;: True&#125;</span></span><br><span class="line"><span class="string">print(yaml.dump(c))</span></span><br><span class="line"><span class="string">&quot;</span> &gt; /etc/netplan/20-asc-init.yaml &amp;&amp; netplan apply</span><br></pre></td></tr></table></figure>
+<p>Don't forget to set the correct permission.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x /usr/bin/asc_init_net</span><br></pre></td></tr></table></figure>
+<h3 id="clean-up">Clean up</h3>
+<p><code>/etc/machine-id</code> might be generated when you install some software or do something else. However, this ID should vary from machine to machine. If two machines share the same ID, they may get the same IP address from the DHCP server. Therefore, this file should keep empty.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -n &gt; /etc/machine-id</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: This file could be regenerated by running <code>systemd-machine-id-setup</code> or rebooting the computer.</p>
+</blockquote>
+<p>Moreover, <code>cloud-init</code> will be executed on the next boot only if it is clean, then it will write something to disk to prevent itself from running again. To make sure it will work as expected, we can clean it manually.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cloud-init clean</span><br></pre></td></tr></table></figure>
+<h2 id="write-preseed-file">Write Preseed File</h2>
+<p>Preseed files store all the answers to the questions that the installer asks. Move to the directory <code>custom-disk</code>, which is created by <code>cubic</code> and contains the supporting files of the CD, including bootloaders and some configuration. Create a file <code>custom-disk/preseed/auto-inst.seed</code>, and write the following content to that file.</p>
+<figure>
+<img data-src="/images/pasted-68.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">### Automatic Installation</span></span><br><span class="line">d-i auto-install/<span class="built_in">enable</span> boolean <span class="literal">true</span></span><br><span class="line">d-i debconf/priority select critical</span><br><span class="line"></span><br><span class="line"><span class="comment">### Localization</span></span><br><span class="line">d-i debian-installer/locale string en_US.UTF-8</span><br><span class="line">d-i localechooser/supported-locales multiselect en_US.UTF-8</span><br><span class="line">d-i console-setup/ask_detect boolean <span class="literal">false</span></span><br><span class="line">d-i keyboard-configuration/xkb-keymap select us</span><br><span class="line"></span><br><span class="line"><span class="comment">### Network config</span></span><br><span class="line">d-i netcfg/<span class="built_in">enable</span> boolean <span class="literal">false</span></span><br><span class="line"><span class="comment">#d-i netcfg/choose_interface select auto</span></span><br><span class="line"><span class="comment">#d-i netcfg/get_hostname string node0</span></span><br><span class="line"><span class="comment">#d-i netcfg/get_domain string unassigned-domain</span></span><br><span class="line"><span class="comment">#d-i netcfg/hostname string node0</span></span><br><span class="line">d-i hw-detect/load_firmware boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### Mirror settings</span></span><br><span class="line">d-i apt-setup/use_mirror boolean <span class="literal">false</span></span><br><span class="line"><span class="comment">#d-i mirror/http/mirror select CC.archive.ubuntu.com</span></span><br><span class="line"><span class="comment">#d-i mirror/country string manual</span></span><br><span class="line"><span class="comment">#d-i mirror/http/hostname string mirrors.sustech.edu.cn</span></span><br><span class="line"><span class="comment">#d-i mirror/http/directory string /ubuntu</span></span><br><span class="line"><span class="comment">#d-i mirror/http/proxy string</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### Account setup</span></span><br><span class="line"><span class="comment"># This is just for testing!!!</span></span><br><span class="line">d-i passwd/make-user boolean <span class="literal">false</span></span><br><span class="line">d-i passwd/user-fullname string Ubuntu User</span><br><span class="line">d-i passwd/username string ubuntu</span><br><span class="line">d-i passwd/user-password password ubuntu</span><br><span class="line">d-i passwd/user-password-again password ubuntu</span><br><span class="line"><span class="comment">#d-i passwd/user-password-crypted password [crypt(3) hash]</span></span><br><span class="line">d-i user-setup/allow-password-weak boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set to true if you want to encrypt the first user&#x27;s home directory.</span></span><br><span class="line">d-i user-setup/encrypt-home boolean <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### Clock and time zone setup</span></span><br><span class="line">d-i clock-setup/utc boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># You may set this to any valid setting for $TZ; see the contents of</span></span><br><span class="line"><span class="comment"># /usr/share/zoneinfo/ for valid values.</span></span><br><span class="line">d-i time/zone string Asia/Shanghai</span><br><span class="line"></span><br><span class="line"><span class="comment"># Controls whether to use NTP to set the clock during the install</span></span><br><span class="line">d-i clock-setup/ntp boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### Partitioning</span></span><br><span class="line"><span class="comment"># !!!DANGER don&#x27;t use this without knowing what you are doing!!!</span></span><br><span class="line"><span class="comment"># comment out this block it you want the installer to ask about the </span></span><br><span class="line"><span class="comment"># partitioning, which is much safer!</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The following will partition disk /dev/sda with an EFI partition, a root partition</span></span><br><span class="line"><span class="comment"># and a swap file. AND WONT ASK TO CONFIRM ANYTHING i.e. it will overwrite existing partitions</span></span><br><span class="line">d-i preseed/early_command string umount /media || <span class="literal">true</span></span><br><span class="line">d-i partman/unmount_active boolean <span class="literal">true</span></span><br><span class="line">d-i partman-auto/disk string /dev/sda</span><br><span class="line">d-i partman-auto/method string regular</span><br><span class="line">d-i partman-auto/choose_recipe select atomic</span><br><span class="line">d-i partman-partitioning/confirm_write_new_label boolean <span class="literal">true</span></span><br><span class="line">d-i partman/choose_partition select finish</span><br><span class="line">d-i partman/confirm boolean <span class="literal">true</span></span><br><span class="line">d-i partman/confirm_nooverwrite boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The kernel image (meta) package to be installed;</span></span><br><span class="line">d-i base-installer/kernel/image string linux-generic</span><br><span class="line"><span class="comment">#d-i base-installer/kernel/altmeta string hwe-18.04</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### Package selection</span></span><br><span class="line"><span class="comment"># Install the Ubuntu Server seed.</span></span><br><span class="line"><span class="comment">#tasksel tasksel/force-tasks string server</span></span><br><span class="line"><span class="comment">#tasksel tasksel/first multiselect openssh-server</span></span><br><span class="line">d-i tasksel/first multiselect none</span><br><span class="line">d-i pkgsel/language-packs multiselect en, zh</span><br><span class="line">d-i pkgsel/update-policy select none</span><br><span class="line"></span><br><span class="line"><span class="comment"># Verbose output and no boot splash screen.</span></span><br><span class="line">d-i debian-installer/quiet  boolean <span class="literal">false</span></span><br><span class="line">d-i debian-installer/splash boolean <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">d-i cdrom-detect/eject boolean <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Avoid that last message about the install being complete.</span></span><br><span class="line"><span class="comment"># This will just finish and reboot</span></span><br><span class="line">d-i finish-install/reboot_in_progress note</span><br><span class="line"><span class="comment">#d-i debian-installer/exit/poweroff boolean true</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: The network is disabled during the installation due the problem we talked about earlier. As a result, <code>debian-install</code> will</p>
+<ul>
+<li>Fail to use self-defined APT repository</li>
+<li>Skip setting the host name</li>
+<li>Skip configuring <code>netplan</code></li>
+</ul>
+<p>But, all the problems above can be fixed by <code>cloud-init</code>.</p>
+</blockquote>
+<h2 id="add-boot-arguments">Add Boot Arguments</h2>
+<p>Automatic installation requires us to pass extra arguments to the kernel. Luckily, <code>cubic</code> will help us to edit the configuration of bootloaders.</p>
+<blockquote>
+<p>Note: There are two bootloaders in the CD image. <code>grub</code> is used to support the <code>EFI</code> firmware, and <code>isolinux</code> is used to support the traditional BIOS.</p>
+</blockquote>
+<p>Write the content below to the corresponding file.</p>
+<h3 id="bootgrubgrub.cfg"><code>boot/grub/grub.cfg</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> loadfont /boot/grub/font.pf2 ; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">set</span> gfxmode=auto</span><br><span class="line">	insmod efi_gop</span><br><span class="line">	insmod efi_uga</span><br><span class="line">	insmod gfxterm</span><br><span class="line">	terminal_output gfxterm</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> menu_color_normal=white/black</span><br><span class="line"><span class="built_in">set</span> menu_color_highlight=black/light-gray</span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> timeout=3</span><br><span class="line">menuentry <span class="string">&quot;Auto Install Ubuntu Server&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">set</span> gfxpayload=keep</span><br><span class="line">	linux /install/vmlinuz boot=casper file=/cdrom/preseed/auto-inst.seed auto=<span class="literal">true</span> priority=critical locale=en_US quiet ---</span><br><span class="line">	initrd  /install/initrd.gz</span><br><span class="line">&#125;</span><br><span class="line">menuentry <span class="string">&quot;Rescue a broken system&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">set</span> gfxpayload=keep</span><br><span class="line">	linux /install/vmlinuz boot=casper rescue/<span class="built_in">enable</span>=<span class="literal">true</span> ---</span><br><span class="line">	initrd /install/initrd.gz</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="isolinuxtxt.cfg"><code>isolinux/txt.cfg</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">default autoinstall</span><br><span class="line">label  auto-install</span><br><span class="line">  menu label ^Auto Install Ubuntu Server</span><br><span class="line">  kernel /install/vmlinuz</span><br><span class="line">  append boot=casper file=/cdrom/preseed/auto-inst.seed vga=788 initrd=/install/initrd.gz auto=<span class="literal">true</span> priority=critical locale=en_US quiet ---</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note: <code>isolinux</code> has a build-in option <code>Rescue a broken system</code>.</p>
+</blockquote>
+<p>By now, everything is ready to go. Let us enjoy the automatic installation.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/">https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/" title="How to make an unattended Ubuntu Server Installation ISO with cloud-init">https://nekodaemon.com/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

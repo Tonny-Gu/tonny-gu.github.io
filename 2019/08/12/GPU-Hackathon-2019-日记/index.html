@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="1. GPU Hackathon 介绍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GPU Hackathon 2019 日记">
+<meta property="og:url" content="https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="1. GPU Hackathon 介绍">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-08-12T03:39:00.000Z">
+<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:author" content="NekoDaemon">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/","path":"2019/08/12/GPU-Hackathon-2019-日记/","title":"GPU Hackathon 2019 日记"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>GPU Hackathon 2019 日记 | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#gpu-hackathon-%E4%BB%8B%E7%BB%8D"><span class="nav-text">1. GPU Hackathon 介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B4%BB%E5%8A%A8%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87"><span class="nav-text">2. 活动前的准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%B0%E9%9A%BE%E5%92%8C%E5%9D%91"><span class="nav-text">3. 困难和坑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#day-1-2"><span class="nav-text">Day 1-2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#day-2-3"><span class="nav-text">Day 2-3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#day-3-4"><span class="nav-text">Day 3-4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#day-4-5"><span class="nav-text">Day 4-5</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">4. 总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GPU Hackathon 2019 日记
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-08-12 03:39:00" itemprop="dateCreated datePublished" datetime="2019-08-12T03:39:00+00:00">2019-08-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-08-09 18:07:41" itemprop="dateModified" datetime="2022-08-09T18:07:41+00:00">2022-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%90%B9%E6%B0%B4%E6%97%A5%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">吹水日记</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="gpu-hackathon-介绍">1. GPU Hackathon 介绍</h2>
+<p>据NVIDIA的员工说，GPU Hackathon 最早是美国橡树岭国家实验室发起的，因为在近些年，GPU的架构非常适合执行并行计算，GPGPU的概念流行后，显卡的GPU可以支持大规模的并行计算，并行计算的速度远超CPU，所以当时的橡树岭在他们的超算平台上配置了不少的GPU。但是如果想用GPU加速计算的话，就需要修改自己的程序，使得程序能够运行在GPU上，然而在当时编写GPU加速代码的门槛比较高，很少的程序能够充分利用GPU的性能，所以橡树岭希望举办一些活动推广GPU计算的技术。后来NVIDIA作为一个GPU厂商，自然也希望更多的用户学会使用GPU，这样他们就能卖出更多的显卡。</p>
+<p>这个活动的流程是这样的，每一支队伍拿出自己原先运行在CPU上的程序，然后在为期5天的活动中，NVIDIA会为每一支队伍安排两名导师，在导师的指导下我们修改自己的代码。此外，每一天每个组都要做一个简单的报告，介绍自己的进展，瓶颈，和下一步的工作。最后，会有一场大型的报告，各组总结自己的工作，并汇报所取得的加速效果。</p>
+<h2 id="活动前的准备">2. 活动前的准备</h2>
+<p>GPU Hackathon建议我们提前两周，团队就要开始进行一些初步的工作。然而，我因为假期参加了NUS Summer Workshop，活动开始前两天我才回到了学校。</p>
+<p>我们组实际上被划分为两个小组，每个小组会负责一份代码的优化，另一个组的成员全部是我们学校力学与航空航天系的一位教授的课题组的研究生和研究助理，而我们组都是对并行计算感兴趣的本科生，我们要优化的代码也是他们课题组提供的。</p>
+<p>活动开始前几天的晚上，我去到他们的课题组，大家简单的介绍了一下自己，接着他们打包了一份原始代码让我先看看。他们的代码都是用Fortran写的，我一开始觉得我学过不少现代的高级编程语言，看懂这古老的高级编程语言应该不是什么困难的事，然而后来活动开始后，事情越来越不妙了。</p>
+<h2 id="困难和坑">3. 困难和坑</h2>
+<p>踩坑可以说是第一天就开始踩，不过对于这点我还是有所心理准备的，只不过我没有预计到之后我天天踩而已。</p>
+<h3 id="day-1-2">Day 1-2</h3>
+<p>第一天我们小组还好，还有一个经验丰富的学长坐镇，踩坑可以一起踩，摔得没有那么惨。我们遇到的第一个问题就是VPN登录不了。一般来说，超算的全部节点，包括登录节点全部隐藏在内网里，需要用一个VPN隧道访问内网，其实这就是VPN最原始的工作。NVIDIA的测试集群也是如此，需要借助一个叫NVIDIA Next Generation VPN Gateway的东西才能连接到测试集群。然而一开始我们去下载客户端Cisco Anyconnect Secure Mobility Client的时候，官网先让你注册，注册后告诉你你没资格下载。接着我们试着从第三方网站下载客户端，不是版本太老就是版本太新。最后发现NVIDIA有提供客户端下载，安装后发现连接不上深圳上海北京香港的Gateway，直到连接美国的Gateway才连接上并下载配置文件，借助配置文件才能连接其他国家的Gateway。其实最迷惑人的是，NVIDIA的工程师再次期间也不知道怎么办。</p>
+<p>解决VPN的问题花掉了上午大部分时间，接着试着编译他们课题组给的Fortran代码。首先使用Linux Environment Modules这种古老的东西配置环境。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">module load PrgEnv/PGI+OpenMPI/2018-03-19</span><br><span class="line">module load cuda</span><br><span class="line">module load pgi</span><br><span class="line">module load openmpi</span><br></pre></td></tr></table></figure>
+<p>CUDA是NVIDIA GPU的支持库，PGI是个编译器，OpenMPI是CPU进程间通信使用的库，Hackathon主要推广的技术是OpenACC，这个库由CUDA和PGI支持。</p>
+<p>本想一句make编译一遍过，又不是什么大工程像什么CESM这种编译起来一堆坑的，结果这份代码却依赖一个极其古老的库，FFTW2，1999年last updated，连SSE这种古老的SIMD指令都没用上的东西。与此同时在NVIDIA的测试集群只有FFTW3的库。更加坑的事情是，FFTW3的接口完全不兼容FFTW2的，这就意味着要是修改原始代码以适配FFTW3，那工作量够我们喝一壶的。学长直接按照README编译FFTW2，想编译出静态链接库，结果因为时代变迁，当时写的编译脚本已经不能在现在的系统下运行了。我一开始试着去解包CentOS的FFTW2的yum二进制包，得到了动态链接库和头文件，编译是能编译了，但是运行程序的时候动态链接库不在指定路径里，并且我们的权限不能将动态链接库复制到指定路径下。不得已，只能借助Arch Linux编译安装的脚本去编译FFTW2，才得到了静态链接库。</p>
+<h3 id="day-2-3">Day 2-3</h3>
+<p>从第二天起，那位经验丰富的学长就跑路去准备雅思了。成功编译后，工程师发现，使用命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 40 ./main</span><br></pre></td></tr></table></figure>
+<p>可以用40个进程运行，然而在使用20个进程运行程序的时候，MPI就会引发错误。工程师让我去排查问题的原因。起初我想用GDB之类的debugger，结果我发现GDB只能trace一个进程，而且往往不是trace的进程出错。于是我想用古老的print打印日志法调试，然而40个进程同时将log连同错误信息异步打印到屏幕上，根本不知道错误信息是哪个进程引发的，好死不死因为MPI出错导致MPI_Barrier也不工作了。然后我想着用stderr重定向错误信息到文件，在C语言里用freopen轻松实现，结果Fortran里没有这种函数。最后只能一句句的修改代码，让程序运行到某个位置终止程序，从而判断哪一行代码引发MPI错误。最后发现是block分割时相关代码，将进程数除8,也就意味着进程数需要是8的整数倍。滑稽的是，相关代码附近的注释写着，慎重处理8这个数，没有文档谁知道这个事。</p>
+<h3 id="day-3-4">Day 3-4</h3>
+<p>解决了MPI问题，random seed的相关代码引发了Runtime error，我看了一眼代码的上下文，又看了一遍上下文，还是没看懂这代码在干什么，于是我先问候了代码的作者的家人，再去问候“代码的作者”，然而“代码的作者”说这部分代码应该是十年前教授在美国的学生写的，他只是直接拿来用，但是他强调在Intel编译器下代码没有问题。一顿搜索猛如虎后发现Intel编译器的random seed的array size是2，同时PGI编译器的random seed的size是37。但是在我接触过的语言里，random seed就是个数，而不是数组，难怪我看不懂这段代码。</p>
+<h3 id="day-4-5">Day 4-5</h3>
+<p>代码能在CPU上运行了，与此同时其他组已经开始取得数十倍甚至百倍的加速效果了，哪怕这段代码跑出来的结果未必正确，先做个性能分析再直接加上OpenACC导语先跑起来再说。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mpirun -np 40 nvprof --cpu-profiling on --cpu-profiling-mode top-down --annotate-mpi openmpi  -o output.%h.%p.%q&#123;OMPI_COMM_WORLD_RANK&#125; ./main</span><br><span class="line"><span class="comment"># command to get the profiling results</span></span><br></pre></td></tr></table></figure>
+<p>使用上面这段命令既可启动NVPROF，配合NVIDIA Visual Profiler就可以做性能分析，加上NVTX的话就可以增加tag，对自定义的代码片段进行性能分析。</p>
+<p>但是，运行nvprof的时候又引发了工程师都不知道怎么发生的错误，结果去掉<code>--annotate-mpi openmpi</code>这个开关就可以正常运行了，反正也不知道为什么就好了。</p>
+<p>加上OpenACC导语后又引发了CUDA Kernel的错误，一番排查后发现Fortran的数组支持负数的下标，然而OpenACC隐性生成copyin代码的时候对数组大小识别错误，调整了导语后可以在GPU上运行。</p>
+<p>然而不知道为什么，用GPU加速的程序比原来慢了很多，打开Profiler一看，显示只有一个GPU一个SMX的一个CUDA核心在运行串行的程序，换句话说就是一核有难，20479核围观。</p>
+<p>在工程师的建议下，在活动结束之前，程序能够跑满一块GPU了，但是因为运算结果保存在GPU上，CPU需要取得这些数据时，CUDA为了维护Unified Memory的一致性开销巨大，在Profiler中大块大块的时间片都是Memory Page Fault。</p>
+<p>最终我们运行在GPU上的程序的计算速度和原始版本相近，并行计算节约下来的时间全部被数据离散传输消耗。</p>
+<h2 id="总结">4. 总结</h2>
+<p>总的来说，还是很感谢深圳超算中心和NVIDIA提供的这次宝贵的踩坑经验，所谓的程序员的经验其实绝大部分就是踩坑和从坑里跳出来的经验，对于很多人来说，他们连踩坑的机会都没有，毕竟这种核武器级的设施也不是随随便便就能接触到的。同时也要致敬那些用超算科研的科学家，因为在超算上还能看到大量上个世纪的计算机痕迹，实话说这玩意是真的很难用好，为了取得更高的计算效率需要付出大量的努力，然后代码变得难以维护和移植，而且科研是漫长的过程，维护上古代码也不是什么轻松的事情。</p>
+<p>加上导语后却引发了CUDA Kernel的错误，一番排查后发现Fortran的数组支持负数的下标，然而OpenACC隐性生成copyin代码的时候对数组大小识别错误，调整了导语后可以在GPU上运行。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>Tonny
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-%E6%97%A5%E8%AE%B0/" title="GPU Hackathon 2019 日记">https://nekodaemon.com/2019/08/12/GPU-Hackathon-2019-日记/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
