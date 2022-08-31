@@ -2059,7 +2059,7 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
-    <title>Tips of configuring InfiniBand Adapters</title>
+    <title>Tips of configuring InfiniBand adapters</title>
     <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
     <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
 <h2 id="relationship-among-infiniband-roce-ipoib-and-ethernet-mode">Relationship among InfiniBand, RoCE, IPoIB, and Ethernet Mode</h2>
