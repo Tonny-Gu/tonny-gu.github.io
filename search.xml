@@ -2059,6 +2059,99 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
+    <title>Tips of configuring InfiniBand Adapters</title>
+    <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
+    <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
+<h2 id="relationship-among-infiniband-roce-ipoib-and-ethernet-mode">Relationship among InfiniBand, RoCE, IPoIB, and Ethernet Mode</h2>
+<p>Let us take Mellanox ConnectX Adapter as an example. Actually, this adapter can work in either InfiniBand Mode or Ethernet Mode, which is configurable with some tools provided by the vendor. As iWARP is not widely adopted, our article will not discuss this protocol.</p>
+<table>
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 30%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>InfiniBand Mode</th>
+<th>Ethernet Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Supported by ConnectX</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>RDMA Support</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Programmable with Verbs</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>TCP/IP Support</td>
+<td>Needs IPoIB</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Configurable with Netplan (e.g. Assign IP Address)</td>
+<td>Needs IPoIB</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Layout of RDMA Packet</td>
+<td>IB Frame + IB Header</td>
+<td>ETH Frame + RoCE Header</td>
+</tr>
+<tr class="odd">
+<td>Layout of TCP Packet</td>
+<td>IB Frame + IB/IPoIB/IP/TCP Headers</td>
+<td>ETH Frame + IP/TCP Headers</td>
+</tr>
+</tbody>
+</table>
+<p>Note that RoCE Header is a general concept. And RoCEv1 and RoCEv2 give different detailed definitions of this part.</p>
+<h2 id="identify-infiniband-ethernet-mode">Identify InfiniBand / Ethernet Mode</h2>
+<p>The easiest way is to directly have a look at the interface name and link type with <code>ifconfig</code> or <code>ip</code> under Linux. An InfiniBand adapter working in Ethernet mode looks exactly the same as a regular Ethernet adapter.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ip a</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">7: ens1f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP group default qlen 1000</span><br><span class="line">    link/ether ...</span><br><span class="line">    inet 10.200.0.1/24 brd 10.200.0.255 scope global ens1f1</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Besides, <code>ibdev2netdev</code> can also help.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibdev2netdev</span><br><span class="line">mlx4_0 port 1 ==&gt; ibp129s0 (Up)</span><br><span class="line">mlx5_0 port 1 ==&gt; ens1f0 (Up)</span><br></pre></td></tr></table></figure>
+<p>Another approach is through <code>ibstat</code>. And the field <code>Link layer</code> shows which mode the adapter is working in.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibstat</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx4_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4099</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 2.42.5000</span><br><span class="line">	Hardware version: 1</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 56</span><br><span class="line">		Base lid: 1</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 1</span><br><span class="line">		Capability mask: 0x0251486a</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: InfiniBand</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx5_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4119</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 16.25.1020</span><br><span class="line">	Hardware version: 0</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 100</span><br><span class="line">		Base lid: 0</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 0</span><br><span class="line">		Capability mask: 0x00010000</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: Ethernet</span><br></pre></td></tr></table></figure>
+<h2 id="change-infiniband-ethernet-mode">Change InfiniBand / Ethernet Mode</h2>
+<p>To alter the work mode, there doesn't exist a general way for now. For Mellanox ConnectX Adapter, the vendor provided a tool called <code>mlxconfig</code>. Here is the usage listed in <a href="https://docs.nvidia.com/networking/display/MFTv4110/Using+mlxconfig">the official document</a>, where you can find more information about it.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo mlxconfig -d /dev/mst/mt4103_pci_cr0 <span class="built_in">set</span> LINK_TYPE_P1=1 LINK_TYPE_P2=1</span><br><span class="line"> </span><br><span class="line">Device <span class="comment">#1:</span></span><br><span class="line">----------</span><br><span class="line">Device <span class="built_in">type</span>:   ConnectX3Pro</span><br><span class="line">PCI device:    /dev/mst/mt4103_pci_cr0</span><br><span class="line">Configurations:        Next Boot        New</span><br><span class="line">  LINK_TYPE_P1         ETH(2)           IB(1)</span><br><span class="line">  LINK_TYPE_P2         ETH(2)           IB(1)</span><br><span class="line"> </span><br><span class="line">Apply new Configuration? ? (y/n) [n] : y</span><br><span class="line">Applying... Done!</span><br><span class="line">-I- Please reboot machine to load new configurations.</span><br></pre></td></tr></table></figure>
+<p>Note that P1 and P2 are referring to two separated ports on the adapter. <strong>Attention: Please make sure the network switch is capable of handling InfiniBand or Ethernet Frame before altering the work mode .</strong> If the switch cannot recognize the data frame sent from the server, you might observer <code>Physical state: Polling</code> reported by <code>ibstat</code>, as the packet is not forwarded by the switch correctly. Certain network switches can only forward one type of data frame at a time, which means you may need to manually reconfigure the switch to let it work with the other type of data frame.</p>
+<h2 id="configure-ipoib">Configure IPoIB</h2>
+<p>By default, the IPoIB will be automatically configured when the IP address is assigned to the interface. The IP address can be managed by <code>netplan</code> or <code>NetworkManager</code>, which depends on your Linux distro. As for the configuration file, there is no difference between the InfiniBand and regular Ethernet Adapters.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Assign a static IP address with netplan for an InfiniBand interface</span></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">  <span class="attr">ethernets:</span></span><br><span class="line">    <span class="attr">ibp129s0:</span></span><br><span class="line">      <span class="attr">addresses:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.7</span><span class="number">.100</span><span class="string">/24</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>Once the above configuration is applied and the interface is brought up successfully. We can see <code>ib_ipoib</code> module is loaded.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ lsmod | grep ipoib</span><br><span class="line">ib_ipoib              180224  0</span><br><span class="line">$ ip a</span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>If the IP address doesn't appear in <code>ip a</code>, we need to check the status of the InfiniBand adapter and make sure its state is active in <code>ibstat</code>. A common mistake is forgetting to enable <code>opensm</code> / <code>opensmd</code>, which will make the adapter stuck at <code>State: Initializing</code>. Note that <code>opensmd</code> will not launch on startup by default.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Start OpenSM</span></span><br><span class="line">$ sudo opensm</span><br><span class="line"></span><br><span class="line"><span class="comment"># Start OpenSM As Daemon</span></span><br><span class="line">$ sudo service opensmd start <span class="comment"># Method 1</span></span><br><span class="line">$ sudo systemctl start opensmd <span class="comment"># Method 2</span></span><br><span class="line">$ sudo /etc/init.d/opensmd start <span class="comment"># Method 3</span></span><br></pre></td></tr></table></figure>
+<h2 id="identify-roce-version">Identify RoCE Version</h2>
+<p>The major difference between RoCEv1 and RoCEv2 is that RoCEv2 is able to utilize IP networking to route while RoCEv1 is routing via MAC addresses. A funny fact is RoCEv1 and RoCEv2 may be enable simultaneously, and we could choose the version at runtime through specifying Group ID (GID). There is a script written by Mellanox named <code>show_gids</code> and it will display RoCE versions associated to GIDs.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ show_gids</span><br><span class="line">DEV	PORT	INDEX	GID					IPv4  		VER	DEV</span><br><span class="line">---	----	-----	---					------------  	---	---</span><br><span class="line">mlx5_0	1	0	fe80:0000:0000:0000:...			v1	ens1f0</span><br><span class="line">mlx5_0	1	1	fe80:0000:0000:0000:...			v2	ens1f0</span><br><span class="line">mlx5_0	1	2	0000:0000:0000:0000:...	11.0.0.201  	v1	ens1f0</span><br><span class="line">mlx5_0	1	3	0000:0000:0000:0000:...	11.0.0.201  	v2	ens1f0</span><br></pre></td></tr></table></figure>
+<h2 id="check-adapter-speed">Check Adapter Speed</h2>
+<p><code>ethtool</code> can read out this information and it can work with both InfiniBand and Ethernet mode.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ethtool ibp129s0</span><br><span class="line">Settings <span class="keyword">for</span> ibp129s0:</span><br><span class="line">...</span><br><span class="line">	Speed: 56000Mb/s</span><br><span class="line">	Duplex: Full</span><br><span class="line"></span><br><span class="line">$ ethtool ens1f0</span><br><span class="line">Settings <span class="keyword">for</span> ens1f0:</span><br><span class="line">...</span><br><span class="line">	Speed: 100000Mb/s</span><br><span class="line">	Duplex: Full</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.advancedclustering.com/act_kb/infiniband-port-states/">https://www.advancedclustering.com/act_kb/infiniband-port-states/</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/32105832">https://zhuanlan.zhihu.com/p/32105832</a></li>
+<li><a href="https://wiki.archlinux.org/title/InfiniBand">https://wiki.archlinux.org/title/InfiniBand</a></li>
+<li><a href="https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM">https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM</a></li>
+<li><a href="https://www.cnblogs.com/juzib/p/13273380.html">https://www.cnblogs.com/juzib/p/13273380.html</a></li>
+<li>[https://blog.51cto.com/liangchaoxi/4044293](</li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Ubuntu 学习笔记</title>
     <url>/2019/06/13/Ubuntu-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h2 id="ubuntu-手动释放获取ip地址">Ubuntu 手动释放获取IP地址</h2>
