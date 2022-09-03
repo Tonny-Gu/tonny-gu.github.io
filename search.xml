@@ -2187,19 +2187,20 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <li>For the user who wants to deeply customize the ISO file, including unpacking <code>rootfs</code> image, <code>cubic</code> is everything you need. You can refer to <a href="(/2021/04/27/How-to-make-an-unattended-Ubuntu-Server-Installation-ISO-with-cloud-init/)">my previous post</a> and learn how it works.</li>
 </ul>
 <h3 id="add-kernel-arguments">Add Kernel Arguments</h3>
-<p>Assume the root directory of ISO image is <code>/cdrom</code>. There are two bootloader configuration files need to modify, one for UEFI system, one for the legacy one.</p>
+<p>Assume the root directory of ISO image is <code>/cdrom</code>. There are two bootloader configuration files need to modify, one for UEFI system, one for the legacy one. Append the kernel arguments like this,</p>
 <ul>
 <li><code>/cdrom/isolinux/txt.cfg</code></li>
 </ul>
-<p>Append the kernel arguments like this,</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>/cdrom/boot/grub/grub.cfg</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">menuentry <span class="string">&quot;Install Ubuntu Server&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">set</span> gfxpayload=keep</span><br><span class="line">	linux	/casper/vmlinuz   quiet autoinstall ds=nocloud\;s=/cdrom/ ---</span><br><span class="line">	initrd	/casper/initrd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>If you would like to skip the integrity check, you could try to append the kernel argument <code>fsck.mode=skip</code> as the following example shows.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># File: /cdrom/isolinux/txt.cfg</span></span><br><span class="line"></span><br><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet fsck.mode=skip autoinstall ds=nocloud;s=/cdrom/ ---</span><br><span class="line"></span><br><span class="line"><span class="comment"># File: /cdrom/boot/grub/grub.cfg</span></span><br><span class="line"></span><br><span class="line">menuentry <span class="string">&quot;Install Ubuntu Server&quot;</span> &#123;</span><br><span class="line">	<span class="built_in">set</span> gfxpayload=keep</span><br><span class="line">	linux	/casper/vmlinuz   quiet fsck.mode=skip autoinstall ds=nocloud\;s=/cdrom/ ---</span><br><span class="line">	initrd	/casper/initrd</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>Note: HWE Kernel is a higher version of Linux kernel compared to the default one, which is shipped with the newer drivers. Theoretically, it has a better support for the latest hardware.</p>
 </blockquote>
-<ul>
-<li><code>/cdrom/grub.cfg</code></li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">label live</span><br><span class="line">  menu label ^Install Ubuntu Server</span><br><span class="line">  kernel /casper/vmlinuz</span><br><span class="line">  append   initrd=/casper/initrd quiet autoinstall ds=nocloud;s=/cdrom/  ---</span><br></pre></td></tr></table></figure>
 <h3 id="add-auto-install-configurations">Add Auto-install Configurations</h3>
 <p>Two new files are also required for automatic answering.</p>
 <ul>
