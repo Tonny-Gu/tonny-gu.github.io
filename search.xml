@@ -448,6 +448,36 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Docker 学习笔记</title>
+    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="docker-自启动">Docker 自启动</h2>
+<p>Debian系的系统下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="docker-container-自启动">Docker Container 自启动</h2>
+<h4 id="container-restart-policy">Container Restart Policy</h4>
+<blockquote>
+<p>--restart的可选参数： 1. no (默认值) Container退出时不重启 2. on-failure[:max-retries] exit code非0时重启 3. always 4. unless-stopped</p>
+</blockquote>
+<p>未创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
+<p>已创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="docker-container-自启动脚本">Docker Container 自启动脚本</h2>
+<p>在Container下创建/startup.sh (别忘了执行权限)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
+<p>创建Container</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ESXi 折腾记录</title>
     <url>/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h1 id="esxi-镜像添加网卡驱动程序">ESXi 镜像添加网卡驱动程序</h1>
@@ -499,36 +529,6 @@
       </categories>
       <tags>
         <tag>ESXi</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Docker 学习笔记</title>
-    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h2 id="docker-自启动">Docker 自启动</h2>
-<p>Debian系的系统下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
-<hr />
-<h2 id="docker-container-自启动">Docker Container 自启动</h2>
-<h4 id="container-restart-policy">Container Restart Policy</h4>
-<blockquote>
-<p>--restart的可选参数： 1. no (默认值) Container退出时不重启 2. on-failure[:max-retries] exit code非0时重启 3. always 4. unless-stopped</p>
-</blockquote>
-<p>未创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
-<p>已创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
-<hr />
-<h2 id="docker-container-自启动脚本">Docker Container 自启动脚本</h2>
-<p>在Container下创建/startup.sh (别忘了执行权限)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
-<p>创建Container</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>Docker</tag>
       </tags>
   </entry>
   <entry>
@@ -2120,8 +2120,8 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 </blockquote>
 <h2 id="references">References</h2>
 <ul>
-<li>https://www.cnblogs.com/aobaxu/p/16195237.html</li>
-<li>[https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting](</li>
+<li><a href="https://www.cnblogs.com/aobaxu/p/16195237.html">https://www.cnblogs.com/aobaxu/p/16195237.html</a></li>
+<li><a href="https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting">https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting</a></li>
 </ul>
 ]]></content>
   </entry>
