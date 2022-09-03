@@ -448,36 +448,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>Docker 学习笔记</title>
-    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h2 id="docker-自启动">Docker 自启动</h2>
-<p>Debian系的系统下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
-<hr />
-<h2 id="docker-container-自启动">Docker Container 自启动</h2>
-<h4 id="container-restart-policy">Container Restart Policy</h4>
-<blockquote>
-<p>--restart的可选参数： 1. no (默认值) Container退出时不重启 2. on-failure[:max-retries] exit code非0时重启 3. always 4. unless-stopped</p>
-</blockquote>
-<p>未创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
-<p>已创建Container时</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
-<hr />
-<h2 id="docker-container-自启动脚本">Docker Container 自启动脚本</h2>
-<p>在Container下创建/startup.sh (别忘了执行权限)</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
-<p>创建Container</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>Docker</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ESXi 折腾记录</title>
     <url>/2019/06/17/ESXi-%E6%8A%98%E8%85%BE%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h1 id="esxi-镜像添加网卡驱动程序">ESXi 镜像添加网卡驱动程序</h1>
@@ -529,6 +499,36 @@
       </categories>
       <tags>
         <tag>ESXi</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker 学习笔记</title>
+    <url>/2019/06/08/Docker-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="docker-自启动">Docker 自启动</h2>
+<p>Debian系的系统下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> service docker start</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="docker-container-自启动">Docker Container 自启动</h2>
+<h4 id="container-restart-policy">Container Restart Policy</h4>
+<blockquote>
+<p>--restart的可选参数： 1. no (默认值) Container退出时不重启 2. on-failure[:max-retries] exit code非0时重启 3. always 4. unless-stopped</p>
+</blockquote>
+<p>未创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run --restart=always</span></span><br></pre></td></tr></table></figure>
+<p>已创建Container时</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker update --restart=always CONTAINER</span></span><br></pre></td></tr></table></figure>
+<hr />
+<h2 id="docker-container-自启动脚本">Docker Container 自启动脚本</h2>
+<p>在Container下创建/startup.sh (别忘了执行权限)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">Your commands</span><br><span class="line"></span><br><span class="line">/bin/bash #阻塞，避免脚本执行完后退出</span><br></pre></td></tr></table></figure>
+<p>创建Container</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> docker run -td IMAGE /startup.sh</span> </span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>Docker</tag>
       </tags>
   </entry>
   <entry>
@@ -1868,99 +1868,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
-    <title>Tips of configuring InfiniBand adapters</title>
-    <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
-    <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
-<h2 id="relationship-among-infiniband-roce-ipoib-and-ethernet-mode">Relationship among InfiniBand, RoCE, IPoIB, and Ethernet Mode</h2>
-<p>Let us take Mellanox ConnectX Adapter as an example. Actually, this adapter can work in either InfiniBand Mode or Ethernet Mode, which is configurable with some tools provided by the vendor. As iWARP is not widely adopted, our article will not discuss this protocol.</p>
-<table>
-<colgroup>
-<col style="width: 45%" />
-<col style="width: 30%" />
-<col style="width: 23%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>InfiniBand Mode</th>
-<th>Ethernet Mode</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Supported by ConnectX</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr class="even">
-<td>RDMA Support</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr class="odd">
-<td>Programmable with Verbs</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr class="even">
-<td>TCP/IP Support</td>
-<td>Needs IPoIB</td>
-<td>Yes</td>
-</tr>
-<tr class="odd">
-<td>Configurable with Netplan (e.g. Assign IP Address)</td>
-<td>Needs IPoIB</td>
-<td>Yes</td>
-</tr>
-<tr class="even">
-<td>Layout of RDMA Packet</td>
-<td>IB Frame + IB Header</td>
-<td>ETH Frame + RoCE Header</td>
-</tr>
-<tr class="odd">
-<td>Layout of TCP Packet</td>
-<td>IB Frame + IB/IPoIB/IP/TCP Headers</td>
-<td>ETH Frame + IP/TCP Headers</td>
-</tr>
-</tbody>
-</table>
-<p>Note that RoCE Header is a general concept. And RoCEv1 and RoCEv2 give different detailed definitions of this part.</p>
-<h2 id="identify-infiniband-ethernet-mode">Identify InfiniBand / Ethernet Mode</h2>
-<p>The easiest way is to directly have a look at the interface name and link type with <code>ifconfig</code> or <code>ip</code> under Linux. An InfiniBand adapter working in Ethernet mode looks exactly the same as a regular Ethernet adapter.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ip a</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">7: ens1f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP group default qlen 1000</span><br><span class="line">    link/ether ...</span><br><span class="line">    inet 10.200.0.1/24 brd 10.200.0.255 scope global ens1f1</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>Besides, <code>ibdev2netdev</code> can also help.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibdev2netdev</span><br><span class="line">mlx4_0 port 1 ==&gt; ibp129s0 (Up)</span><br><span class="line">mlx5_0 port 1 ==&gt; ens1f0 (Up)</span><br></pre></td></tr></table></figure>
-<p>Another approach is through <code>ibstat</code>. And the field <code>Link layer</code> shows which mode the adapter is working in.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibstat</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx4_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4099</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 2.42.5000</span><br><span class="line">	Hardware version: 1</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 56</span><br><span class="line">		Base lid: 1</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 1</span><br><span class="line">		Capability mask: 0x0251486a</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: InfiniBand</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx5_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4119</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 16.25.1020</span><br><span class="line">	Hardware version: 0</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 100</span><br><span class="line">		Base lid: 0</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 0</span><br><span class="line">		Capability mask: 0x00010000</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: Ethernet</span><br></pre></td></tr></table></figure>
-<h2 id="change-infiniband-ethernet-mode">Change InfiniBand / Ethernet Mode</h2>
-<p>To alter the work mode, there doesn't exist a general way for now. For Mellanox ConnectX Adapter, the vendor provided a tool called <code>mlxconfig</code>. Here is the usage listed in <a href="https://docs.nvidia.com/networking/display/MFTv4110/Using+mlxconfig">the official document</a>, where you can find more information about it.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo mlxconfig -d /dev/mst/mt4103_pci_cr0 <span class="built_in">set</span> LINK_TYPE_P1=1 LINK_TYPE_P2=1</span><br><span class="line"> </span><br><span class="line">Device <span class="comment">#1:</span></span><br><span class="line">----------</span><br><span class="line">Device <span class="built_in">type</span>:   ConnectX3Pro</span><br><span class="line">PCI device:    /dev/mst/mt4103_pci_cr0</span><br><span class="line">Configurations:        Next Boot        New</span><br><span class="line">  LINK_TYPE_P1         ETH(2)           IB(1)</span><br><span class="line">  LINK_TYPE_P2         ETH(2)           IB(1)</span><br><span class="line"> </span><br><span class="line">Apply new Configuration? ? (y/n) [n] : y</span><br><span class="line">Applying... Done!</span><br><span class="line">-I- Please reboot machine to load new configurations.</span><br></pre></td></tr></table></figure>
-<p>Note that P1 and P2 are referring to two separated ports on the adapter. <strong>Attention: Please make sure the network switch is capable of handling InfiniBand or Ethernet Frame before altering the work mode .</strong> If the switch cannot recognize the data frame sent from the server, you might observer <code>Physical state: Polling</code> reported by <code>ibstat</code>, as the packet is not forwarded by the switch correctly. Certain network switches can only forward one type of data frame at a time, which means you may need to manually reconfigure the switch to let it work with the other type of data frame.</p>
-<h2 id="configure-ipoib">Configure IPoIB</h2>
-<p>By default, the IPoIB will be automatically configured when the IP address is assigned to the interface. The IP address can be managed by <code>netplan</code> or <code>NetworkManager</code>, which depends on your Linux distro. As for the configuration file, there is no difference between the InfiniBand and regular Ethernet Adapters.</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Assign a static IP address with netplan for an InfiniBand interface</span></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">  <span class="attr">ethernets:</span></span><br><span class="line">    <span class="attr">ibp129s0:</span></span><br><span class="line">      <span class="attr">addresses:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.7</span><span class="number">.100</span><span class="string">/24</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure>
-<p>Once the above configuration is applied and the interface is brought up successfully. We can see <code>ib_ipoib</code> module is loaded.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ lsmod | grep ipoib</span><br><span class="line">ib_ipoib              180224  0</span><br><span class="line">$ ip a</span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
-<p>If the IP address doesn't appear in <code>ip a</code>, we need to check the status of the InfiniBand adapter and make sure its state is active in <code>ibstat</code>. A common mistake is forgetting to enable <code>opensm</code> / <code>opensmd</code>, which will make the adapter stuck at <code>State: Initializing</code>. Note that <code>opensmd</code> will not launch on startup by default.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Start OpenSM</span></span><br><span class="line">$ sudo opensm</span><br><span class="line"></span><br><span class="line"><span class="comment"># Start OpenSM As Daemon</span></span><br><span class="line">$ sudo service opensmd start <span class="comment"># Method 1</span></span><br><span class="line">$ sudo systemctl start opensmd <span class="comment"># Method 2</span></span><br><span class="line">$ sudo /etc/init.d/opensmd start <span class="comment"># Method 3</span></span><br></pre></td></tr></table></figure>
-<h2 id="identify-roce-version">Identify RoCE Version</h2>
-<p>The major difference between RoCEv1 and RoCEv2 is that RoCEv2 is able to utilize IP networking to route while RoCEv1 is routing via MAC addresses. A funny fact is RoCEv1 and RoCEv2 may be enable simultaneously, and we could choose the version at runtime through specifying Group ID (GID). There is a script written by Mellanox named <code>show_gids</code> and it will display RoCE versions associated to GIDs.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ show_gids</span><br><span class="line">DEV	PORT	INDEX	GID					IPv4  		VER	DEV</span><br><span class="line">---	----	-----	---					------------  	---	---</span><br><span class="line">mlx5_0	1	0	fe80:0000:0000:0000:...			v1	ens1f0</span><br><span class="line">mlx5_0	1	1	fe80:0000:0000:0000:...			v2	ens1f0</span><br><span class="line">mlx5_0	1	2	0000:0000:0000:0000:...	11.0.0.201  	v1	ens1f0</span><br><span class="line">mlx5_0	1	3	0000:0000:0000:0000:...	11.0.0.201  	v2	ens1f0</span><br></pre></td></tr></table></figure>
-<h2 id="check-adapter-speed">Check Adapter Speed</h2>
-<p><code>ethtool</code> can read out this information and it can work with both InfiniBand and Ethernet mode.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ethtool ibp129s0</span><br><span class="line">Settings <span class="keyword">for</span> ibp129s0:</span><br><span class="line">...</span><br><span class="line">	Speed: 56000Mb/s</span><br><span class="line">	Duplex: Full</span><br><span class="line"></span><br><span class="line">$ ethtool ens1f0</span><br><span class="line">Settings <span class="keyword">for</span> ens1f0:</span><br><span class="line">...</span><br><span class="line">	Speed: 100000Mb/s</span><br><span class="line">	Duplex: Full</span><br></pre></td></tr></table></figure>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://www.advancedclustering.com/act_kb/infiniband-port-states/">https://www.advancedclustering.com/act_kb/infiniband-port-states/</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/32105832">https://zhuanlan.zhihu.com/p/32105832</a></li>
-<li><a href="https://wiki.archlinux.org/title/InfiniBand">https://wiki.archlinux.org/title/InfiniBand</a></li>
-<li><a href="https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM">https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM</a></li>
-<li><a href="https://www.cnblogs.com/juzib/p/13273380.html">https://www.cnblogs.com/juzib/p/13273380.html</a></li>
-<li><a href="https://blog.51cto.com/liangchaoxi/4044293">https://blog.51cto.com/liangchaoxi/4044293</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
     <url>/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</url>
     <content><![CDATA[<p>SC21又又又又是在线上打的。第二年痛失美帝免费旅游机会了！！！第二年了！！！<del>没有机票，酒店，和大吃大喝的比赛能叫比赛吗！</del>不过结果还是不错的，远远的超出我的预期（原因请看下文分解）。</p>
@@ -2149,6 +2056,166 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 </ul>
 <h2 id="ending">Ending</h2>
 <p>其实这1w字的流水账早就在10月的时候写完了，只不过拖到了第二年才发出来，欸嘿。说起来这也是我最后一次以正式队员/队长的身份打SC比赛了，想想好气啊，因为这破疫情，痛失2x美帝 2x新加坡 2x北京 1x厦门免费旅游机会，没能帮学校花钱，我感到非常的愧疚。果然还是想续一续我的学生身份，继续努力的帮学校花钱。希望今年能以Year 0 PhD Student的身份打ASC22（<del>offer不会下不来了吧</del>），然后在未来某一年以Presenter的身份回到SC的会场，并成为目击证人，亲眼见证在nike的successor在SC SCC把其他队锤爆的那一刻。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
+    <url>/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</url>
+    <content><![CDATA[<p>Slurm will make a bunch of seperated machines look much like a cluster, is it right?</p>
+<h2 id="naming-convention-of-nodes">Naming Convention of Nodes</h2>
+<p>A common cluster should comprise management nodes and compute nodes. This aritcle will take our cluster as an example to demostrate steps to install and configure Slurm. In our case, the management node is called <code>clab-mgt01</code> while the compute nodes are named from <code>clab01</code> to <code>clab20</code> in order.</p>
+<h2 id="install-dependencies">Install Dependencies</h2>
+<p>Execute the following command to install the dependencies <strong>on all machines</strong>. (<code>clab-all</code> refers to all machines including management and compute nodes).</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo apt install slurm-wlm slurm-client munge</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Tips: There are several tools that may help to manage multiple nodes easily:</p>
+<ul>
+<li>iTerm2 (on Mac) / Terminator (on Linux)</li>
+<li>csshX (on Mac) / cssh (on Linux)</li>
+<li>Parallel SSH (at cluster side)</li>
+</ul>
+</blockquote>
+<h2 id="generate-slurm-configuration">Generate Slurm Configuration</h2>
+<p>There is <a href="https://slurm.schedmd.com/configurator.html">an official online configuration generator</a>. And we should carefully check the fields below.</p>
+<ul>
+<li><strong>SlurmctldHost</strong>: <code>clab-mgt01</code> in our case.</li>
+<li><strong>NodeName</strong>: <code>clab[01-20]</code> in our case.</li>
+<li><strong>CPUs</strong>: It is recommended to leave it blank.</li>
+<li><strong>Sockets</strong>: For a dual-socket server we commonly see, it should be <code>2</code>.</li>
+<li><strong>CoresPerSocket</strong>: Number of physical cores per socket.</li>
+<li><strong>ThreadsPerCore</strong>: For a regular x86 server, if hyperthreading is enabled, it should be <code>2</code>, otherwise <code>1</code>.</li>
+<li><strong>RealMemory</strong>: Optional.</li>
+</ul>
+<p>Click <code>submit</code>, then we could copy the file content to <code>/etc/slurm-llnl/slurm.conf</code> <strong>on all machines</strong>.</p>
+<blockquote>
+<p>Tips: Don't forget the shared storage (e.g. NFS storage) on the cluster. We could utilize it to distribute files.</p>
+</blockquote>
+<h2 id="distribute-munge-key">Distribute Munge Key</h2>
+<p>Once Munge is installed successfully, the key <code>/etc/munge/munge.key</code> will be automatically generated. It is requried for all machines to hold the same key. Therefore, we could distribute the key <strong>on the management node</strong> to <strong>the remaining nodes</strong> including compute nodes and other backup management node if existing.</p>
+<blockquote>
+<p>Tips: Again. We could also utilize the shared storage to distribute the key.</p>
+</blockquote>
+<p>Then make sure the permission and the ownership are correctly set.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo chmod 400 /etc/munge/munge.key</span><br><span class="line">clab-all$ chown munge:munge /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
+<h2 id="patch-slurm-cgroup-integration">Patch Slurm Cgroup Integration</h2>
+<p>By default, there Slurm cannot work with Cgroup well. If we start Slurm service right now, we may receive this error shown below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">error: cgroup namespace <span class="string">&#x27;freezer&#x27;</span> not mounted. aborting</span><br></pre></td></tr></table></figure>
+<p>Therefore, by pasting the following content to <code>/etc/slurm/cgroup.conf</code> <strong>on compute nodes</strong>, this issue can be fixed.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CgroupMountpoint=/sys/fs/cgroup</span><br></pre></td></tr></table></figure>
+<p>or using this command:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> CgroupMountpoint=/sys/fs/cgroup &gt;&gt; /etc/slurm/cgroup.conf</span><br></pre></td></tr></table></figure>
+<h2 id="fix-directory-permission">Fix Directory Permission</h2>
+<p>For unknown reasons, the permission of the relevant directory is not set properly, which may lead to this error.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">slurmctld: fatal: mkdir(/var/spool/slurmctld): Permission denied</span><br></pre></td></tr></table></figure>
+<p>The solution is executing the commands below <strong>on management nodes</strong>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo mkdir -p /var/spool/slurmctld</span><br><span class="line">clab-mgt$ sudo chown slurm:slurm /var/spool/slurmctld/</span><br></pre></td></tr></table></figure>
+<h2 id="start-slurm-service">Start Slurm Service</h2>
+<p>So far, we have finished the basic configuration. Let us launch Slurm now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On management nodes</span></span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-mgt$ sudo systemctl start munge</span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">clab-mgt$ sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># On compute nodes</span></span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-comp$ sudo systemctl start munge</span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">clab-comp$ sudo systemctl start slurmd</span><br></pre></td></tr></table></figure>
+<p>Run <code>sinfo</code> and we should see all the compute nodes are ready.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sinfo</span><br><span class="line">PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span><br><span class="line">debug*       up   infinite     20   idle clab[01-20]</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Tips: If your Slurm is not working correctly, you could try with these commands to debug.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo slurmctld -D</span><br><span class="line">clab-comp$ sudo slurmd -D</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="references">References</h2>
+<ul>
+<li>https://www.cnblogs.com/aobaxu/p/16195237.html</li>
+<li>[https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting](</li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>Tips of configuring InfiniBand adapters</title>
+    <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
+    <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
+<h2 id="relationship-among-infiniband-roce-ipoib-and-ethernet-mode">Relationship among InfiniBand, RoCE, IPoIB, and Ethernet Mode</h2>
+<p>Let us take Mellanox ConnectX Adapter as an example. Actually, this adapter can work in either InfiniBand Mode or Ethernet Mode, which is configurable with some tools provided by the vendor. As iWARP is not widely adopted, our article will not discuss this protocol.</p>
+<table>
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 30%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>InfiniBand Mode</th>
+<th>Ethernet Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Supported by ConnectX</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>RDMA Support</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Programmable with Verbs</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>TCP/IP Support</td>
+<td>Needs IPoIB</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Configurable with Netplan (e.g. Assign IP Address)</td>
+<td>Needs IPoIB</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Layout of RDMA Packet</td>
+<td>IB Frame + IB Header</td>
+<td>ETH Frame + RoCE Header</td>
+</tr>
+<tr class="odd">
+<td>Layout of TCP Packet</td>
+<td>IB Frame + IB/IPoIB/IP/TCP Headers</td>
+<td>ETH Frame + IP/TCP Headers</td>
+</tr>
+</tbody>
+</table>
+<p>Note that RoCE Header is a general concept. And RoCEv1 and RoCEv2 give different detailed definitions of this part.</p>
+<h2 id="identify-infiniband-ethernet-mode">Identify InfiniBand / Ethernet Mode</h2>
+<p>The easiest way is to directly have a look at the interface name and link type with <code>ifconfig</code> or <code>ip</code> under Linux. An InfiniBand adapter working in Ethernet mode looks exactly the same as a regular Ethernet adapter.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ip a</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">7: ens1f1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP group default qlen 1000</span><br><span class="line">    link/ether ...</span><br><span class="line">    inet 10.200.0.1/24 brd 10.200.0.255 scope global ens1f1</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Besides, <code>ibdev2netdev</code> can also help.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibdev2netdev</span><br><span class="line">mlx4_0 port 1 ==&gt; ibp129s0 (Up)</span><br><span class="line">mlx5_0 port 1 ==&gt; ens1f0 (Up)</span><br></pre></td></tr></table></figure>
+<p>Another approach is through <code>ibstat</code>. And the field <code>Link layer</code> shows which mode the adapter is working in.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ibstat</span><br><span class="line"><span class="comment"># InfiniBand Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx4_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4099</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 2.42.5000</span><br><span class="line">	Hardware version: 1</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 56</span><br><span class="line">		Base lid: 1</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 1</span><br><span class="line">		Capability mask: 0x0251486a</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: InfiniBand</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ethernet Mode</span></span><br><span class="line">CA <span class="string">&#x27;mlx5_0&#x27;</span></span><br><span class="line">	CA <span class="built_in">type</span>: MT4119</span><br><span class="line">	Number of ports: 1</span><br><span class="line">	Firmware version: 16.25.1020</span><br><span class="line">	Hardware version: 0</span><br><span class="line">	Node GUID: </span><br><span class="line">	System image GUID: </span><br><span class="line">	Port 1:</span><br><span class="line">		State: Active</span><br><span class="line">		Physical state: LinkUp</span><br><span class="line">		Rate: 100</span><br><span class="line">		Base lid: 0</span><br><span class="line">		LMC: 0</span><br><span class="line">		SM lid: 0</span><br><span class="line">		Capability mask: 0x00010000</span><br><span class="line">		Port GUID: </span><br><span class="line">		Link layer: Ethernet</span><br></pre></td></tr></table></figure>
+<h2 id="change-infiniband-ethernet-mode">Change InfiniBand / Ethernet Mode</h2>
+<p>To alter the work mode, there doesn't exist a general way for now. For Mellanox ConnectX Adapter, the vendor provided a tool called <code>mlxconfig</code>. Here is the usage listed in <a href="https://docs.nvidia.com/networking/display/MFTv4110/Using+mlxconfig">the official document</a>, where you can find more information about it.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo mlxconfig -d /dev/mst/mt4103_pci_cr0 <span class="built_in">set</span> LINK_TYPE_P1=1 LINK_TYPE_P2=1</span><br><span class="line"> </span><br><span class="line">Device <span class="comment">#1:</span></span><br><span class="line">----------</span><br><span class="line">Device <span class="built_in">type</span>:   ConnectX3Pro</span><br><span class="line">PCI device:    /dev/mst/mt4103_pci_cr0</span><br><span class="line">Configurations:        Next Boot        New</span><br><span class="line">  LINK_TYPE_P1         ETH(2)           IB(1)</span><br><span class="line">  LINK_TYPE_P2         ETH(2)           IB(1)</span><br><span class="line"> </span><br><span class="line">Apply new Configuration? ? (y/n) [n] : y</span><br><span class="line">Applying... Done!</span><br><span class="line">-I- Please reboot machine to load new configurations.</span><br></pre></td></tr></table></figure>
+<p>Note that P1 and P2 are referring to two separated ports on the adapter. <strong>Attention: Please make sure the network switch is capable of handling InfiniBand or Ethernet Frame before altering the work mode .</strong> If the switch cannot recognize the data frame sent from the server, you might observer <code>Physical state: Polling</code> reported by <code>ibstat</code>, as the packet is not forwarded by the switch correctly. Certain network switches can only forward one type of data frame at a time, which means you may need to manually reconfigure the switch to let it work with the other type of data frame.</p>
+<h2 id="configure-ipoib">Configure IPoIB</h2>
+<p>By default, the IPoIB will be automatically configured when the IP address is assigned to the interface. The IP address can be managed by <code>netplan</code> or <code>NetworkManager</code>, which depends on your Linux distro. As for the configuration file, there is no difference between the InfiniBand and regular Ethernet Adapters.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Assign a static IP address with netplan for an InfiniBand interface</span></span><br><span class="line"><span class="attr">network:</span></span><br><span class="line">  <span class="attr">ethernets:</span></span><br><span class="line">    <span class="attr">ibp129s0:</span></span><br><span class="line">      <span class="attr">addresses:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">192.168</span><span class="number">.7</span><span class="number">.100</span><span class="string">/24</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>Once the above configuration is applied and the interface is brought up successfully. We can see <code>ib_ipoib</code> module is loaded.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ lsmod | grep ipoib</span><br><span class="line">ib_ipoib              180224  0</span><br><span class="line">$ ip a</span><br><span class="line">4: ibp129s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 2044 qdisc mq state UP group default qlen 256</span><br><span class="line">    link/infiniband ...</span><br><span class="line">    inet 192.168.7.100/24 brd 192.168.7.255 scope global ibp129s0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<p>If the IP address doesn't appear in <code>ip a</code>, we need to check the status of the InfiniBand adapter and make sure its state is active in <code>ibstat</code>. A common mistake is forgetting to enable <code>opensm</code> / <code>opensmd</code>, which will make the adapter stuck at <code>State: Initializing</code>. Note that <code>opensmd</code> will not launch on startup by default.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Start OpenSM</span></span><br><span class="line">$ sudo opensm</span><br><span class="line"></span><br><span class="line"><span class="comment"># Start OpenSM As Daemon</span></span><br><span class="line">$ sudo service opensmd start <span class="comment"># Method 1</span></span><br><span class="line">$ sudo systemctl start opensmd <span class="comment"># Method 2</span></span><br><span class="line">$ sudo /etc/init.d/opensmd start <span class="comment"># Method 3</span></span><br></pre></td></tr></table></figure>
+<h2 id="identify-roce-version">Identify RoCE Version</h2>
+<p>The major difference between RoCEv1 and RoCEv2 is that RoCEv2 is able to utilize IP networking to route while RoCEv1 is routing via MAC addresses. A funny fact is RoCEv1 and RoCEv2 may be enable simultaneously, and we could choose the version at runtime through specifying Group ID (GID). There is a script written by Mellanox named <code>show_gids</code> and it will display RoCE versions associated to GIDs.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ show_gids</span><br><span class="line">DEV	PORT	INDEX	GID					IPv4  		VER	DEV</span><br><span class="line">---	----	-----	---					------------  	---	---</span><br><span class="line">mlx5_0	1	0	fe80:0000:0000:0000:...			v1	ens1f0</span><br><span class="line">mlx5_0	1	1	fe80:0000:0000:0000:...			v2	ens1f0</span><br><span class="line">mlx5_0	1	2	0000:0000:0000:0000:...	11.0.0.201  	v1	ens1f0</span><br><span class="line">mlx5_0	1	3	0000:0000:0000:0000:...	11.0.0.201  	v2	ens1f0</span><br></pre></td></tr></table></figure>
+<h2 id="check-adapter-speed">Check Adapter Speed</h2>
+<p><code>ethtool</code> can read out this information and it can work with both InfiniBand and Ethernet mode.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ethtool ibp129s0</span><br><span class="line">Settings <span class="keyword">for</span> ibp129s0:</span><br><span class="line">...</span><br><span class="line">	Speed: 56000Mb/s</span><br><span class="line">	Duplex: Full</span><br><span class="line"></span><br><span class="line">$ ethtool ens1f0</span><br><span class="line">Settings <span class="keyword">for</span> ens1f0:</span><br><span class="line">...</span><br><span class="line">	Speed: 100000Mb/s</span><br><span class="line">	Duplex: Full</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.advancedclustering.com/act_kb/infiniband-port-states/">https://www.advancedclustering.com/act_kb/infiniband-port-states/</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/32105832">https://zhuanlan.zhihu.com/p/32105832</a></li>
+<li><a href="https://wiki.archlinux.org/title/InfiniBand">https://wiki.archlinux.org/title/InfiniBand</a></li>
+<li><a href="https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM">https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM</a></li>
+<li><a href="https://www.cnblogs.com/juzib/p/13273380.html">https://www.cnblogs.com/juzib/p/13273380.html</a></li>
+<li><a href="https://blog.51cto.com/liangchaoxi/4044293">https://blog.51cto.com/liangchaoxi/4044293</a></li>
+</ul>
 ]]></content>
   </entry>
   <entry>
