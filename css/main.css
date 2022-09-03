@@ -3238,18 +3238,8 @@ figure.highlight {
 .post-meta {
   justify-content: left;
 }
-.index > .post-block {
-  padding-bottom: 20px;
-}
-@media (min-width: 768px) and (max-width: 991px) {
-  .index > .post-block {
-    padding-bottom: 0px;
-  }
-}
-@media (max-width: 767px) {
-  .index > .post-block {
-    padding-bottom: 0px;
-  }
+.index > .post-block .post-body > p {
+  margin: 0;
 }
 .footer {
   padding: 10px 0;
