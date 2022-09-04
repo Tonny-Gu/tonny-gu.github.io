@@ -713,9 +713,45 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">TMP=$(mktemp) &amp;&amp; cat hosts.txt | awk -v hosts=<span class="string">&quot;<span class="subst">$(base64 -w 0 hosts.txt)</span>&quot;</span> <span class="string">&#x27;&#123;printf &quot;ssh -o StrictHostKeyChecking=no %s \&quot;echo %s | base64 -d &gt;&gt; /etc/hosts\&quot; &amp; \nssh -o StrictHostKeyChecking=no %s \&quot;hostnamectl set-hostname %s\&quot; &amp; \n&quot;, $1, hosts, $1, $2&#125;&#x27;</span> &gt; <span class="variable">$TMP</span> &amp;&amp; bash <span class="variable">$TMP</span> &amp;&amp; rm <span class="variable">$TMP</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;OK&quot;</span></span><br></pre></td></tr></table></figure>
 <p>This is the end of the primary part of this tutorial. You have completed all necessary steps to build your toy cluster. Enjoy it!</p>
 <h2 id="advanced-topic">Advanced Topic</h2>
+<p>Here are some keywords you can search on Google if you are interested. I will keep updating this list in the future.</p>
 <h3 id="os-deployment">OS Deployment</h3>
 <ul>
 <li>cloud-init</li>
+<li>ansible-playbook</li>
+<li>Terraform</li>
+<li>MAAS</li>
+</ul>
+<h3 id="job-scheduler-1">Job Scheduler</h3>
+<ul>
+<li>IBM Platform LSF</li>
+<li>Slurm</li>
+<li>PBS</li>
+</ul>
+<h3 id="centralized-authentication">Centralized Authentication</h3>
+<ul>
+<li>LDAP + Kerberos</li>
+<li>LDAP + NSLCD + NSCD</li>
+</ul>
+<h3 id="distributed-filesystem">Distributed Filesystem</h3>
+<ul>
+<li>BeeGFS</li>
+<li>Ceph</li>
+<li>Lustre</li>
+</ul>
+<h3 id="package-manager">Package Manager</h3>
+<ul>
+<li>Environment Modules</li>
+<li>Spack</li>
+<li>Conda</li>
+</ul>
+<h3 id="container">Container</h3>
+<ul>
+<li>NVIDIA-Docker</li>
+<li>Singularity</li>
+</ul>
+<h3 id="cluster-status-monitor">Cluster Status Monitor</h3>
+<ul>
+<li>Grafana</li>
 </ul>
 <h3 id="terminal">Terminal</h3>
 <ul>
@@ -724,37 +760,9 @@
 <li>tmux-cssh</li>
 <li>ClusterShell</li>
 </ul>
-<h3 id="job-scheduler-1">Job Scheduler</h3>
-<ul>
-<li>IBM Platform LSF</li>
-<li>Slurm</li>
-</ul>
-<h3 id="account-management">Account Management</h3>
-<ul>
-<li>Kerberos + LDAP</li>
-</ul>
-<h3 id="shared-storage-1">Shared Storage</h3>
-<ul>
-<li>BeeGFS</li>
-<li>Ceph</li>
-</ul>
-<h3 id="file-system">File System</h3>
-<ul>
-<li>Ext4</li>
-<li>XFS</li>
-<li>Btrfs</li>
-<li>ZFS</li>
-</ul>
-<h3 id="environment-management">Environment Management</h3>
-<ul>
-<li>Environment Modules</li>
-<li>Spack</li>
-<li>Conda</li>
-</ul>
-<p>(To be continued)</p>
 <h2 id="acknowledgment">Acknowledgment</h2>
 <ul>
-<li>Tsinghua student supercomputing team / TUNA</li>
+<li>Tsinghua Student Supercomputing Team / TUNA</li>
 </ul>
 ]]></content>
   </entry>

@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://nekodaemon.com/images/pasted-80.png">
 <meta property="og:image" content="https://nekodaemon.com/images/pasted-81.png">
 <meta property="article:published_time" content="2020-10-24T23:50:31.000Z">
-<meta property="article:modified_time" content="2022-08-09T18:07:41.927Z">
+<meta property="article:modified_time" content="2022-09-04T20:39:48.615Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://nekodaemon.com/images/pasted-74.png">
@@ -159,7 +159,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-text">Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#software-minimal-requirements"><span class="nav-text">Software (Minimal Requirements)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clusters-vs-pc"><span class="nav-text">Clusters vs PC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-storage"><span class="nav-text">Shared Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh-login-without-password"><span class="nav-text">SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#user-permission"><span class="nav-text">User Permission</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler"><span class="nav-text">Job Scheduler</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-up-kvm-hypervisor-on-host"><span class="nav-text">Set up KVM hypervisor on Host</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#make-sure-virtualization-support-is-enabled"><span class="nav-text">Make sure Virtualization support is enabled</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software"><span class="nav-text">Install necessary software</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch-gui-vm-manager"><span class="nav-text">Launch GUI VM Manager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#for-linux-mac-user"><span class="nav-text">For Linux &#x2F; Mac User</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#for-windows-user"><span class="nav-text">For Windows User</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#create-the-first-virtual-machine"><span class="nav-text">Create the first virtual machine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-1st-time"><span class="nav-text">Configure nodes (1st time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software-1"><span class="nav-text">Install necessary software</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-user-accounts-optional"><span class="nav-text">Create User Accounts (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-opt-directory"><span class="nav-text">Create &#x2F;opt directory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-ssh-login-without-password"><span class="nav-text">Setup SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-sudo-without-password-optional"><span class="nav-text">Setup sudo without Password (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-up"><span class="nav-text">Clean up</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-master---compute-1"><span class="nav-text">Clone nodes (Master -&gt; Compute 1)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-2nd-time"><span class="nav-text">Configure nodes (2nd time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-all-nodes"><span class="nav-text">On All Nodes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#check-ip-address"><span class="nav-text">Check IP address</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-master-node"><span class="nav-text">On Master Node</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#add-a-network-adapter"><span class="nav-text">Add a network adapter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#export-nfs-storage"><span class="nav-text">Export NFS Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-compute-node-1"><span class="nav-text">On Compute Node 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#import-nfs-storage"><span class="nav-text">Import NFS Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#clean-up-again"><span class="nav-text">Clean up again</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-compute-1---compute-n"><span class="nav-text">Clone nodes (Compute 1 -&gt; Compute N)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-hostname-and-hosts"><span class="nav-text">Set Hostname and Hosts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#advanced-topic"><span class="nav-text">Advanced Topic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#os-deployment"><span class="nav-text">OS Deployment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#terminal"><span class="nav-text">Terminal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler-1"><span class="nav-text">Job Scheduler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#account-management"><span class="nav-text">Account Management</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-storage-1"><span class="nav-text">Shared Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#file-system"><span class="nav-text">File System</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#environment-management"><span class="nav-text">Environment Management</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#acknowledgment"><span class="nav-text">Acknowledgment</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-text">Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#software-minimal-requirements"><span class="nav-text">Software (Minimal Requirements)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clusters-vs-pc"><span class="nav-text">Clusters vs PC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shared-storage"><span class="nav-text">Shared Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh-login-without-password"><span class="nav-text">SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#user-permission"><span class="nav-text">User Permission</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler"><span class="nav-text">Job Scheduler</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-up-kvm-hypervisor-on-host"><span class="nav-text">Set up KVM hypervisor on Host</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#make-sure-virtualization-support-is-enabled"><span class="nav-text">Make sure Virtualization support is enabled</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software"><span class="nav-text">Install necessary software</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#launch-gui-vm-manager"><span class="nav-text">Launch GUI VM Manager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#for-linux-mac-user"><span class="nav-text">For Linux &#x2F; Mac User</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#for-windows-user"><span class="nav-text">For Windows User</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#create-the-first-virtual-machine"><span class="nav-text">Create the first virtual machine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-1st-time"><span class="nav-text">Configure nodes (1st time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#install-necessary-software-1"><span class="nav-text">Install necessary software</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-user-accounts-optional"><span class="nav-text">Create User Accounts (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-opt-directory"><span class="nav-text">Create &#x2F;opt directory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-ssh-login-without-password"><span class="nav-text">Setup SSH Login without Password</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-sudo-without-password-optional"><span class="nav-text">Setup sudo without Password (Optional)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean-up"><span class="nav-text">Clean up</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-master---compute-1"><span class="nav-text">Clone nodes (Master -&gt; Compute 1)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#configure-nodes-2nd-time"><span class="nav-text">Configure nodes (2nd time)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-all-nodes"><span class="nav-text">On All Nodes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#check-ip-address"><span class="nav-text">Check IP address</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-master-node"><span class="nav-text">On Master Node</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#add-a-network-adapter"><span class="nav-text">Add a network adapter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#export-nfs-storage"><span class="nav-text">Export NFS Storage</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-compute-node-1"><span class="nav-text">On Compute Node 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#import-nfs-storage"><span class="nav-text">Import NFS Storage</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#clean-up-again"><span class="nav-text">Clean up again</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#clone-nodes-compute-1---compute-n"><span class="nav-text">Clone nodes (Compute 1 -&gt; Compute N)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set-hostname-and-hosts"><span class="nav-text">Set Hostname and Hosts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#advanced-topic"><span class="nav-text">Advanced Topic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#os-deployment"><span class="nav-text">OS Deployment</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#job-scheduler-1"><span class="nav-text">Job Scheduler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#centralized-authentication"><span class="nav-text">Centralized Authentication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#distributed-filesystem"><span class="nav-text">Distributed Filesystem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#package-manager"><span class="nav-text">Package Manager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#container"><span class="nav-text">Container</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cluster-status-monitor"><span class="nav-text">Cluster Status Monitor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#terminal"><span class="nav-text">Terminal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#acknowledgment"><span class="nav-text">Acknowledgment</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -288,7 +288,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Last updated on</span>
-      <time title="Modified: 2022-08-10 02:07:41" itemprop="dateModified" datetime="2022-08-10T02:07:41+08:00">2022-08-10</time>
+      <time title="Modified: 2022-09-05 04:39:48" itemprop="dateModified" datetime="2022-09-05T04:39:48+08:00">2022-09-05</time>
     </span>
 
   
@@ -480,9 +480,45 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TMP=$(mktemp) &amp;&amp; cat hosts.txt | awk -v hosts=<span class="string">&quot;<span class="subst">$(base64 -w 0 hosts.txt)</span>&quot;</span> <span class="string">&#x27;&#123;printf &quot;ssh -o StrictHostKeyChecking=no %s \&quot;echo %s | base64 -d &gt;&gt; /etc/hosts\&quot; &amp; \nssh -o StrictHostKeyChecking=no %s \&quot;hostnamectl set-hostname %s\&quot; &amp; \n&quot;, $1, hosts, $1, $2&#125;&#x27;</span> &gt; <span class="variable">$TMP</span> &amp;&amp; bash <span class="variable">$TMP</span> &amp;&amp; rm <span class="variable">$TMP</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;OK&quot;</span></span><br></pre></td></tr></table></figure>
 <p>This is the end of the primary part of this tutorial. You have completed all necessary steps to build your toy cluster. Enjoy it!</p>
 <h2 id="advanced-topic">Advanced Topic</h2>
+<p>Here are some keywords you can search on Google if you are interested. I will keep updating this list in the future.</p>
 <h3 id="os-deployment">OS Deployment</h3>
 <ul>
 <li>cloud-init</li>
+<li>ansible-playbook</li>
+<li>Terraform</li>
+<li>MAAS</li>
+</ul>
+<h3 id="job-scheduler-1">Job Scheduler</h3>
+<ul>
+<li>IBM Platform LSF</li>
+<li>Slurm</li>
+<li>PBS</li>
+</ul>
+<h3 id="centralized-authentication">Centralized Authentication</h3>
+<ul>
+<li>LDAP + Kerberos</li>
+<li>LDAP + NSLCD + NSCD</li>
+</ul>
+<h3 id="distributed-filesystem">Distributed Filesystem</h3>
+<ul>
+<li>BeeGFS</li>
+<li>Ceph</li>
+<li>Lustre</li>
+</ul>
+<h3 id="package-manager">Package Manager</h3>
+<ul>
+<li>Environment Modules</li>
+<li>Spack</li>
+<li>Conda</li>
+</ul>
+<h3 id="container">Container</h3>
+<ul>
+<li>NVIDIA-Docker</li>
+<li>Singularity</li>
+</ul>
+<h3 id="cluster-status-monitor">Cluster Status Monitor</h3>
+<ul>
+<li>Grafana</li>
 </ul>
 <h3 id="terminal">Terminal</h3>
 <ul>
@@ -491,37 +527,9 @@
 <li>tmux-cssh</li>
 <li>ClusterShell</li>
 </ul>
-<h3 id="job-scheduler-1">Job Scheduler</h3>
-<ul>
-<li>IBM Platform LSF</li>
-<li>Slurm</li>
-</ul>
-<h3 id="account-management">Account Management</h3>
-<ul>
-<li>Kerberos + LDAP</li>
-</ul>
-<h3 id="shared-storage-1">Shared Storage</h3>
-<ul>
-<li>BeeGFS</li>
-<li>Ceph</li>
-</ul>
-<h3 id="file-system">File System</h3>
-<ul>
-<li>Ext4</li>
-<li>XFS</li>
-<li>Btrfs</li>
-<li>ZFS</li>
-</ul>
-<h3 id="environment-management">Environment Management</h3>
-<ul>
-<li>Environment Modules</li>
-<li>Spack</li>
-<li>Conda</li>
-</ul>
-<p>(To be continued)</p>
 <h2 id="acknowledgment">Acknowledgment</h2>
 <ul>
-<li>Tsinghua student supercomputing team / TUNA</li>
+<li>Tsinghua Student Supercomputing Team / TUNA</li>
 </ul>
 
     </div>
