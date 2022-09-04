@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://nekodaemon.com/profile/index.html</loc>
+    <loc>https://nekodaemon.com/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</loc>
     
     <lastmod>2022-09-04</lastmod>
     
@@ -11,9 +11,9 @@
   </url>
   
   <url>
-    <loc>https://nekodaemon.com/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</loc>
+    <loc>https://nekodaemon.com/profile/index.html</loc>
     
-    <lastmod>2022-09-03</lastmod>
+    <lastmod>2022-09-04</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
