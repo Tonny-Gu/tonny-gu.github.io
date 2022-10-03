@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="It&#39;s time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it&#39;s possible to set up a reliable reverse proxy with single command.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Easy ways to setup Reverse Proxy for NAT-Passthrough">
+<meta property="og:url" content="https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="It&#39;s time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it&#39;s possible to set up a reliable reverse proxy with single command.">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-10-03T11:12:20.000Z">
+<meta property="article:modified_time" content="2022-10-03T19:20:47.395Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/","path":"2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/","title":"Easy ways to setup Reverse Proxy for NAT-Passthrough"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Easy ways to setup Reverse Proxy for NAT-Passthrough | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#prerequisite"><span class="nav-text">Prerequisite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#recommended-persistent-method-via-gost-with-docker"><span class="nav-text">(Recommended) Persistent Method: via Gost with Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#before-getting-started-install-docker"><span class="nav-text">Before getting started: Install Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#recommended-using-websocket-tls-gost-relay-protocol"><span class="nav-text">(Recommended) Using Websocket + TLS + Gost Relay Protocol</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#optional-using-your-ssl-certificate"><span class="nav-text">(Optional) Using your SSL certificate</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#temporary-method-via-openssh-client"><span class="nav-text">Temporary Method: via OpenSSH Client</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Easy ways to setup Reverse Proxy for NAT-Passthrough
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-10-03 19:12:20" itemprop="dateCreated datePublished" datetime="2022-10-03T19:12:20+08:00">2022-10-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2022-10-04 03:20:47" itemprop="dateModified" datetime="2022-10-04T03:20:47+08:00">2022-10-04</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>It's time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it's possible to set up a reliable reverse proxy with single command.</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<p>Make sure you have a machine with a public IP address (it could be a VPS), otherwise our method may not be applicable. Let's take exposing the SSH port of a machine behind NAT as an example. There are three roles in total:</p>
+<ul>
+<li>Local Machine: The machine behind NAT firewall with a local IP address, and you want to expose its SSH port 22 to the public network.</li>
+<li>Public Server: The machine with a public IP address (a.b.c.d). Typically you rent it from a public cloud service provider like AWS or Azure. Its port 22 is also open and being used by its own SSH service.</li>
+<li>Your Computer: Another machine you are currently using.</li>
+</ul>
+<h2 id="recommended-persistent-method-via-gost-with-docker">(Recommended) Persistent Method: via Gost with Docker</h2>
+<h3 id="before-getting-started-install-docker">Before getting started: Install Docker</h3>
+<p>The first step is to install the Docker on both <strong>the local machine</strong> and <strong>the public server</strong>. For Ubuntu 18.04+, I personally prefer to install Docker through apt.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">local-machine&amp;public-server$ sudo apt update</span><br><span class="line">local-machine&amp;public-server$ sudo apt install docker.io -y</span><br></pre></td></tr></table></figure>
+<h3 id="recommended-using-websocket-tls-gost-relay-protocol">(Recommended) Using Websocket + TLS + Gost Relay Protocol</h3>
+<p>Gost supports nuermous proxy protocols. For reliablity, it is suggested to use a secured protocol to resist the interference by some secure gateways like GFW. Luckily, with the help of Docker, it is very easy to set up a secured tunnel. Another good news is that Docker Daemon will help to monitor the service and automatically restart Gost Service at boot or on failure. Let's say goodbye to the annoying Systemd.</p>
+<p><strong>On Public Server</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~ <span class="comment"># other any other path you like</span></span><br><span class="line">mkdir gost</span><br><span class="line">docker run --name gost_server --net host -v $(<span class="built_in">pwd</span>)/gost:/root -id --restart always --entrypoint <span class="string">&quot;&quot;</span> -w <span class="string">&quot;/root&quot;</span> gogost/gost gost -L <span class="string">&quot;relay+wss://&lt;user&gt;:&lt;passwd&gt;@:&lt;gost_service_port&gt;?bind=true&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>On Local Machine</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:&lt;remote_port&gt;/:&lt;local_port&gt; -F <span class="string">&quot;relay+wss://&lt;user&gt;:&lt;passwd&gt;@&lt;pub_server_ip_or_domain&gt;:&lt;gost_service_port&gt;&quot;</span></span><br></pre></td></tr></table></figure>
+<p>Here is the explanation of parameters:</p>
+<ul>
+<li><code>user</code> / <code>passwd</code>: The username and the password for Gost. They are irrelevant to any other account such as Linux accounts.</li>
+<li><code>pub_server_ip_or_domain</code>: It could be either the public IP address or the binded domain name. If you would like to use your valid SSL certificate issued by CA, you should only use the domain name here.</li>
+<li><code>gost_service_port</code>: Could be arbitrary value. It is also fine to set this port number to 443 to pretend as a HTTPS server.</li>
+<li><code>remote_port</code>: The port that the public server's Gost listens to. The data received from this port will be forwarded to <code>local_port</code> on the local machine. It could be arbitrary value.</li>
+<li><code>local_port</code>: The port that should associate with some services on the local machine. In our case, it should be 22, the SSH port.</li>
+</ul>
+<p>Back to our case, the corresponding commands will be:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># On Public Server</span></span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line">mkdir gost</span><br><span class="line">docker run --name gost_server --net host -v $(<span class="built_in">pwd</span>)/gost:/root -id --restart always --entrypoint <span class="string">&quot;&quot;</span> -w <span class="string">&quot;/root&quot;</span> gogost/gost gost -L <span class="string">&quot;relay+wss://user:pass@:1234?bind=true&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># On Local Machine</span></span><br><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:2022/:22 -F <span class="string">&quot;relay+wss://user:pass@a.b.c.d:1234&quot;</span> <span class="comment"># a.b.c.d is the public IP of the public server</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:2022/:22 -F <span class="string">&quot;relay+wss://user:pass@mydomain.com:1234&quot;</span> <span class="comment"># mydomain.com can be parsed to a.b.c.d</span></span><br></pre></td></tr></table></figure>
+<p>After that, the SSH port 22 on the local machine should be mapped to the port 2022 on the public server now.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># user-local is the name of the user on local machine</span></span><br><span class="line">your-computer$ ssh user-local@a.b.c.d -p 2022</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">your-computer$ ssh user-local@mydomain.com -p 2022</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Debugging Tips:</strong> If Gost is not working properly, we can read the log using the command below.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f gost_server <span class="comment"># or gost_client</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="optional-using-your-ssl-certificate">(Optional) Using your SSL certificate</h4>
+<p>By default, Gost will generate a self-signed SSL certificate if the user doesn't specify one. However, this might be considered unsafe as the communication is no longer able to defense the MITM attack. Moreover, some secure gateways may disrupt the TLS session with a self-signed certificate.</p>
+<p>The solution is simple. Do you remember the <code>gost</code> directory we created before? We just need to put our certificate there and restart the service. There should be two files in total, <code>cert.pem</code> and <code>key.pem</code>, and their content should start with <code>-----BEGIN CERTIFICATE----</code> and <code>-----BEGIN RSA PRIVATE KEY-----</code> respectively.</p>
+<p>Lastly, the command to restart the service is:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># On Public Server</span></span><br><span class="line">docker restart gost_server</span><br></pre></td></tr></table></figure>
+<h2 id="temporary-method-via-openssh-client">Temporary Method: via OpenSSH Client</h2>
+<p>If you don't want to install any new software, we can also utilize SSH to build a tunnel. This method is also simple (sometimes), but it is not quite reliable. As you might know, a SSH connection can be easily disrupted due to many reasons. In our case, we just need to type this command on the local machine to set up a tunnel:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">local-machine$ ssh -R <span class="string">&quot;[::]:2022:localhost:22&quot;</span> user-public@a.b.c.d</span><br><span class="line"><span class="comment"># a.b.c.d is the public IP, user-public is the name of the user on public server</span></span><br></pre></td></tr></table></figure>
+<p>If everything goes well, now you can connect to the local machine through:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">your-computer$ ssh user-local@a.b.c.d -p 2022</span><br><span class="line"><span class="comment"># user-local is the name of the user on local machine</span></span><br></pre></td></tr></table></figure>
+<p>However, if you failed to connect to your local machine. Please check the <code>sshd</code> configuration on the public server.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public-server$ sudo nano /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<p>Find the following line (for nano editor, press Ctrl-W to search), uncomment, and replaced <code>no</code> with <code>yes</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Before</span></span><br><span class="line"><span class="comment">#GatewayPorts no</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># After</span></span><br><span class="line">GatewayPorts yes</span><br></pre></td></tr></table></figure>
+<p>Then restart the SSH server.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public-server$ sudo service sshd restart</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/" title="Easy ways to setup Reverse Proxy for NAT-Passthrough">https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>

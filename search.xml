@@ -814,6 +814,61 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Easy ways to setup Reverse Proxy for NAT-Passthrough</title>
+    <url>/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</url>
+    <content><![CDATA[<p>It's time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it's possible to set up a reliable reverse proxy with single command.</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<p>Make sure you have a machine with a public IP address (it could be a VPS), otherwise our method may not be applicable. Let's take exposing the SSH port of a machine behind NAT as an example. There are three roles in total:</p>
+<ul>
+<li>Local Machine: The machine behind NAT firewall with a local IP address, and you want to expose its SSH port 22 to the public network.</li>
+<li>Public Server: The machine with a public IP address (a.b.c.d). Typically you rent it from a public cloud service provider like AWS or Azure. Its port 22 is also open and being used by its own SSH service.</li>
+<li>Your Computer: Another machine you are currently using.</li>
+</ul>
+<h2 id="recommended-persistent-method-via-gost-with-docker">(Recommended) Persistent Method: via Gost with Docker</h2>
+<h3 id="before-getting-started-install-docker">Before getting started: Install Docker</h3>
+<p>The first step is to install the Docker on both <strong>the local machine</strong> and <strong>the public server</strong>. For Ubuntu 18.04+, I personally prefer to install Docker through apt.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">local-machine&amp;public-server$ sudo apt update</span><br><span class="line">local-machine&amp;public-server$ sudo apt install docker.io -y</span><br></pre></td></tr></table></figure>
+<h3 id="recommended-using-websocket-tls-gost-relay-protocol">(Recommended) Using Websocket + TLS + Gost Relay Protocol</h3>
+<p>Gost supports nuermous proxy protocols. For reliablity, it is suggested to use a secured protocol to resist the interference by some secure gateways like GFW. Luckily, with the help of Docker, it is very easy to set up a secured tunnel. Another good news is that Docker Daemon will help to monitor the service and automatically restart Gost Service at boot or on failure. Let's say goodbye to the annoying Systemd.</p>
+<p><strong>On Public Server</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~ <span class="comment"># other any other path you like</span></span><br><span class="line">mkdir gost</span><br><span class="line">docker run --name gost_server --net host -v $(<span class="built_in">pwd</span>)/gost:/root -id --restart always --entrypoint <span class="string">&quot;&quot;</span> -w <span class="string">&quot;/root&quot;</span> gogost/gost gost -L <span class="string">&quot;relay+wss://&lt;user&gt;:&lt;passwd&gt;@:&lt;gost_service_port&gt;?bind=true&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>On Local Machine</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:&lt;remote_port&gt;/:&lt;local_port&gt; -F <span class="string">&quot;relay+wss://&lt;user&gt;:&lt;passwd&gt;@&lt;pub_server_ip_or_domain&gt;:&lt;gost_service_port&gt;&quot;</span></span><br></pre></td></tr></table></figure>
+<p>Here is the explanation of parameters:</p>
+<ul>
+<li><code>user</code> / <code>passwd</code>: The username and the password for Gost. They are irrelevant to any other account such as Linux accounts.</li>
+<li><code>pub_server_ip_or_domain</code>: It could be either the public IP address or the binded domain name. If you would like to use your valid SSL certificate issued by CA, you should only use the domain name here.</li>
+<li><code>gost_service_port</code>: Could be arbitrary value. It is also fine to set this port number to 443 to pretend as a HTTPS server.</li>
+<li><code>remote_port</code>: The port that the public server's Gost listens to. The data received from this port will be forwarded to <code>local_port</code> on the local machine. It could be arbitrary value.</li>
+<li><code>local_port</code>: The port that should associate with some services on the local machine. In our case, it should be 22, the SSH port.</li>
+</ul>
+<p>Back to our case, the corresponding commands will be:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On Public Server</span></span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line">mkdir gost</span><br><span class="line">docker run --name gost_server --net host -v $(<span class="built_in">pwd</span>)/gost:/root -id --restart always --entrypoint <span class="string">&quot;&quot;</span> -w <span class="string">&quot;/root&quot;</span> gogost/gost gost -L <span class="string">&quot;relay+wss://user:pass@:1234?bind=true&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># On Local Machine</span></span><br><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:2022/:22 -F <span class="string">&quot;relay+wss://user:pass@a.b.c.d:1234&quot;</span> <span class="comment"># a.b.c.d is the public IP of the public server</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">docker run --name gost_client --net host -id --restart always --entrypoint <span class="string">&quot;&quot;</span>  gogost/gost gost -L rtcp://:2022/:22 -F <span class="string">&quot;relay+wss://user:pass@mydomain.com:1234&quot;</span> <span class="comment"># mydomain.com can be parsed to a.b.c.d</span></span><br></pre></td></tr></table></figure>
+<p>After that, the SSH port 22 on the local machine should be mapped to the port 2022 on the public server now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># user-local is the name of the user on local machine</span></span><br><span class="line">your-computer$ ssh user-local@a.b.c.d -p 2022</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">your-computer$ ssh user-local@mydomain.com -p 2022</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Debugging Tips:</strong> If Gost is not working properly, we can read the log using the command below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker logs -f gost_server <span class="comment"># or gost_client</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="optional-using-your-ssl-certificate">(Optional) Using your SSL certificate</h4>
+<p>By default, Gost will generate a self-signed SSL certificate if the user doesn't specify one. However, this might be considered unsafe as the communication is no longer able to defense the MITM attack. Moreover, some secure gateways may disrupt the TLS session with a self-signed certificate.</p>
+<p>The solution is simple. Do you remember the <code>gost</code> directory we created before? We just need to put our certificate there and restart the service. There should be two files in total, <code>cert.pem</code> and <code>key.pem</code>, and their content should start with <code>-----BEGIN CERTIFICATE----</code> and <code>-----BEGIN RSA PRIVATE KEY-----</code> respectively.</p>
+<p>Lastly, the command to restart the service is:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On Public Server</span></span><br><span class="line">docker restart gost_server</span><br></pre></td></tr></table></figure>
+<h2 id="temporary-method-via-openssh-client">Temporary Method: via OpenSSH Client</h2>
+<p>If you don't want to install any new software, we can also utilize SSH to build a tunnel. This method is also simple (sometimes), but it is not quite reliable. As you might know, a SSH connection can be easily disrupted due to many reasons. In our case, we just need to type this command on the local machine to set up a tunnel:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">local-machine$ ssh -R <span class="string">&quot;[::]:2022:localhost:22&quot;</span> user-public@a.b.c.d</span><br><span class="line"><span class="comment"># a.b.c.d is the public IP, user-public is the name of the user on public server</span></span><br></pre></td></tr></table></figure>
+<p>If everything goes well, now you can connect to the local machine through:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">your-computer$ ssh user-local@a.b.c.d -p 2022</span><br><span class="line"><span class="comment"># user-local is the name of the user on local machine</span></span><br></pre></td></tr></table></figure>
+<p>However, if you failed to connect to your local machine. Please check the <code>sshd</code> configuration on the public server.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">public-server$ sudo nano /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<p>Find the following line (for nano editor, press Ctrl-W to search), uncomment, and replaced <code>no</code> with <code>yes</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Before</span></span><br><span class="line"><span class="comment">#GatewayPorts no</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># After</span></span><br><span class="line">GatewayPorts yes</span><br></pre></td></tr></table></figure>
+<p>Then restart the SSH server.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">public-server$ sudo service sshd restart</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
     <title>Everything you need to know about Splitting NCCL Communicators</title>
     <url>/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/</url>
     <content><![CDATA[<p>MPI allows to create a new communicator by splitting an existing one into a sub-communicator, which can make our program dynamically select a subset of computing nodes to involve in the collective communication operations, such as all-reduce and all-gather operations. NCCL also has a similar feature, but it is not well-documented yet.</p>

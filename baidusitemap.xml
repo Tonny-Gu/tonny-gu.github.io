@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</loc>
+    <lastmod>2022-10-03</lastmod>
+  </url>
+  <url>
     <loc>https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</loc>
     <lastmod>2022-09-04</lastmod>
   </url>
