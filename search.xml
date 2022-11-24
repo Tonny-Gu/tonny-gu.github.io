@@ -2122,72 +2122,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
-    <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
-    <url>/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</url>
-    <content><![CDATA[<p>Slurm will make a bunch of seperated machines look much like a cluster, is it right?</p>
-<h2 id="naming-convention-of-nodes">Naming Convention of Nodes</h2>
-<p>A common cluster should comprise management nodes and compute nodes. This aritcle will take our cluster as an example to demostrate steps to install and configure Slurm. In our case, the management node is called <code>clab-mgt01</code> while the compute nodes are named from <code>clab01</code> to <code>clab20</code> in order.</p>
-<h2 id="install-dependencies">Install Dependencies</h2>
-<p>Execute the following command to install the dependencies <strong>on all machines</strong>. (<code>clab-all</code> refers to all machines including management and compute nodes).</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo apt install slurm-wlm slurm-client munge</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>Tips: There are several tools that may help to manage multiple nodes easily:</p>
-<ul>
-<li>iTerm2 (on Mac) / Terminator (on Linux)</li>
-<li>csshX (on Mac) / cssh (on Linux)</li>
-<li>Parallel SSH (at cluster side)</li>
-</ul>
-</blockquote>
-<h2 id="generate-slurm-configuration">Generate Slurm Configuration</h2>
-<p>There is <a href="https://slurm.schedmd.com/configurator.html">an official online configuration generator</a>. And we should carefully check the fields below.</p>
-<ul>
-<li><strong>SlurmctldHost</strong>: <code>clab-mgt01</code> in our case.</li>
-<li><strong>NodeName</strong>: <code>clab[01-20]</code> in our case.</li>
-<li><strong>CPUs</strong>: It is recommended to leave it blank.</li>
-<li><strong>Sockets</strong>: For a dual-socket server we commonly see, it should be <code>2</code>.</li>
-<li><strong>CoresPerSocket</strong>: Number of physical cores per socket.</li>
-<li><strong>ThreadsPerCore</strong>: For a regular x86 server, if hyperthreading is enabled, it should be <code>2</code>, otherwise <code>1</code>.</li>
-<li><strong>RealMemory</strong>: Optional.</li>
-</ul>
-<p>Click <code>submit</code>, then we could copy the file content to <code>/etc/slurm-llnl/slurm.conf</code> <strong>on all machines</strong>.</p>
-<blockquote>
-<p>Tips: Don't forget the shared storage (e.g. NFS storage) on the cluster. We could utilize it to distribute files.</p>
-</blockquote>
-<h2 id="distribute-munge-key">Distribute Munge Key</h2>
-<p>Once Munge is installed successfully, the key <code>/etc/munge/munge.key</code> will be automatically generated. It is requried for all machines to hold the same key. Therefore, we could distribute the key <strong>on the management node</strong> to <strong>the remaining nodes</strong> including compute nodes and other backup management node if existing.</p>
-<blockquote>
-<p>Tips: Again. We could also utilize the shared storage to distribute the key.</p>
-</blockquote>
-<p>Then make sure the permission and the ownership are correctly set.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo chmod 400 /etc/munge/munge.key</span><br><span class="line">clab-all$ chown munge:munge /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
-<h2 id="patch-slurm-cgroup-integration">Patch Slurm Cgroup Integration</h2>
-<p>By default, there Slurm cannot work with Cgroup well. If we start Slurm service right now, we may receive this error shown below.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">error: cgroup namespace <span class="string">&#x27;freezer&#x27;</span> not mounted. aborting</span><br></pre></td></tr></table></figure>
-<p>Therefore, by pasting the following content to <code>/etc/slurm/cgroup.conf</code> <strong>on compute nodes</strong>, this issue can be fixed.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CgroupMountpoint=/sys/fs/cgroup</span><br></pre></td></tr></table></figure>
-<p>or using this command:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> CgroupMountpoint=/sys/fs/cgroup &gt;&gt; /etc/slurm/cgroup.conf</span><br></pre></td></tr></table></figure>
-<h2 id="fix-directory-permission">Fix Directory Permission</h2>
-<p>For unknown reasons, the permission of the relevant directory is not set properly, which may lead to this error.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">slurmctld: fatal: mkdir(/var/spool/slurmctld): Permission denied</span><br></pre></td></tr></table></figure>
-<p>The solution is executing the commands below <strong>on management nodes</strong>.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo mkdir -p /var/spool/slurmctld</span><br><span class="line">clab-mgt$ sudo chown slurm:slurm /var/spool/slurmctld/</span><br></pre></td></tr></table></figure>
-<h2 id="start-slurm-service">Start Slurm Service</h2>
-<p>So far, we have finished the basic configuration. Let us launch Slurm now.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On management nodes</span></span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-mgt$ sudo systemctl start munge</span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">clab-mgt$ sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># On compute nodes</span></span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-comp$ sudo systemctl start munge</span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">clab-comp$ sudo systemctl start slurmd</span><br></pre></td></tr></table></figure>
-<p>Run <code>sinfo</code> and we should see all the compute nodes are ready.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sinfo</span><br><span class="line">PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span><br><span class="line">debug*       up   infinite     20   idle clab[01-20]</span><br></pre></td></tr></table></figure>
-<h2 id="debugging-tips">Debugging Tips</h2>
-<p>If your Slurm is not working correctly, you could try with these commands to debug.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo slurmctld -D</span><br><span class="line">clab-comp$ sudo slurmd -D</span><br></pre></td></tr></table></figure>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://www.cnblogs.com/aobaxu/p/16195237.html">https://www.cnblogs.com/aobaxu/p/16195237.html</a></li>
-<li><a href="https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting">https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>Tips of configuring InfiniBand adapters</title>
     <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
     <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
@@ -2277,6 +2211,72 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <li><a href="https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM">https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM</a></li>
 <li><a href="https://www.cnblogs.com/juzib/p/13273380.html">https://www.cnblogs.com/juzib/p/13273380.html</a></li>
 <li><a href="https://blog.51cto.com/liangchaoxi/4044293">https://blog.51cto.com/liangchaoxi/4044293</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
+    <url>/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</url>
+    <content><![CDATA[<p>Slurm will make a bunch of seperated machines look much like a cluster, is it right?</p>
+<h2 id="naming-convention-of-nodes">Naming Convention of Nodes</h2>
+<p>A common cluster should comprise management nodes and compute nodes. This aritcle will take our cluster as an example to demostrate steps to install and configure Slurm. In our case, the management node is called <code>clab-mgt01</code> while the compute nodes are named from <code>clab01</code> to <code>clab20</code> in order.</p>
+<h2 id="install-dependencies">Install Dependencies</h2>
+<p>Execute the following command to install the dependencies <strong>on all machines</strong>. (<code>clab-all</code> refers to all machines including management and compute nodes).</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo apt install slurm-wlm slurm-client munge</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Tips: There are several tools that may help to manage multiple nodes easily:</p>
+<ul>
+<li>iTerm2 (on Mac) / Terminator (on Linux)</li>
+<li>csshX (on Mac) / cssh (on Linux)</li>
+<li>Parallel SSH (at cluster side)</li>
+</ul>
+</blockquote>
+<h2 id="generate-slurm-configuration">Generate Slurm Configuration</h2>
+<p>There is <a href="https://slurm.schedmd.com/configurator.html">an official online configuration generator</a>. And we should carefully check the fields below.</p>
+<ul>
+<li><strong>SlurmctldHost</strong>: <code>clab-mgt01</code> in our case.</li>
+<li><strong>NodeName</strong>: <code>clab[01-20]</code> in our case.</li>
+<li><strong>CPUs</strong>: It is recommended to leave it blank.</li>
+<li><strong>Sockets</strong>: For a dual-socket server we commonly see, it should be <code>2</code>.</li>
+<li><strong>CoresPerSocket</strong>: Number of physical cores per socket.</li>
+<li><strong>ThreadsPerCore</strong>: For a regular x86 server, if hyperthreading is enabled, it should be <code>2</code>, otherwise <code>1</code>.</li>
+<li><strong>RealMemory</strong>: Optional.</li>
+</ul>
+<p>Click <code>submit</code>, then we could copy the file content to <code>/etc/slurm-llnl/slurm.conf</code> <strong>on all machines</strong>.</p>
+<blockquote>
+<p>Tips: Don't forget the shared storage (e.g. NFS storage) on the cluster. We could utilize it to distribute files.</p>
+</blockquote>
+<h2 id="distribute-munge-key">Distribute Munge Key</h2>
+<p>Once Munge is installed successfully, the key <code>/etc/munge/munge.key</code> will be automatically generated. It is requried for all machines to hold the same key. Therefore, we could distribute the key <strong>on the management node</strong> to <strong>the remaining nodes</strong> including compute nodes and other backup management node if existing.</p>
+<blockquote>
+<p>Tips: Again. We could also utilize the shared storage to distribute the key.</p>
+</blockquote>
+<p>Then make sure the permission and the ownership are correctly set.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo chmod 400 /etc/munge/munge.key</span><br><span class="line">clab-all$ chown munge:munge /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
+<h2 id="patch-slurm-cgroup-integration">Patch Slurm Cgroup Integration</h2>
+<p>By default, there Slurm cannot work with Cgroup well. If we start Slurm service right now, we may receive this error shown below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">error: cgroup namespace <span class="string">&#x27;freezer&#x27;</span> not mounted. aborting</span><br></pre></td></tr></table></figure>
+<p>Therefore, by pasting the following content to <code>/etc/slurm/cgroup.conf</code> <strong>on compute nodes</strong>, this issue can be fixed.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CgroupMountpoint=/sys/fs/cgroup</span><br></pre></td></tr></table></figure>
+<p>or using this command:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> CgroupMountpoint=/sys/fs/cgroup &gt;&gt; /etc/slurm/cgroup.conf</span><br></pre></td></tr></table></figure>
+<h2 id="fix-directory-permission">Fix Directory Permission</h2>
+<p>For unknown reasons, the permission of the relevant directory is not set properly, which may lead to this error.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">slurmctld: fatal: mkdir(/var/spool/slurmctld): Permission denied</span><br></pre></td></tr></table></figure>
+<p>The solution is executing the commands below <strong>on management nodes</strong>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo mkdir -p /var/spool/slurmctld</span><br><span class="line">clab-mgt$ sudo chown slurm:slurm /var/spool/slurmctld/</span><br></pre></td></tr></table></figure>
+<h2 id="start-slurm-service">Start Slurm Service</h2>
+<p>So far, we have finished the basic configuration. Let us launch Slurm now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On management nodes</span></span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-mgt$ sudo systemctl start munge</span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">clab-mgt$ sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># On compute nodes</span></span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-comp$ sudo systemctl start munge</span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">clab-comp$ sudo systemctl start slurmd</span><br></pre></td></tr></table></figure>
+<p>Run <code>sinfo</code> and we should see all the compute nodes are ready.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sinfo</span><br><span class="line">PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span><br><span class="line">debug*       up   infinite     20   idle clab[01-20]</span><br></pre></td></tr></table></figure>
+<h2 id="debugging-tips">Debugging Tips</h2>
+<p>If your Slurm is not working correctly, you could try with these commands to debug.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo slurmctld -D</span><br><span class="line">clab-comp$ sudo slurmd -D</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.cnblogs.com/aobaxu/p/16195237.html">https://www.cnblogs.com/aobaxu/p/16195237.html</a></li>
+<li><a href="https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting">https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting</a></li>
 </ul>
 ]]></content>
   </entry>
