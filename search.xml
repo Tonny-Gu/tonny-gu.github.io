@@ -2122,6 +2122,72 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
+    <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
+    <url>/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</url>
+    <content><![CDATA[<p>Slurm will make a bunch of seperated machines look much like a cluster, is it right?</p>
+<h2 id="naming-convention-of-nodes">Naming Convention of Nodes</h2>
+<p>A common cluster should comprise management nodes and compute nodes. This aritcle will take our cluster as an example to demostrate steps to install and configure Slurm. In our case, the management node is called <code>clab-mgt01</code> while the compute nodes are named from <code>clab01</code> to <code>clab20</code> in order.</p>
+<h2 id="install-dependencies">Install Dependencies</h2>
+<p>Execute the following command to install the dependencies <strong>on all machines</strong>. (<code>clab-all</code> refers to all machines including management and compute nodes).</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo apt install slurm-wlm slurm-client munge</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Tips: There are several tools that may help to manage multiple nodes easily:</p>
+<ul>
+<li>iTerm2 (on Mac) / Terminator (on Linux)</li>
+<li>csshX (on Mac) / cssh (on Linux)</li>
+<li>Parallel SSH (at cluster side)</li>
+</ul>
+</blockquote>
+<h2 id="generate-slurm-configuration">Generate Slurm Configuration</h2>
+<p>There is <a href="https://slurm.schedmd.com/configurator.html">an official online configuration generator</a>. And we should carefully check the fields below.</p>
+<ul>
+<li><strong>SlurmctldHost</strong>: <code>clab-mgt01</code> in our case.</li>
+<li><strong>NodeName</strong>: <code>clab[01-20]</code> in our case.</li>
+<li><strong>CPUs</strong>: It is recommended to leave it blank.</li>
+<li><strong>Sockets</strong>: For a dual-socket server we commonly see, it should be <code>2</code>.</li>
+<li><strong>CoresPerSocket</strong>: Number of physical cores per socket.</li>
+<li><strong>ThreadsPerCore</strong>: For a regular x86 server, if hyperthreading is enabled, it should be <code>2</code>, otherwise <code>1</code>.</li>
+<li><strong>RealMemory</strong>: Optional.</li>
+</ul>
+<p>Click <code>submit</code>, then we could copy the file content to <code>/etc/slurm-llnl/slurm.conf</code> <strong>on all machines</strong>.</p>
+<blockquote>
+<p>Tips: Don't forget the shared storage (e.g. NFS storage) on the cluster. We could utilize it to distribute files.</p>
+</blockquote>
+<h2 id="distribute-munge-key">Distribute Munge Key</h2>
+<p>Once Munge is installed successfully, the key <code>/etc/munge/munge.key</code> will be automatically generated. It is requried for all machines to hold the same key. Therefore, we could distribute the key <strong>on the management node</strong> to <strong>the remaining nodes</strong> including compute nodes and other backup management node if existing.</p>
+<blockquote>
+<p>Tips: Again. We could also utilize the shared storage to distribute the key.</p>
+</blockquote>
+<p>Then make sure the permission and the ownership are correctly set.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo chmod 400 /etc/munge/munge.key</span><br><span class="line">clab-all$ chown munge:munge /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
+<h2 id="patch-slurm-cgroup-integration">Patch Slurm Cgroup Integration</h2>
+<p>By default, there Slurm cannot work with Cgroup well. If we start Slurm service right now, we may receive this error shown below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">error: cgroup namespace <span class="string">&#x27;freezer&#x27;</span> not mounted. aborting</span><br></pre></td></tr></table></figure>
+<p>Therefore, by pasting the following content to <code>/etc/slurm/cgroup.conf</code> <strong>on compute nodes</strong>, this issue can be fixed.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CgroupMountpoint=/sys/fs/cgroup</span><br></pre></td></tr></table></figure>
+<p>or using this command:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> CgroupMountpoint=/sys/fs/cgroup &gt;&gt; /etc/slurm/cgroup.conf</span><br></pre></td></tr></table></figure>
+<h2 id="fix-directory-permission">Fix Directory Permission</h2>
+<p>For unknown reasons, the permission of the relevant directory is not set properly, which may lead to this error.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">slurmctld: fatal: mkdir(/var/spool/slurmctld): Permission denied</span><br></pre></td></tr></table></figure>
+<p>The solution is executing the commands below <strong>on management nodes</strong>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo mkdir -p /var/spool/slurmctld</span><br><span class="line">clab-mgt$ sudo chown slurm:slurm /var/spool/slurmctld/</span><br></pre></td></tr></table></figure>
+<h2 id="start-slurm-service">Start Slurm Service</h2>
+<p>So far, we have finished the basic configuration. Let us launch Slurm now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On management nodes</span></span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-mgt$ sudo systemctl start munge</span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">clab-mgt$ sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># On compute nodes</span></span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-comp$ sudo systemctl start munge</span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">clab-comp$ sudo systemctl start slurmd</span><br></pre></td></tr></table></figure>
+<p>Run <code>sinfo</code> and we should see all the compute nodes are ready.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sinfo</span><br><span class="line">PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span><br><span class="line">debug*       up   infinite     20   idle clab[01-20]</span><br></pre></td></tr></table></figure>
+<h2 id="debugging-tips">Debugging Tips</h2>
+<p>If your Slurm is not working correctly, you could try with these commands to debug.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo slurmctld -D</span><br><span class="line">clab-comp$ sudo slurmd -D</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.cnblogs.com/aobaxu/p/16195237.html">https://www.cnblogs.com/aobaxu/p/16195237.html</a></li>
+<li><a href="https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting">https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Tips of configuring InfiniBand adapters</title>
     <url>/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</url>
     <content><![CDATA[<p>After reconfiguring clusters from scratch for several times, it seems that I am gradually adapting to this mystery and strange InfiniBand world...</p>
@@ -2211,72 +2277,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <li><a href="https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM">https://docs.nvidia.com/networking/display/MLNXOFEDv461000/OpenSM</a></li>
 <li><a href="https://www.cnblogs.com/juzib/p/13273380.html">https://www.cnblogs.com/juzib/p/13273380.html</a></li>
 <li><a href="https://blog.51cto.com/liangchaoxi/4044293">https://blog.51cto.com/liangchaoxi/4044293</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
-    <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
-    <url>/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</url>
-    <content><![CDATA[<p>Slurm will make a bunch of seperated machines look much like a cluster, is it right?</p>
-<h2 id="naming-convention-of-nodes">Naming Convention of Nodes</h2>
-<p>A common cluster should comprise management nodes and compute nodes. This aritcle will take our cluster as an example to demostrate steps to install and configure Slurm. In our case, the management node is called <code>clab-mgt01</code> while the compute nodes are named from <code>clab01</code> to <code>clab20</code> in order.</p>
-<h2 id="install-dependencies">Install Dependencies</h2>
-<p>Execute the following command to install the dependencies <strong>on all machines</strong>. (<code>clab-all</code> refers to all machines including management and compute nodes).</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo apt install slurm-wlm slurm-client munge</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>Tips: There are several tools that may help to manage multiple nodes easily:</p>
-<ul>
-<li>iTerm2 (on Mac) / Terminator (on Linux)</li>
-<li>csshX (on Mac) / cssh (on Linux)</li>
-<li>Parallel SSH (at cluster side)</li>
-</ul>
-</blockquote>
-<h2 id="generate-slurm-configuration">Generate Slurm Configuration</h2>
-<p>There is <a href="https://slurm.schedmd.com/configurator.html">an official online configuration generator</a>. And we should carefully check the fields below.</p>
-<ul>
-<li><strong>SlurmctldHost</strong>: <code>clab-mgt01</code> in our case.</li>
-<li><strong>NodeName</strong>: <code>clab[01-20]</code> in our case.</li>
-<li><strong>CPUs</strong>: It is recommended to leave it blank.</li>
-<li><strong>Sockets</strong>: For a dual-socket server we commonly see, it should be <code>2</code>.</li>
-<li><strong>CoresPerSocket</strong>: Number of physical cores per socket.</li>
-<li><strong>ThreadsPerCore</strong>: For a regular x86 server, if hyperthreading is enabled, it should be <code>2</code>, otherwise <code>1</code>.</li>
-<li><strong>RealMemory</strong>: Optional.</li>
-</ul>
-<p>Click <code>submit</code>, then we could copy the file content to <code>/etc/slurm-llnl/slurm.conf</code> <strong>on all machines</strong>.</p>
-<blockquote>
-<p>Tips: Don't forget the shared storage (e.g. NFS storage) on the cluster. We could utilize it to distribute files.</p>
-</blockquote>
-<h2 id="distribute-munge-key">Distribute Munge Key</h2>
-<p>Once Munge is installed successfully, the key <code>/etc/munge/munge.key</code> will be automatically generated. It is requried for all machines to hold the same key. Therefore, we could distribute the key <strong>on the management node</strong> to <strong>the remaining nodes</strong> including compute nodes and other backup management node if existing.</p>
-<blockquote>
-<p>Tips: Again. We could also utilize the shared storage to distribute the key.</p>
-</blockquote>
-<p>Then make sure the permission and the ownership are correctly set.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-all$ sudo chmod 400 /etc/munge/munge.key</span><br><span class="line">clab-all$ chown munge:munge /etc/munge/munge.key</span><br></pre></td></tr></table></figure>
-<h2 id="patch-slurm-cgroup-integration">Patch Slurm Cgroup Integration</h2>
-<p>By default, there Slurm cannot work with Cgroup well. If we start Slurm service right now, we may receive this error shown below.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">error: cgroup namespace <span class="string">&#x27;freezer&#x27;</span> not mounted. aborting</span><br></pre></td></tr></table></figure>
-<p>Therefore, by pasting the following content to <code>/etc/slurm/cgroup.conf</code> <strong>on compute nodes</strong>, this issue can be fixed.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">CgroupMountpoint=/sys/fs/cgroup</span><br></pre></td></tr></table></figure>
-<p>or using this command:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> CgroupMountpoint=/sys/fs/cgroup &gt;&gt; /etc/slurm/cgroup.conf</span><br></pre></td></tr></table></figure>
-<h2 id="fix-directory-permission">Fix Directory Permission</h2>
-<p>For unknown reasons, the permission of the relevant directory is not set properly, which may lead to this error.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">slurmctld: fatal: mkdir(/var/spool/slurmctld): Permission denied</span><br></pre></td></tr></table></figure>
-<p>The solution is executing the commands below <strong>on management nodes</strong>.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo mkdir -p /var/spool/slurmctld</span><br><span class="line">clab-mgt$ sudo chown slurm:slurm /var/spool/slurmctld/</span><br></pre></td></tr></table></figure>
-<h2 id="start-slurm-service">Start Slurm Service</h2>
-<p>So far, we have finished the basic configuration. Let us launch Slurm now.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># On management nodes</span></span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-mgt$ sudo systemctl start munge</span><br><span class="line">clab-mgt$ sudo systemctl <span class="built_in">enable</span> slurmctld</span><br><span class="line">clab-mgt$ sudo systemctl start slurmctld</span><br><span class="line"></span><br><span class="line"><span class="comment"># On compute nodes</span></span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> munge</span><br><span class="line">clab-comp$ sudo systemctl start munge</span><br><span class="line">clab-comp$ sudo systemctl <span class="built_in">enable</span> slurmd</span><br><span class="line">clab-comp$ sudo systemctl start slurmd</span><br></pre></td></tr></table></figure>
-<p>Run <code>sinfo</code> and we should see all the compute nodes are ready.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sinfo</span><br><span class="line">PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST</span><br><span class="line">debug*       up   infinite     20   idle clab[01-20]</span><br></pre></td></tr></table></figure>
-<h2 id="debugging-tips">Debugging Tips</h2>
-<p>If your Slurm is not working correctly, you could try with these commands to debug.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">clab-mgt$ sudo slurmctld -D</span><br><span class="line">clab-comp$ sudo slurmd -D</span><br></pre></td></tr></table></figure>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://www.cnblogs.com/aobaxu/p/16195237.html">https://www.cnblogs.com/aobaxu/p/16195237.html</a></li>
-<li><a href="https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting">https://stackoverflow.com/questions/62641323/error-cgroup-namespace-freezer-not-mounted-aborting</a></li>
 </ul>
 ]]></content>
   </entry>
@@ -2857,6 +2857,293 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <p>把这个脚本修改为下面的样子并运行，就可以将音频导出为<code>wav</code>文件了。</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line">dat = &#123;</span><br><span class="line">  <span class="string">&quot;audioContent&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">  <span class="string">&quot;timepoints&quot;</span>: [],</span><br><span class="line">  <span class="string">&quot;audioConfig&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;audioEncoding&quot;</span>: <span class="string">&quot;LINEAR16&quot;</span>,</span><br><span class="line">    <span class="string">&quot;speakingRate&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;pitch&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;volumeGainDb&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;sampleRateHertz&quot;</span>: <span class="number">24000</span>,</span><br><span class="line">    <span class="string">&quot;effectsProfileId&quot;</span>: []</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;output.wav&quot;</span>, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(base64.b64decode(dat[<span class="string">&quot;audioContent&quot;</span>]))</span><br></pre></td></tr></table></figure>
 <p>现在可以愉快的把音频插入到PPT里，设置动画自动播放音频自动切换了。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>快速理解并行 Makefile</title>
+    <url>/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/</url>
+    <content><![CDATA[<p>本教程为南科大2022年超算校内赛第二题扩展教程，<a href="https://github.com/Tonny-Gu/HelloHPC">赛题的repo</a>。</p>
+<p>Makefile 是 GNU Make 这个工具所需的文件，可以看作是一个比较特殊的 Bash 脚本。而对比现代的编译辅助工具，Make 显得非常简陋，直接用这玩意如同在打火机一块钱一个的时代钻木取火，但好处就是这个工具并不是很难理解。</p>
+<p>首先要明确的是，Make 这个工具是用来编译比较大型的工程的（就是管理一大堆源代码文件），所以它很多设计是围绕编译展开的，而且它是上世纪八十年代的产物，面向的是当时手无寸铁的程序员，至少比起啥工具都没有的情况，Make 还是有很大作用的。总的来说，Make 其实主要是在做这几件事： - 判断是否可以跳过执行某些 Linux 命令（command） - 确定 Linux 命令执行的顺序，并行执行不相关的命令</p>
+<h2 id="基本语法">基本语法</h2>
+<p>我们先抛开编译不谈，来看 Make 的规则（Rule）的基本语法。</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">target: prerequisites</span></span><br><span class="line">    command</span><br><span class="line">    command</span><br></pre></td></tr></table></figure>
+<p>Make 大概是个缝合怪，有很多东西坨在一起了。比如说目标target，就有： - 真target：会对应一个具体的文件 - 假target（Phony Target）：和磁盘上的文件完全没关系</p>
+<p>然后执行条件（prerequisites）是一个或者一组目标，这些目标会决定下面的命令（command）要不要被执行。</p>
+<p>命令（command）就是 Linux 的命令，一般情况下这些命令写清楚了<strong>如何产生一个真target</strong>（如果 target 是真 target 的话）。</p>
+<p>继续抛开编译不谈，来看<code>make/makefile1</code>里的简单例子，</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son.bak.txt</span></span><br><span class="line">	@echo I am all <span class="comment"># display I am all on screen</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.bak.txt: son.txt</span></span><br><span class="line">	@echo I am son.bak.txt <span class="comment"># display I am son.bak.txt on screen</span></span><br><span class="line">	@cp son.txt son.bak.txt <span class="comment"># copy son.txt to son.bak.txt</span></span><br></pre></td></tr></table></figure>
+<p>在 command 前加一个<code>@</code>，可以让 Make 不把原始命令显示出来。</p>
+<p>这里<code>son.bak.txt</code>是一个真 target，因为真的会有<code>son.bak.txt</code>这么个文件（在执行了<code>cp</code>命令以后）。</p>
+<p><code>son.txt</code>也是一个真 target，并且一开始就有了。</p>
+<p>习惯上<code>all</code>是一个假 target，类似于整个 Makefile 的入口（或者说总目标），并且会写成第一个 target（就像这里写在了第一行）。当我们执行<code>make</code>命令的时候（不手动指定 target），其实就是去产生（make）<code>all</code> target。</p>
+<p>我们实际上并不用去特别区分真假 target，只需要知道有一些特殊的 target 就行。</p>
+<p>什么叫 make 一个 target？其实就是： - 如果存在一个执行条件里的 target 没有被 make 过，就先去 make 执行条件里还没 make 过的 target - 在执行条件里所有的 target 都 make 了以后，<strong>在某些时刻</strong>，把它的 command 执行一遍</p>
+<p>在这个例子里，Make 的故事是： - 我们要 make <code>all</code> target - Make 首先跑去 make <code>all</code> - 然后很快发现<code>son.bak.txt</code>没有 make 过，就跑去 make <code>son.bak.txt</code> - 接着一看<code>son.bak.txt</code>要求要 make <code>son.txt</code> - 但是 - 没有一条关于<code>son.txt</code>的 rule - <code>son.txt</code>已经有这个文件了 - 那我们就当<code>son.txt</code>已经 make 好了 - 执行条件里所有的 target 都好了，再看发现我们没有<code>son.bak.txt</code>这个文件 - 那就执行 command（<code>cp</code>和<code>echo</code>） - command 执行完了，就当<code>son.bak.txt</code> make 好了 - <code>all</code>执行条件里所有的 target 都好了，再看发现我们没有<code>all</code>这个文件 - 那就执行 command（<code>echo</code>）（假 target 永远都要执行一次 command，毕竟对应的文件永远不存在） - command 执行完了，就当<code>all</code> make 好了</p>
+<p>程序输出如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># make</span></span><br><span class="line">I am son.bak.txt</span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<h2 id="判断是否需要执行命令">判断是否需要执行命令</h2>
+<p>Make 的一大作用是，当我们有一大堆代码文件的时候，我们并不希望改动一个文件就要重新编译所有的文件，当然是<strong>拎出所有受到的影响的代码</strong>来重新编译，这样就可以节约很多时间。所以 Make 会自动<strong>选择性的执行</strong> Makefile 里的 command。那什么时候 command 会被执行？</p>
+<h3 id="执行条件的-target-有更新">执行条件的 target 有更新</h3>
+<p>继续上一个例子，当我们在执行一次<code>make</code>命令以后，如果试着再<code>make</code>一次，程序的输出就只有</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># make</span></span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<p>很明显，只有<code>all</code> target 被执行了。在这个例子里，Make 的故事是： - 我们要 make <code>all</code> target - Make 首先跑去 make <code>all</code> - 然后很快发现<code>son.bak.txt</code>没有 make 过，就跑去 make <code>son.bak.txt</code> - 接着一看<code>son.bak.txt</code>要求要 make <code>son.txt</code> - 那我们当<code>son.txt</code>已经 make 好了 - 执行条件里所有的 target 都好了，再看发现我们没有<code>son.bak.txt</code>这个文件 - 我们有<code>son.bak.txt</code>，而且和<code>son.txt</code>一样新 - 那就跳过执行 command - <code>all</code>执行条件里所有的 target 都好了，再看发现我们没有<code>all</code>这个文件 - 那就执行 command（<code>echo</code>）（假 target 永远都要执行一次 command，毕竟对应的文件永远不存在） - command 执行完了，就当<code>all</code> make 好了</p>
+<blockquote>
+<p>如果我们去掉 Makefile 里<code>all</code>的command，再执行<code>make</code>:</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">&gt;all: son.bak.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">&gt;son.bak.txt: son.txt</span></span><br><span class="line">echo I am son.bak.txt</span><br><span class="line">cp son.txt son.bak.txt</span><br></pre></td></tr></table></figure>
+<p>输出就只剩下这些东西。这代表这次<code>make</code>啥事也没做。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&gt;<span class="comment"># make</span></span><br><span class="line">&gt;make: Nothing to be <span class="keyword">done</span> <span class="keyword">for</span> <span class="string">&#x27;all&#x27;</span>.</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>也不难理解，我们没修改过<code>son.txt</code>，那也没有必要去重新复制一份<code>son.bak.txt</code>。Make 会根据 target 的执行条件里是否有依赖的 target 更新了（执行过 command，或者文件有新修改）来判断是否需要被重新 make 这个 target。</p>
+<blockquote>
+<p>具体来说，Make 会比较<code>son.bak.txt</code>和<code>son.txt</code>的修改时间来判断两文件谁新谁旧。</p>
+</blockquote>
+<p>我们可以编辑一下<code>son.txt</code>，随便写一些东西并保存，再执行<code>make</code>的时候，就会发现 Make 重新复制了一份<code>son.bak.txt</code>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># echo 1 &gt; son.txt # write 1 to file son.txt</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">I am son.bak.txt</span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<p>我们的<code>I am son.bak.txt</code>回来啦，意味着<code>son.bak.txt</code>被重新复制了一份。</p>
+<p>再举一个复杂一点的例子，在<code>make/makefile2</code>里，Makefile 的内容如下：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt: mom.txt dad.txt</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">	@rm mom.txt dad.txt</span><br></pre></td></tr></table></figure>
+<p>同时我们新增一个<code>clean</code>假 target，用来清理 Makefile 产生的中间文件。输入命令<code>make clean</code>即可删掉<code>mom.txt</code>和<code>dad.txt</code>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># make clean</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line">cat grandma.txt &gt; dad.txt</span><br><span class="line">cat mom.txt &gt; son.txt</span><br><span class="line">cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">make: <span class="string">&#x27;all&#x27;</span> is up to date.</span><br><span class="line"><span class="comment"># echo 1 &gt; grandma.txt </span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line">cat mom.txt &gt; son.txt</span><br><span class="line">cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br></pre></td></tr></table></figure>
+<p>注意到第一次<code>make</code>之后，如果未对文件作出修改，所有的 target 除<code>all</code>以外会被跳过执行 command。当仅有<code>grandma.txt</code>被修改时，<code>dad.txt</code>这个 target 也会跳过执行 command。期间 Make 的故事是： - make <code>all</code> target - make <code>son.txt</code> - make <code>mom.txt</code> - make <code>grandma.txt</code> - 检查<code>grandma.txt</code>文件是否有新修改 - 有更新，执行<code>cat grandma.txt &gt; mom.txt</code> - make <code>dad.txt</code> - make <code>grandpa.txt</code> - 检查<code>grandma.txt</code>文件是否有新修改 - 没更新，啥也不做 - 检查<code>mom.txt</code>和<code>dad.txt</code>是否执行过 command - <code>mom.txt</code>有执行过 command，执行<code>cat mom.txt &gt; son.txt</code>和<code>cat dad.txt &gt;&gt; son.txt</code> - 检查<code>son.txt</code>是否执行过 command - <code>son.txt</code>有执行过 command，执行空指令</p>
+<h3 id="存在依赖关系">存在依赖关系</h3>
+<p>显而易见，下面的例子里，<code>aunt.txt</code>和<code>uncle.txt</code>因为和<code>all</code>屁关系没有，从未被依赖过，所以它们的 command 压根就不可能被执行。</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt: mom.txt dad.txt</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt</span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt</span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br><span class="line"></span><br><span class="line"><span class="section">aunt.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; aunt.txt</span><br><span class="line"></span><br><span class="line"><span class="section">uncle.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; uncle.txt</span><br></pre></td></tr></table></figure>
+<h2 id="确定命令执行的顺序">确定命令执行的顺序</h2>
+<p>Makefile 可以说是文件和命令的依赖关系的说明书，描述了通过什么文件以及什么命令可以产生什么文件。比如在上个例子里，<code>son.txt</code>文件的产生依赖<code>mom.txt</code>和<code>dad.txt</code>，<code>mom.txt</code>和<code>dad.txt</code>的产生分别依赖<code>grandma.txt</code>和<code>grandpa.txt</code>。在真实环境中，为了加速工程的编译速度，几个被依赖的，但它们之间没有依赖关系的 target 的 command 可以被同时执行。这也因此要求我们准确描述依赖关系。如果我们把上个例子的 Makefile 写成：</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son.txt mom.txt dad.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt:</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt</span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt</span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br></pre></td></tr></table></figure>
+<p>就有可能造成<code>son.txt</code>，<code>mom.txt</code>，<code>dad.txt</code>的 command 被同时执行，就存在<code>mom.txt</code>文件还没产生，<code>son.txt</code>的命令（需要<code>mom.txt</code>作为输入）就开始执行了的可能性。</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son.txt</code></th>
+<th><code>mom.txt</code></th>
+<th><code>dad.txt</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>cat mom.txt &gt; son.txt</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>？？我文件呢？</td>
+<td></td>
+<td><code>cat &gt; dad.txt</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td></td>
+<td><code>cat &gt; mom.txt</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>所以我们需要确保执行的顺序像下面那个样子。</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son.txt</code></th>
+<th><code>mom.txt</code></th>
+<th><code>dad.txt</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td></td>
+<td><code>cat &gt; mom.txt</code></td>
+<td><code>cat &gt; dad.txt</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><code>cat mom.txt &gt; son.txt</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>使用<code>make -j</code>可以启动并行编译，在下面的例子中，我们可以看到<code>grandpa</code>和<code>grandma</code>同时开始执行，<code>son</code>在<code>mom</code>和<code>dad</code>都结束后才开始执行，总耗时为12s。</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son</span></span><br><span class="line">	@echo <span class="string">&quot;finish        @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">son: mom dad</span></span><br><span class="line">	@echo <span class="string">&quot;son     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 2</span><br><span class="line">	@echo <span class="string">&quot;son     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom: grandma</span></span><br><span class="line">	@echo <span class="string">&quot;mom     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;mom     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad: grandpa</span></span><br><span class="line">	@echo <span class="string">&quot;dad     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;dad     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandma:</span></span><br><span class="line">	@echo <span class="string">&quot;grandma begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;grandma end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandpa:</span></span><br><span class="line">	@echo <span class="string">&quot;grandpa begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;grandpa end&quot;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># make -j</span></span><br><span class="line">grandma begin @ Fri Dec 23 23:34:14 UTC 2022</span><br><span class="line">grandpa begin @ Fri Dec 23 23:34:14 UTC 2022</span><br><span class="line">grandma end</span><br><span class="line">mom     begin @ Fri Dec 23 23:34:17 UTC 2022</span><br><span class="line">grandpa end</span><br><span class="line">dad     begin @ Fri Dec 23 23:34:19 UTC 2022</span><br><span class="line">mom     end</span><br><span class="line">dad     end</span><br><span class="line">son     begin @ Fri Dec 23 23:34:24 UTC 2022</span><br><span class="line">son     end</span><br><span class="line">finish        @ Fri Dec 23 23:34:26 UTC 2022</span><br></pre></td></tr></table></figure>
+<p>可视化结果如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son</code></th>
+<th><code>mom</code></th>
+<th><code>dad</code></th>
+<th><code>grandma</code></th>
+<th><code>grandpa</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>14</td>
+<td></td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>15</td>
+<td></td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>16</td>
+<td></td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>17</td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td>结束</td>
+</tr>
+<tr class="even">
+<td>19</td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>21</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>22</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>23</td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>24</td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>25</td>
+<td>结束</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>将代码修改成如下形式，可以使所有 target 同时开始执行，总耗时为5s。</p>
+<figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line"><span class="section">all: son mom dad grandma grandpa</span></span><br><span class="line">	@echo <span class="string">&quot;finish        @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">son: </span></span><br><span class="line">	@echo <span class="string">&quot;son     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 2</span><br><span class="line">	@echo <span class="string">&quot;son     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom: </span></span><br><span class="line">	@echo <span class="string">&quot;mom     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;mom     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad: </span></span><br><span class="line">	@echo <span class="string">&quot;dad     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;dad     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandma:</span></span><br><span class="line">	@echo <span class="string">&quot;grandma begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;grandma end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandpa:</span></span><br><span class="line">	@echo <span class="string">&quot;grandpa begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;grandpa end&quot;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># make -j</span></span><br><span class="line">son     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">mom     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">dad     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">grandma begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">grandpa begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">son     end</span><br><span class="line">mom     end</span><br><span class="line">grandma end</span><br><span class="line">dad     end</span><br><span class="line">grandpa end</span><br><span class="line">finish        @ Fri Dec 23 23:36:38 UTC 2022</span><br></pre></td></tr></table></figure>
+<p>可视化结果如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son</code></th>
+<th><code>mom</code></th>
+<th><code>dad</code></th>
+<th><code>grandma</code></th>
+<th><code>grandpa</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>33</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>34</td>
+<td>结束</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>35</td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+<td>结束</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>36</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>37</td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td></td>
+<td>结束</td>
+</tr>
+</tbody>
+</table>
+<h2 id="references">References</h2>
+<ul>
+<li>https://makefiletutorial.com/</li>
+</ul>
 ]]></content>
   </entry>
   <entry>

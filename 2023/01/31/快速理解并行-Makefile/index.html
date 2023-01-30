@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="本教程为南科大2022年超算校内赛第二题扩展教程，赛题的repo。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速理解并行 Makefile">
+<meta property="og:url" content="https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="本教程为南科大2022年超算校内赛第二题扩展教程，赛题的repo。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-01-30T21:24:47.000Z">
+<meta property="article:modified_time" content="2023-01-30T21:27:09.676Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/","path":"2023/01/31/快速理解并行-Makefile/","title":"快速理解并行 Makefile"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>快速理解并行 Makefile | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95"><span class="nav-text">基本语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="nav-text">判断是否需要执行命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E6%9D%A1%E4%BB%B6%E7%9A%84-target-%E6%9C%89%E6%9B%B4%E6%96%B0"><span class="nav-text">执行条件的 target 有更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%9C%A8%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB"><span class="nav-text">存在依赖关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AE%E5%AE%9A%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E9%A1%BA%E5%BA%8F"><span class="nav-text">确定命令执行的顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://victoryang00.cn/wordpress/" title="https:&#x2F;&#x2F;victoryang00.cn&#x2F;wordpress&#x2F;" rel="noopener" target="_blank">victoryang</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          快速理解并行 Makefile
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-01-31 05:24:47 / Modified: 05:27:09" itemprop="dateCreated datePublished" datetime="2023-01-31T05:24:47+08:00">2023-01-31</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本教程为南科大2022年超算校内赛第二题扩展教程，<a target="_blank" rel="noopener" href="https://github.com/Tonny-Gu/HelloHPC">赛题的repo</a>。</p>
+<p>Makefile 是 GNU Make 这个工具所需的文件，可以看作是一个比较特殊的 Bash 脚本。而对比现代的编译辅助工具，Make 显得非常简陋，直接用这玩意如同在打火机一块钱一个的时代钻木取火，但好处就是这个工具并不是很难理解。</p>
+<p>首先要明确的是，Make 这个工具是用来编译比较大型的工程的（就是管理一大堆源代码文件），所以它很多设计是围绕编译展开的，而且它是上世纪八十年代的产物，面向的是当时手无寸铁的程序员，至少比起啥工具都没有的情况，Make 还是有很大作用的。总的来说，Make 其实主要是在做这几件事： - 判断是否可以跳过执行某些 Linux 命令（command） - 确定 Linux 命令执行的顺序，并行执行不相关的命令</p>
+<h2 id="基本语法">基本语法</h2>
+<p>我们先抛开编译不谈，来看 Make 的规则（Rule）的基本语法。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">target: prerequisites</span></span><br><span class="line">    command</span><br><span class="line">    command</span><br></pre></td></tr></table></figure>
+<p>Make 大概是个缝合怪，有很多东西坨在一起了。比如说目标target，就有： - 真target：会对应一个具体的文件 - 假target（Phony Target）：和磁盘上的文件完全没关系</p>
+<p>然后执行条件（prerequisites）是一个或者一组目标，这些目标会决定下面的命令（command）要不要被执行。</p>
+<p>命令（command）就是 Linux 的命令，一般情况下这些命令写清楚了<strong>如何产生一个真target</strong>（如果 target 是真 target 的话）。</p>
+<p>继续抛开编译不谈，来看<code>make/makefile1</code>里的简单例子，</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son.bak.txt</span></span><br><span class="line">	@echo I am all <span class="comment"># display I am all on screen</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.bak.txt: son.txt</span></span><br><span class="line">	@echo I am son.bak.txt <span class="comment"># display I am son.bak.txt on screen</span></span><br><span class="line">	@cp son.txt son.bak.txt <span class="comment"># copy son.txt to son.bak.txt</span></span><br></pre></td></tr></table></figure>
+<p>在 command 前加一个<code>@</code>，可以让 Make 不把原始命令显示出来。</p>
+<p>这里<code>son.bak.txt</code>是一个真 target，因为真的会有<code>son.bak.txt</code>这么个文件（在执行了<code>cp</code>命令以后）。</p>
+<p><code>son.txt</code>也是一个真 target，并且一开始就有了。</p>
+<p>习惯上<code>all</code>是一个假 target，类似于整个 Makefile 的入口（或者说总目标），并且会写成第一个 target（就像这里写在了第一行）。当我们执行<code>make</code>命令的时候（不手动指定 target），其实就是去产生（make）<code>all</code> target。</p>
+<p>我们实际上并不用去特别区分真假 target，只需要知道有一些特殊的 target 就行。</p>
+<p>什么叫 make 一个 target？其实就是： - 如果存在一个执行条件里的 target 没有被 make 过，就先去 make 执行条件里还没 make 过的 target - 在执行条件里所有的 target 都 make 了以后，<strong>在某些时刻</strong>，把它的 command 执行一遍</p>
+<p>在这个例子里，Make 的故事是： - 我们要 make <code>all</code> target - Make 首先跑去 make <code>all</code> - 然后很快发现<code>son.bak.txt</code>没有 make 过，就跑去 make <code>son.bak.txt</code> - 接着一看<code>son.bak.txt</code>要求要 make <code>son.txt</code> - 但是 - 没有一条关于<code>son.txt</code>的 rule - <code>son.txt</code>已经有这个文件了 - 那我们就当<code>son.txt</code>已经 make 好了 - 执行条件里所有的 target 都好了，再看发现我们没有<code>son.bak.txt</code>这个文件 - 那就执行 command（<code>cp</code>和<code>echo</code>） - command 执行完了，就当<code>son.bak.txt</code> make 好了 - <code>all</code>执行条件里所有的 target 都好了，再看发现我们没有<code>all</code>这个文件 - 那就执行 command（<code>echo</code>）（假 target 永远都要执行一次 command，毕竟对应的文件永远不存在） - command 执行完了，就当<code>all</code> make 好了</p>
+<p>程序输出如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># make</span></span><br><span class="line">I am son.bak.txt</span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<h2 id="判断是否需要执行命令">判断是否需要执行命令</h2>
+<p>Make 的一大作用是，当我们有一大堆代码文件的时候，我们并不希望改动一个文件就要重新编译所有的文件，当然是<strong>拎出所有受到的影响的代码</strong>来重新编译，这样就可以节约很多时间。所以 Make 会自动<strong>选择性的执行</strong> Makefile 里的 command。那什么时候 command 会被执行？</p>
+<h3 id="执行条件的-target-有更新">执行条件的 target 有更新</h3>
+<p>继续上一个例子，当我们在执行一次<code>make</code>命令以后，如果试着再<code>make</code>一次，程序的输出就只有</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># make</span></span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<p>很明显，只有<code>all</code> target 被执行了。在这个例子里，Make 的故事是： - 我们要 make <code>all</code> target - Make 首先跑去 make <code>all</code> - 然后很快发现<code>son.bak.txt</code>没有 make 过，就跑去 make <code>son.bak.txt</code> - 接着一看<code>son.bak.txt</code>要求要 make <code>son.txt</code> - 那我们当<code>son.txt</code>已经 make 好了 - 执行条件里所有的 target 都好了，再看发现我们没有<code>son.bak.txt</code>这个文件 - 我们有<code>son.bak.txt</code>，而且和<code>son.txt</code>一样新 - 那就跳过执行 command - <code>all</code>执行条件里所有的 target 都好了，再看发现我们没有<code>all</code>这个文件 - 那就执行 command（<code>echo</code>）（假 target 永远都要执行一次 command，毕竟对应的文件永远不存在） - command 执行完了，就当<code>all</code> make 好了</p>
+<blockquote>
+<p>如果我们去掉 Makefile 里<code>all</code>的command，再执行<code>make</code>:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">&gt;all: son.bak.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">&gt;son.bak.txt: son.txt</span></span><br><span class="line">echo I am son.bak.txt</span><br><span class="line">cp son.txt son.bak.txt</span><br></pre></td></tr></table></figure>
+<p>输出就只剩下这些东西。这代表这次<code>make</code>啥事也没做。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;<span class="comment"># make</span></span><br><span class="line">&gt;make: Nothing to be <span class="keyword">done</span> <span class="keyword">for</span> <span class="string">&#x27;all&#x27;</span>.</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>也不难理解，我们没修改过<code>son.txt</code>，那也没有必要去重新复制一份<code>son.bak.txt</code>。Make 会根据 target 的执行条件里是否有依赖的 target 更新了（执行过 command，或者文件有新修改）来判断是否需要被重新 make 这个 target。</p>
+<blockquote>
+<p>具体来说，Make 会比较<code>son.bak.txt</code>和<code>son.txt</code>的修改时间来判断两文件谁新谁旧。</p>
+</blockquote>
+<p>我们可以编辑一下<code>son.txt</code>，随便写一些东西并保存，再执行<code>make</code>的时候，就会发现 Make 重新复制了一份<code>son.bak.txt</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># echo 1 &gt; son.txt # write 1 to file son.txt</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">I am son.bak.txt</span><br><span class="line">I am all</span><br></pre></td></tr></table></figure>
+<p>我们的<code>I am son.bak.txt</code>回来啦，意味着<code>son.bak.txt</code>被重新复制了一份。</p>
+<p>再举一个复杂一点的例子，在<code>make/makefile2</code>里，Makefile 的内容如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt: mom.txt dad.txt</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">	@rm mom.txt dad.txt</span><br></pre></td></tr></table></figure>
+<p>同时我们新增一个<code>clean</code>假 target，用来清理 Makefile 产生的中间文件。输入命令<code>make clean</code>即可删掉<code>mom.txt</code>和<code>dad.txt</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># make clean</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line">cat grandma.txt &gt; dad.txt</span><br><span class="line">cat mom.txt &gt; son.txt</span><br><span class="line">cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">make: <span class="string">&#x27;all&#x27;</span> is up to date.</span><br><span class="line"><span class="comment"># echo 1 &gt; grandma.txt </span></span><br><span class="line"><span class="comment"># make</span></span><br><span class="line">cat grandma.txt &gt; mom.txt <span class="comment"># replace the content with grandma.txt</span></span><br><span class="line">cat mom.txt &gt; son.txt</span><br><span class="line">cat dad.txt &gt;&gt; son.txt <span class="comment"># merge the content of mom.txt and dad.txt</span></span><br></pre></td></tr></table></figure>
+<p>注意到第一次<code>make</code>之后，如果未对文件作出修改，所有的 target 除<code>all</code>以外会被跳过执行 command。当仅有<code>grandma.txt</code>被修改时，<code>dad.txt</code>这个 target 也会跳过执行 command。期间 Make 的故事是： - make <code>all</code> target - make <code>son.txt</code> - make <code>mom.txt</code> - make <code>grandma.txt</code> - 检查<code>grandma.txt</code>文件是否有新修改 - 有更新，执行<code>cat grandma.txt &gt; mom.txt</code> - make <code>dad.txt</code> - make <code>grandpa.txt</code> - 检查<code>grandma.txt</code>文件是否有新修改 - 没更新，啥也不做 - 检查<code>mom.txt</code>和<code>dad.txt</code>是否执行过 command - <code>mom.txt</code>有执行过 command，执行<code>cat mom.txt &gt; son.txt</code>和<code>cat dad.txt &gt;&gt; son.txt</code> - 检查<code>son.txt</code>是否执行过 command - <code>son.txt</code>有执行过 command，执行空指令</p>
+<h3 id="存在依赖关系">存在依赖关系</h3>
+<p>显而易见，下面的例子里，<code>aunt.txt</code>和<code>uncle.txt</code>因为和<code>all</code>屁关系没有，从未被依赖过，所以它们的 command 压根就不可能被执行。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt: mom.txt dad.txt</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt</span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt</span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br><span class="line"></span><br><span class="line"><span class="section">aunt.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; aunt.txt</span><br><span class="line"></span><br><span class="line"><span class="section">uncle.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; uncle.txt</span><br></pre></td></tr></table></figure>
+<h2 id="确定命令执行的顺序">确定命令执行的顺序</h2>
+<p>Makefile 可以说是文件和命令的依赖关系的说明书，描述了通过什么文件以及什么命令可以产生什么文件。比如在上个例子里，<code>son.txt</code>文件的产生依赖<code>mom.txt</code>和<code>dad.txt</code>，<code>mom.txt</code>和<code>dad.txt</code>的产生分别依赖<code>grandma.txt</code>和<code>grandpa.txt</code>。在真实环境中，为了加速工程的编译速度，几个被依赖的，但它们之间没有依赖关系的 target 的 command 可以被同时执行。这也因此要求我们准确描述依赖关系。如果我们把上个例子的 Makefile 写成：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son.txt mom.txt dad.txt</span></span><br><span class="line">	</span><br><span class="line"><span class="section">son.txt:</span></span><br><span class="line">	cat mom.txt &gt; son.txt</span><br><span class="line">	cat dad.txt &gt;&gt; son.txt</span><br><span class="line"></span><br><span class="line"><span class="section">mom.txt: grandma.txt</span></span><br><span class="line">	cat grandma.txt &gt; mom.txt</span><br><span class="line"></span><br><span class="line"><span class="section">dad.txt: grandpa.txt</span></span><br><span class="line">	cat grandma.txt &gt; dad.txt</span><br></pre></td></tr></table></figure>
+<p>就有可能造成<code>son.txt</code>，<code>mom.txt</code>，<code>dad.txt</code>的 command 被同时执行，就存在<code>mom.txt</code>文件还没产生，<code>son.txt</code>的命令（需要<code>mom.txt</code>作为输入）就开始执行了的可能性。</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son.txt</code></th>
+<th><code>mom.txt</code></th>
+<th><code>dad.txt</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>cat mom.txt &gt; son.txt</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>？？我文件呢？</td>
+<td></td>
+<td><code>cat &gt; dad.txt</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td></td>
+<td><code>cat &gt; mom.txt</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>所以我们需要确保执行的顺序像下面那个样子。</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son.txt</code></th>
+<th><code>mom.txt</code></th>
+<th><code>dad.txt</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td></td>
+<td><code>cat &gt; mom.txt</code></td>
+<td><code>cat &gt; dad.txt</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><code>cat mom.txt &gt; son.txt</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>使用<code>make -j</code>可以启动并行编译，在下面的例子中，我们可以看到<code>grandpa</code>和<code>grandma</code>同时开始执行，<code>son</code>在<code>mom</code>和<code>dad</code>都结束后才开始执行，总耗时为12s。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son</span></span><br><span class="line">	@echo <span class="string">&quot;finish        @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">son: mom dad</span></span><br><span class="line">	@echo <span class="string">&quot;son     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 2</span><br><span class="line">	@echo <span class="string">&quot;son     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom: grandma</span></span><br><span class="line">	@echo <span class="string">&quot;mom     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;mom     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad: grandpa</span></span><br><span class="line">	@echo <span class="string">&quot;dad     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;dad     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandma:</span></span><br><span class="line">	@echo <span class="string">&quot;grandma begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;grandma end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandpa:</span></span><br><span class="line">	@echo <span class="string">&quot;grandpa begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;grandpa end&quot;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># make -j</span></span><br><span class="line">grandma begin @ Fri Dec 23 23:34:14 UTC 2022</span><br><span class="line">grandpa begin @ Fri Dec 23 23:34:14 UTC 2022</span><br><span class="line">grandma end</span><br><span class="line">mom     begin @ Fri Dec 23 23:34:17 UTC 2022</span><br><span class="line">grandpa end</span><br><span class="line">dad     begin @ Fri Dec 23 23:34:19 UTC 2022</span><br><span class="line">mom     end</span><br><span class="line">dad     end</span><br><span class="line">son     begin @ Fri Dec 23 23:34:24 UTC 2022</span><br><span class="line">son     end</span><br><span class="line">finish        @ Fri Dec 23 23:34:26 UTC 2022</span><br></pre></td></tr></table></figure>
+<p>可视化结果如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son</code></th>
+<th><code>mom</code></th>
+<th><code>dad</code></th>
+<th><code>grandma</code></th>
+<th><code>grandpa</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>14</td>
+<td></td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>15</td>
+<td></td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>16</td>
+<td></td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>17</td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td>结束</td>
+</tr>
+<tr class="even">
+<td>19</td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>21</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>22</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>23</td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>24</td>
+<td>执行</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>25</td>
+<td>结束</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>将代码修改成如下形式，可以使所有 target 同时开始执行，总耗时为5s。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all: son mom dad grandma grandpa</span></span><br><span class="line">	@echo <span class="string">&quot;finish        @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">son: </span></span><br><span class="line">	@echo <span class="string">&quot;son     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 2</span><br><span class="line">	@echo <span class="string">&quot;son     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">mom: </span></span><br><span class="line">	@echo <span class="string">&quot;mom     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;mom     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">dad: </span></span><br><span class="line">	@echo <span class="string">&quot;dad     begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;dad     end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandma:</span></span><br><span class="line">	@echo <span class="string">&quot;grandma begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 3</span><br><span class="line">	@echo <span class="string">&quot;grandma end&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">grandpa:</span></span><br><span class="line">	@echo <span class="string">&quot;grandpa begin @&quot;</span> <span class="string">&quot;$(shell date)&quot;</span></span><br><span class="line">	@sleep 5</span><br><span class="line">	@echo <span class="string">&quot;grandpa end&quot;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># make -j</span></span><br><span class="line">son     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">mom     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">dad     begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">grandma begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">grandpa begin @ Fri Dec 23 23:36:33 UTC 2022</span><br><span class="line">son     end</span><br><span class="line">mom     end</span><br><span class="line">grandma end</span><br><span class="line">dad     end</span><br><span class="line">grandpa end</span><br><span class="line">finish        @ Fri Dec 23 23:36:38 UTC 2022</span><br></pre></td></tr></table></figure>
+<p>可视化结果如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>时刻</th>
+<th><code>son</code></th>
+<th><code>mom</code></th>
+<th><code>dad</code></th>
+<th><code>grandma</code></th>
+<th><code>grandpa</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>33</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>34</td>
+<td>结束</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>35</td>
+<td></td>
+<td>结束</td>
+<td>执行</td>
+<td>结束</td>
+<td>执行</td>
+</tr>
+<tr class="even">
+<td>36</td>
+<td></td>
+<td></td>
+<td>执行</td>
+<td></td>
+<td>执行</td>
+</tr>
+<tr class="odd">
+<td>37</td>
+<td></td>
+<td></td>
+<td>结束</td>
+<td></td>
+<td>结束</td>
+</tr>
+</tbody>
+</table>
+<h2 id="references">References</h2>
+<ul>
+<li>https://makefiletutorial.com/</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/" title="快速理解并行 Makefile">https://nekodaemon.com/2023/01/31/快速理解并行-Makefile/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
