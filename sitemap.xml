@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://nekodaemon.com/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</loc>
+    
+    <lastmod>2023-03-29</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://nekodaemon.com/more/index.html</loc>
     
     <lastmod>2023-01-30</lastmod>
@@ -517,7 +526,7 @@
 
   <url>
     <loc>https://nekodaemon.com/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -525,77 +534,77 @@
   
   <url>
     <loc>https://nekodaemon.com/tags/GPU/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/HPC/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Docker/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/ESXi/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Server/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Hexo/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Pug/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Jetson/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Markdown/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/NUS/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/tags/Ubuntu/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -604,21 +613,21 @@
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%90%B9%E6%B0%B4%E6%97%A5%E8%AE%B0/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://nekodaemon.com/categories/%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99/</loc>
-    <lastmod>2023-01-30</lastmod>
+    <lastmod>2023-03-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

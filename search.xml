@@ -62,146 +62,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>ASC20 &amp; NVIDIA DLI CUDA C/C++基础培训笔记</title>
-    <url>/2020/01/19/ASC20-NVIDIA-DLI-CUDA-C-C-%E5%9F%BA%E7%A1%80%E5%9F%B9%E8%AE%AD%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h2 id="day2-nvidia-dli-加速计算基础-cuda-cc">Day2 NVIDIA DLI 加速计算基础 —— CUDA C/C++</h2>
-<h3 id="systems-management-interface">Systems Management Interface</h3>
-<p>命令查询有关此 GPU 的信息</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
-<h3 id="writing-application-code-for-the-gpu">Writing Application Code for the GPU</h3>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CPUFunction</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;This function is defined to run on the CPU.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">__global__ <span class="keyword">void</span> <span class="title">GPUFunction</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;This function is defined to run on the GPU.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  CPUFunction();</span><br><span class="line"></span><br><span class="line">  GPUFunction&lt;&lt;&lt;<span class="number">1</span>, <span class="number">1</span>&gt;&gt;&gt;();</span><br><span class="line">  cudaDeviceSynchronize();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>__global__ void GPUFunction()</code>
-<ul>
-<li>使用<code>__global__</code>关键字定义的函数需要返回 void 类型</li>
-</ul></li>
-<li><code>GPUFunction&lt;&lt;&lt;1, 1&gt;&gt;&gt;()</code>
-<ul>
-<li>使用 &lt;&lt;&lt; ... &gt;&gt;&gt; 语法提供执行配置</li>
-<li>通过执行配置指定线程层次结构</li>
-</ul></li>
-</ul>
-<h3 id="compiling-and-running-accelerated-cuda-code">Compiling and Running Accelerated CUDA Code</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvcc -arch=sm_70 -o hello-gpu 01-hello/01-hello-gpu.cu -run</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>-arch</code>
-<ul>
-<li><a href="http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list">虚拟架构特性</a></li>
-<li><a href="http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list">GPU特性</a></li>
-</ul></li>
-</ul>
-<h3 id="block-dimensions">Block Dimensions</h3>
-<p>惯用表达式<code>threadIdx.x + blockIdx.x * blockDim.x</code></p>
-<h3 id="allocating-memory">Allocating Memory</h3>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// CPU-only</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">20</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *a;</span><br><span class="line">a = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(size);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use `a` in CPU-only program.</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">free</span>(a);</span><br><span class="line"><span class="comment">// Accelerated</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">20</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *a;</span><br><span class="line"><span class="comment">// Note the address of `a` is passed as first argument.</span></span><br><span class="line">cudaMallocManaged(&amp;a, size);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use `a` on the CPU and/or on any GPU in the accelerated system.</span></span><br><span class="line"></span><br><span class="line">cudaFree(a);</span><br></pre></td></tr></table></figure>
-<h3 id="manual-memory-allocation-and-copying">Manual Memory Allocation and Copying</h3>
-<ul>
-<li>cudaMalloc 为 GPU 分配内存
-<ul>
-<li>防止 GPU 分页错误</li>
-</ul></li>
-<li>cudaMallocHost 为 CPU 分配内存
-<ul>
-<li>钉固内存或锁页内存</li>
-<li>cudaFreeHost 命令释放钉固内存</li>
-<li>cudaMemcpy 命令均可拷贝（而非传输）内存</li>
-</ul></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> *host_a, *device_a;        <span class="comment">// Define host-specific and device-specific arrays.</span></span><br><span class="line">cudaMalloc(&amp;device_a, size);   <span class="comment">// `device_a` is immediately available on the GPU.</span></span><br><span class="line">cudaMallocHost(&amp;host_a, size); <span class="comment">// `host_a` is immediately available on CPU, and is page-locked, or pinned.</span></span><br><span class="line"></span><br><span class="line">initializeOnHost(host_a, N);   <span class="comment">// No CPU page faulting since memory is already allocated on the host.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// `cudaMemcpy` takes the destination, source, size, and a CUDA-provided variable for the direction of the copy.</span></span><br><span class="line">cudaMemcpy(device_a, host_a, size, cudaMemcpyHostToDevice);</span><br><span class="line"></span><br><span class="line">kernel&lt;&lt;&lt;blocks, threads, <span class="number">0</span>, someStream&gt;&gt;&gt;(device_a, N);</span><br><span class="line"></span><br><span class="line"><span class="comment">// `cudaMemcpy` can also copy data from device to host.</span></span><br><span class="line">cudaMemcpy(host_a, device_a, size, cudaMemcpyDeviceToHost);</span><br><span class="line"></span><br><span class="line">verifyOnHost(host_a, N);</span><br><span class="line"></span><br><span class="line">cudaFree(device_a);</span><br><span class="line">cudaFreeHost(host_a);          <span class="comment">// Free pinned memory like this.</span></span><br></pre></td></tr></table></figure>
-<h3 id="using-streams-to-overlap-data-transfers-and-code-execution">Using Streams to Overlap Data Transfers and Code Execution</h3>
-<ul>
-<li>cudaMemcpyAsync
-<ul>
-<li>仅对主机而言为异步</li>
-<li>默认情况下，在默认流中执行，对于在 GPU 上执行的其他 CUDA 操作而言，该执行操作为阻碍操作</li>
-<li>将非默认流看作可选的第 5 个参数，可以与其他 CUDA 操作并发执行</li>
-</ul></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">24</span>;</span><br><span class="line"><span class="keyword">int</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *host_array;</span><br><span class="line"><span class="keyword">int</span> *device_array;</span><br><span class="line"></span><br><span class="line">cudaMallocHost(&amp;host_array, size);               <span class="comment">// Pinned host memory allocation.</span></span><br><span class="line">cudaMalloc(&amp;device_array, size);                 <span class="comment">// Allocation directly on the active GPU device.</span></span><br><span class="line"></span><br><span class="line">initializeData(host_array, N);                   <span class="comment">// Assume this application needs to initialize on the host.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> numberOfSegments = <span class="number">4</span>;                  <span class="comment">// This example demonstrates slicing the work into 4 segments.</span></span><br><span class="line"><span class="keyword">int</span> segmentN = N / numberOfSegments;             <span class="comment">// A value for a segment&#x27;s worth of `N` is needed.</span></span><br><span class="line"><span class="keyword">size_t</span> segmentSize = size / numberOfSegments;    <span class="comment">// A value for a segment&#x27;s worth of `size` is needed.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// For each of the 4 segments...</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numberOfSegments; ++i)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// Calculate the index where this particular segment should operate within the larger arrays.</span></span><br><span class="line">  segmentOffset = i * segmentN;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create a stream for this segment&#x27;s worth of copy and work.</span></span><br><span class="line">  cudaStream_t stream;</span><br><span class="line">  cudaStreamCreate(&amp;stream);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Asynchronously copy segment&#x27;s worth of pinned host memory to device over non-default stream.</span></span><br><span class="line">  cudaMemcpyAsync(&amp;device_array[segmentOffset],  <span class="comment">// Take care to access correct location in array.</span></span><br><span class="line">                  &amp;host_array[segmentOffset],    <span class="comment">// Take care to access correct location in array.</span></span><br><span class="line">                  segmentSize,                   <span class="comment">// Only copy a segment&#x27;s worth of memory.</span></span><br><span class="line">                  cudaMemcpyHostToDevice,</span><br><span class="line">                  stream);                       <span class="comment">// Provide optional argument for non-default stream.</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Execute segment&#x27;s worth of work over same non-default stream as memory copy.</span></span><br><span class="line">  kernel&lt;&lt;&lt;number_of_blocks, threads_per_block, <span class="number">0</span>, stream&gt;&gt;&gt;(&amp;device_array[segmentOffset], segmentN);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// `cudaStreamDestroy` will return immediately (is non-blocking), but will not actually destroy stream until</span></span><br><span class="line">  <span class="comment">// all stream operations are complete.</span></span><br><span class="line">  cudaStreamDestroy(stream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="grid-size-work-amount-mismatch">Grid Size Work Amount Mismatch</h3>
-<p>线程执行时不会尝试访问超出范围的数据元素</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">__global__ <span class="title">some_kernel</span><span class="params">(<span class="keyword">int</span> N)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> idx = threadIdx.x + blockIdx.x * blockDim.x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (idx &lt; N) <span class="comment">// Check to make sure `idx` maps to some value within `N`</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// Only do work if it does</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="data-sets-larger-than-the-grid">Data Sets Larger than the Grid</h3>
-<p>网格跨度循环</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">__global <span class="keyword">void</span> <span class="title">kernel</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> N)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> indexWithinTheGrid = threadIdx.x + blockIdx.x * blockDim.x;</span><br><span class="line">  <span class="keyword">int</span> gridStride = gridDim.x * blockDim.x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = indexWithinTheGrid; i &lt; N; i += gridStride)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// do work on a[i];</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="error-handling">Error Handling</h3>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">cudaError_t err;</span><br><span class="line">err = cudaMallocManaged(&amp;a, N)                    <span class="comment">// Assume the existence of `a` and `N`.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (err != cudaSuccess)                           <span class="comment">// `cudaSuccess` is provided by CUDA.</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Error: %s\n&quot;</span>, cudaGetErrorString(err)); <span class="comment">// `cudaGetErrorString` is provided by CUDA.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * This launch should cause an error, but the kernel itself</span></span><br><span class="line"><span class="comment"> * cannot return it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">someKernel&lt;&lt;&lt;<span class="number">1</span>, <span class="number">-1</span>&gt;&gt;&gt;();  <span class="comment">// -1 is not a valid number of threads.</span></span><br><span class="line"></span><br><span class="line">cudaError_t err;</span><br><span class="line">err = cudaGetLastError(); <span class="comment">// `cudaGetLastError` will return the error from above.</span></span><br><span class="line"><span class="keyword">if</span> (err != cudaSuccess)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Error: %s\n&quot;</span>, cudaGetErrorString(err));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>CUDA Error Handling Function</strong></p>
-<p>创建一个包装 CUDA 函数调用的宏</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> cudaError_t <span class="title">checkCuda</span><span class="params">(cudaError_t result)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (result != cudaSuccess) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;CUDA Runtime Error: %s\n&quot;</span>, cudaGetErrorString(result));</span><br><span class="line">    assert(result == cudaSuccess);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The macro can be wrapped around any function returning</span></span><br><span class="line"><span class="comment"> * a value of type `cudaError_t`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">  checkCuda( cudaDeviceSynchronize() )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="grids-and-blocks-of-2-and-3-dimensions">Grids and Blocks of 2 and 3 Dimensions</h3>
-<p>可以将网格和线程块定义为最多具有3个维度。定义二维或三维网格或线程块，可以使用 CUDA 的 dim3 类型</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">dim3 <span class="title">threads_per_block</span><span class="params">(<span class="number">16</span>, <span class="number">16</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line"><span class="function">dim3 <span class="title">number_of_blocks</span><span class="params">(<span class="number">16</span>, <span class="number">16</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">someKernel&lt;&lt;&lt;number_of_blocks, threads_per_block&gt;&gt;&gt;();</span><br></pre></td></tr></table></figure>
-<p>someKernel 内部的变量 gridDim.x、gridDim.y、blockDim.x 和 blockDim.y 均将等于 16</p>
-<h3 id="profile-an-application-with-nvprof">Profile an Application with nvprof</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvcc -arch=sm_70 -o single-thread-vector-add 01-vector-add/01-vector-add.cu -run</span><br><span class="line">nvprof ./single-thread-vector-add</span><br></pre></td></tr></table></figure>
-<h3 id="querying-gpu-device-properties">Querying GPU Device Properties</h3>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> deviceId;</span><br><span class="line">cudaGetDevice(&amp;deviceId);</span><br><span class="line"></span><br><span class="line">cudaDeviceProp props;</span><br><span class="line">cudaGetDeviceProperties(&amp;props, deviceId);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * `props` now contains several properties about the current device.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> computeCapabilityMajor = props.major;</span><br><span class="line"><span class="keyword">int</span> computeCapabilityMinor = props.minor;</span><br><span class="line"><span class="keyword">int</span> multiProcessorCount = props.multiProcessorCount;</span><br><span class="line"><span class="keyword">int</span> warpSize = props.warpSize;</span><br></pre></td></tr></table></figure>
-<h3 id="asynchronous-memory-prefetching">Asynchronous Memory Prefetching</h3>
-<p>异步内存预取，来减少页错误和按需内存迁移成本</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> deviceId;</span><br><span class="line">cudaGetDevice(&amp;deviceId);                                         <span class="comment">// The ID of the currently active GPU device.</span></span><br><span class="line"></span><br><span class="line">cudaMemPrefetchAsync(pointerToSomeUMData, size, deviceId);        <span class="comment">// Prefetch to GPU device.</span></span><br><span class="line">cudaMemPrefetchAsync(pointerToSomeUMData, size, cudaCpuDeviceId); <span class="comment">// Prefetch to host. `cudaCpuDeviceId` is a</span></span><br><span class="line">                                                                  <span class="comment">// built-in CUDA variable.</span></span><br></pre></td></tr></table></figure>
-<h3 id="creating-utilizing-and-destroying-non-default-cuda-streams">Creating, Utilizing, and Destroying Non-Default CUDA Streams</h3>
-<ul>
-<li>CUDA 流行为
-<ul>
-<li>给定流中的操作会按序执行</li>
-<li>就不同非默认流中的操作而言，无法保证其会按彼此之间的任何特定顺序执行</li>
-<li>阻碍其他流的运行直至其自身已运行完毕</li>
-</ul></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">cudaStream_t stream;       <span class="comment">// CUDA streams are of type `cudaStream_t`.</span></span><br><span class="line">cudaStreamCreate(&amp;stream); <span class="comment">// Note that a pointer must be passed to `cudaCreateStream`.</span></span><br><span class="line"></span><br><span class="line">someKernel&lt;&lt;&lt;number_of_blocks, threads_per_block, <span class="number">0</span>, stream&gt;&gt;&gt;(); <span class="comment">// `stream` is passed as 4th EC argument.</span></span><br><span class="line"></span><br><span class="line">cudaStreamDestroy(stream); <span class="comment">// Note that a value, not a pointer, is passed to `cudaDestroyStream`.</span></span><br></pre></td></tr></table></figure>
-<h3 id="gpu-programming-model-hardware-mapping">GPU Programming Model &amp; Hardware Mapping</h3>
-<table>
-<thead>
-<tr class="header">
-<th>Model</th>
-<th>Hardware</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Thread</td>
-<td>SP aka CUDA Core</td>
-</tr>
-<tr class="even">
-<td>Block</td>
-<td>SM / SMX</td>
-</tr>
-<tr class="odd">
-<td>Grid</td>
-<td>GPU aka Device</td>
-</tr>
-<tr class="even">
-<td>Global Memory</td>
-<td>DRAM</td>
-</tr>
-<tr class="odd">
-<td>Shared Memory</td>
-<td>SM内部存储</td>
-</tr>
-</tbody>
-</table>
-<p>注意： Thread不是实际的执行单元</p>
-<h4 id="warp">Warp</h4>
-<ul>
-<li>每一个Warp有32条Thread</li>
-<li>Sharing instructions</li>
-<li>Dynamically scheduled by SM</li>
-<li>Executed when operands ready</li>
-<li>在编写程序的过程中不涉及到Warp，即对程序员透明</li>
-</ul>
-<p>潜在的性能损失 - Warp Divergent</p>
-]]></content>
-      <categories>
-        <category>学习笔记</category>
-      </categories>
-      <tags>
-        <tag>GPU</tag>
-        <tag>HPC</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Building OpenWrt from Scratch for ARM64 UEFI ACPI VM</title>
     <url>/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</url>
     <content><![CDATA[<p>OpenWrt doesn't provide a combined disk image for ARM virtual machines, unlike what they did for x86 VMs. Meanwhile, their official ARM64 kernel release can't boot in UEFI environment. But we can still make it work by compiling it from source and building a disk image manually.</p>
@@ -402,6 +262,146 @@
 <li><a href="https://www.cxyzjd.com/article/u010875635/74289971">https://www.cxyzjd.com/article/u010875635/74289971</a></li>
 </ul>
 ]]></content>
+  </entry>
+  <entry>
+    <title>ASC20 &amp; NVIDIA DLI CUDA C/C++基础培训笔记</title>
+    <url>/2020/01/19/ASC20-NVIDIA-DLI-CUDA-C-C-%E5%9F%BA%E7%A1%80%E5%9F%B9%E8%AE%AD%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h2 id="day2-nvidia-dli-加速计算基础-cuda-cc">Day2 NVIDIA DLI 加速计算基础 —— CUDA C/C++</h2>
+<h3 id="systems-management-interface">Systems Management Interface</h3>
+<p>命令查询有关此 GPU 的信息</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
+<h3 id="writing-application-code-for-the-gpu">Writing Application Code for the GPU</h3>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CPUFunction</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;This function is defined to run on the CPU.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">__global__ <span class="keyword">void</span> <span class="title">GPUFunction</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;This function is defined to run on the GPU.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  CPUFunction();</span><br><span class="line"></span><br><span class="line">  GPUFunction&lt;&lt;&lt;<span class="number">1</span>, <span class="number">1</span>&gt;&gt;&gt;();</span><br><span class="line">  cudaDeviceSynchronize();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>__global__ void GPUFunction()</code>
+<ul>
+<li>使用<code>__global__</code>关键字定义的函数需要返回 void 类型</li>
+</ul></li>
+<li><code>GPUFunction&lt;&lt;&lt;1, 1&gt;&gt;&gt;()</code>
+<ul>
+<li>使用 &lt;&lt;&lt; ... &gt;&gt;&gt; 语法提供执行配置</li>
+<li>通过执行配置指定线程层次结构</li>
+</ul></li>
+</ul>
+<h3 id="compiling-and-running-accelerated-cuda-code">Compiling and Running Accelerated CUDA Code</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvcc -arch=sm_70 -o hello-gpu 01-hello/01-hello-gpu.cu -run</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>-arch</code>
+<ul>
+<li><a href="http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list">虚拟架构特性</a></li>
+<li><a href="http://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list">GPU特性</a></li>
+</ul></li>
+</ul>
+<h3 id="block-dimensions">Block Dimensions</h3>
+<p>惯用表达式<code>threadIdx.x + blockIdx.x * blockDim.x</code></p>
+<h3 id="allocating-memory">Allocating Memory</h3>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// CPU-only</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">20</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *a;</span><br><span class="line">a = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(size);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use `a` in CPU-only program.</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">free</span>(a);</span><br><span class="line"><span class="comment">// Accelerated</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">20</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *a;</span><br><span class="line"><span class="comment">// Note the address of `a` is passed as first argument.</span></span><br><span class="line">cudaMallocManaged(&amp;a, size);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Use `a` on the CPU and/or on any GPU in the accelerated system.</span></span><br><span class="line"></span><br><span class="line">cudaFree(a);</span><br></pre></td></tr></table></figure>
+<h3 id="manual-memory-allocation-and-copying">Manual Memory Allocation and Copying</h3>
+<ul>
+<li>cudaMalloc 为 GPU 分配内存
+<ul>
+<li>防止 GPU 分页错误</li>
+</ul></li>
+<li>cudaMallocHost 为 CPU 分配内存
+<ul>
+<li>钉固内存或锁页内存</li>
+<li>cudaFreeHost 命令释放钉固内存</li>
+<li>cudaMemcpy 命令均可拷贝（而非传输）内存</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> *host_a, *device_a;        <span class="comment">// Define host-specific and device-specific arrays.</span></span><br><span class="line">cudaMalloc(&amp;device_a, size);   <span class="comment">// `device_a` is immediately available on the GPU.</span></span><br><span class="line">cudaMallocHost(&amp;host_a, size); <span class="comment">// `host_a` is immediately available on CPU, and is page-locked, or pinned.</span></span><br><span class="line"></span><br><span class="line">initializeOnHost(host_a, N);   <span class="comment">// No CPU page faulting since memory is already allocated on the host.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// `cudaMemcpy` takes the destination, source, size, and a CUDA-provided variable for the direction of the copy.</span></span><br><span class="line">cudaMemcpy(device_a, host_a, size, cudaMemcpyHostToDevice);</span><br><span class="line"></span><br><span class="line">kernel&lt;&lt;&lt;blocks, threads, <span class="number">0</span>, someStream&gt;&gt;&gt;(device_a, N);</span><br><span class="line"></span><br><span class="line"><span class="comment">// `cudaMemcpy` can also copy data from device to host.</span></span><br><span class="line">cudaMemcpy(host_a, device_a, size, cudaMemcpyDeviceToHost);</span><br><span class="line"></span><br><span class="line">verifyOnHost(host_a, N);</span><br><span class="line"></span><br><span class="line">cudaFree(device_a);</span><br><span class="line">cudaFreeHost(host_a);          <span class="comment">// Free pinned memory like this.</span></span><br></pre></td></tr></table></figure>
+<h3 id="using-streams-to-overlap-data-transfers-and-code-execution">Using Streams to Overlap Data Transfers and Code Execution</h3>
+<ul>
+<li>cudaMemcpyAsync
+<ul>
+<li>仅对主机而言为异步</li>
+<li>默认情况下，在默认流中执行，对于在 GPU 上执行的其他 CUDA 操作而言，该执行操作为阻碍操作</li>
+<li>将非默认流看作可选的第 5 个参数，可以与其他 CUDA 操作并发执行</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> N = <span class="number">2</span>&lt;&lt;<span class="number">24</span>;</span><br><span class="line"><span class="keyword">int</span> size = N * <span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *host_array;</span><br><span class="line"><span class="keyword">int</span> *device_array;</span><br><span class="line"></span><br><span class="line">cudaMallocHost(&amp;host_array, size);               <span class="comment">// Pinned host memory allocation.</span></span><br><span class="line">cudaMalloc(&amp;device_array, size);                 <span class="comment">// Allocation directly on the active GPU device.</span></span><br><span class="line"></span><br><span class="line">initializeData(host_array, N);                   <span class="comment">// Assume this application needs to initialize on the host.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> numberOfSegments = <span class="number">4</span>;                  <span class="comment">// This example demonstrates slicing the work into 4 segments.</span></span><br><span class="line"><span class="keyword">int</span> segmentN = N / numberOfSegments;             <span class="comment">// A value for a segment&#x27;s worth of `N` is needed.</span></span><br><span class="line"><span class="keyword">size_t</span> segmentSize = size / numberOfSegments;    <span class="comment">// A value for a segment&#x27;s worth of `size` is needed.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// For each of the 4 segments...</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numberOfSegments; ++i)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// Calculate the index where this particular segment should operate within the larger arrays.</span></span><br><span class="line">  segmentOffset = i * segmentN;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create a stream for this segment&#x27;s worth of copy and work.</span></span><br><span class="line">  cudaStream_t stream;</span><br><span class="line">  cudaStreamCreate(&amp;stream);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Asynchronously copy segment&#x27;s worth of pinned host memory to device over non-default stream.</span></span><br><span class="line">  cudaMemcpyAsync(&amp;device_array[segmentOffset],  <span class="comment">// Take care to access correct location in array.</span></span><br><span class="line">                  &amp;host_array[segmentOffset],    <span class="comment">// Take care to access correct location in array.</span></span><br><span class="line">                  segmentSize,                   <span class="comment">// Only copy a segment&#x27;s worth of memory.</span></span><br><span class="line">                  cudaMemcpyHostToDevice,</span><br><span class="line">                  stream);                       <span class="comment">// Provide optional argument for non-default stream.</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Execute segment&#x27;s worth of work over same non-default stream as memory copy.</span></span><br><span class="line">  kernel&lt;&lt;&lt;number_of_blocks, threads_per_block, <span class="number">0</span>, stream&gt;&gt;&gt;(&amp;device_array[segmentOffset], segmentN);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// `cudaStreamDestroy` will return immediately (is non-blocking), but will not actually destroy stream until</span></span><br><span class="line">  <span class="comment">// all stream operations are complete.</span></span><br><span class="line">  cudaStreamDestroy(stream);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="grid-size-work-amount-mismatch">Grid Size Work Amount Mismatch</h3>
+<p>线程执行时不会尝试访问超出范围的数据元素</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">__global__ <span class="title">some_kernel</span><span class="params">(<span class="keyword">int</span> N)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> idx = threadIdx.x + blockIdx.x * blockDim.x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (idx &lt; N) <span class="comment">// Check to make sure `idx` maps to some value within `N`</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// Only do work if it does</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="data-sets-larger-than-the-grid">Data Sets Larger than the Grid</h3>
+<p>网格跨度循环</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">__global <span class="keyword">void</span> <span class="title">kernel</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> N)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> indexWithinTheGrid = threadIdx.x + blockIdx.x * blockDim.x;</span><br><span class="line">  <span class="keyword">int</span> gridStride = gridDim.x * blockDim.x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = indexWithinTheGrid; i &lt; N; i += gridStride)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// do work on a[i];</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="error-handling">Error Handling</h3>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">cudaError_t err;</span><br><span class="line">err = cudaMallocManaged(&amp;a, N)                    <span class="comment">// Assume the existence of `a` and `N`.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (err != cudaSuccess)                           <span class="comment">// `cudaSuccess` is provided by CUDA.</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Error: %s\n&quot;</span>, cudaGetErrorString(err)); <span class="comment">// `cudaGetErrorString` is provided by CUDA.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * This launch should cause an error, but the kernel itself</span></span><br><span class="line"><span class="comment"> * cannot return it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">someKernel&lt;&lt;&lt;<span class="number">1</span>, <span class="number">-1</span>&gt;&gt;&gt;();  <span class="comment">// -1 is not a valid number of threads.</span></span><br><span class="line"></span><br><span class="line">cudaError_t err;</span><br><span class="line">err = cudaGetLastError(); <span class="comment">// `cudaGetLastError` will return the error from above.</span></span><br><span class="line"><span class="keyword">if</span> (err != cudaSuccess)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Error: %s\n&quot;</span>, cudaGetErrorString(err));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>CUDA Error Handling Function</strong></p>
+<p>创建一个包装 CUDA 函数调用的宏</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> cudaError_t <span class="title">checkCuda</span><span class="params">(cudaError_t result)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (result != cudaSuccess) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;CUDA Runtime Error: %s\n&quot;</span>, cudaGetErrorString(result));</span><br><span class="line">    assert(result == cudaSuccess);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The macro can be wrapped around any function returning</span></span><br><span class="line"><span class="comment"> * a value of type `cudaError_t`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">  checkCuda( cudaDeviceSynchronize() )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="grids-and-blocks-of-2-and-3-dimensions">Grids and Blocks of 2 and 3 Dimensions</h3>
+<p>可以将网格和线程块定义为最多具有3个维度。定义二维或三维网格或线程块，可以使用 CUDA 的 dim3 类型</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">dim3 <span class="title">threads_per_block</span><span class="params">(<span class="number">16</span>, <span class="number">16</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line"><span class="function">dim3 <span class="title">number_of_blocks</span><span class="params">(<span class="number">16</span>, <span class="number">16</span>, <span class="number">1</span>)</span></span>;</span><br><span class="line">someKernel&lt;&lt;&lt;number_of_blocks, threads_per_block&gt;&gt;&gt;();</span><br></pre></td></tr></table></figure>
+<p>someKernel 内部的变量 gridDim.x、gridDim.y、blockDim.x 和 blockDim.y 均将等于 16</p>
+<h3 id="profile-an-application-with-nvprof">Profile an Application with nvprof</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvcc -arch=sm_70 -o single-thread-vector-add 01-vector-add/01-vector-add.cu -run</span><br><span class="line">nvprof ./single-thread-vector-add</span><br></pre></td></tr></table></figure>
+<h3 id="querying-gpu-device-properties">Querying GPU Device Properties</h3>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> deviceId;</span><br><span class="line">cudaGetDevice(&amp;deviceId);</span><br><span class="line"></span><br><span class="line">cudaDeviceProp props;</span><br><span class="line">cudaGetDeviceProperties(&amp;props, deviceId);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * `props` now contains several properties about the current device.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> computeCapabilityMajor = props.major;</span><br><span class="line"><span class="keyword">int</span> computeCapabilityMinor = props.minor;</span><br><span class="line"><span class="keyword">int</span> multiProcessorCount = props.multiProcessorCount;</span><br><span class="line"><span class="keyword">int</span> warpSize = props.warpSize;</span><br></pre></td></tr></table></figure>
+<h3 id="asynchronous-memory-prefetching">Asynchronous Memory Prefetching</h3>
+<p>异步内存预取，来减少页错误和按需内存迁移成本</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> deviceId;</span><br><span class="line">cudaGetDevice(&amp;deviceId);                                         <span class="comment">// The ID of the currently active GPU device.</span></span><br><span class="line"></span><br><span class="line">cudaMemPrefetchAsync(pointerToSomeUMData, size, deviceId);        <span class="comment">// Prefetch to GPU device.</span></span><br><span class="line">cudaMemPrefetchAsync(pointerToSomeUMData, size, cudaCpuDeviceId); <span class="comment">// Prefetch to host. `cudaCpuDeviceId` is a</span></span><br><span class="line">                                                                  <span class="comment">// built-in CUDA variable.</span></span><br></pre></td></tr></table></figure>
+<h3 id="creating-utilizing-and-destroying-non-default-cuda-streams">Creating, Utilizing, and Destroying Non-Default CUDA Streams</h3>
+<ul>
+<li>CUDA 流行为
+<ul>
+<li>给定流中的操作会按序执行</li>
+<li>就不同非默认流中的操作而言，无法保证其会按彼此之间的任何特定顺序执行</li>
+<li>阻碍其他流的运行直至其自身已运行完毕</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">cudaStream_t stream;       <span class="comment">// CUDA streams are of type `cudaStream_t`.</span></span><br><span class="line">cudaStreamCreate(&amp;stream); <span class="comment">// Note that a pointer must be passed to `cudaCreateStream`.</span></span><br><span class="line"></span><br><span class="line">someKernel&lt;&lt;&lt;number_of_blocks, threads_per_block, <span class="number">0</span>, stream&gt;&gt;&gt;(); <span class="comment">// `stream` is passed as 4th EC argument.</span></span><br><span class="line"></span><br><span class="line">cudaStreamDestroy(stream); <span class="comment">// Note that a value, not a pointer, is passed to `cudaDestroyStream`.</span></span><br></pre></td></tr></table></figure>
+<h3 id="gpu-programming-model-hardware-mapping">GPU Programming Model &amp; Hardware Mapping</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Thread</td>
+<td>SP aka CUDA Core</td>
+</tr>
+<tr class="even">
+<td>Block</td>
+<td>SM / SMX</td>
+</tr>
+<tr class="odd">
+<td>Grid</td>
+<td>GPU aka Device</td>
+</tr>
+<tr class="even">
+<td>Global Memory</td>
+<td>DRAM</td>
+</tr>
+<tr class="odd">
+<td>Shared Memory</td>
+<td>SM内部存储</td>
+</tr>
+</tbody>
+</table>
+<p>注意： Thread不是实际的执行单元</p>
+<h4 id="warp">Warp</h4>
+<ul>
+<li>每一个Warp有32条Thread</li>
+<li>Sharing instructions</li>
+<li>Dynamically scheduled by SM</li>
+<li>Executed when operands ready</li>
+<li>在编写程序的过程中不涉及到Warp，即对程序员透明</li>
+</ul>
+<p>潜在的性能损失 - Warp Divergent</p>
+]]></content>
+      <categories>
+        <category>学习笔记</category>
+      </categories>
+      <tags>
+        <tag>GPU</tag>
+        <tag>HPC</tag>
+      </tags>
   </entry>
   <entry>
     <title>Design of TensorFlow XLA Sharding System</title>
@@ -1447,6 +1447,91 @@
 <ul>
 <li><a href="https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/">https://www.pugetsystems.com/labs/hpc/Note-Auto-Install-Ubuntu-with-Custom-Preseed-ISO-1654/</a></li>
 </ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to properly setup GPUDirect RDMA</title>
+    <url>/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</url>
+    <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there isn't many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<h3 id="install-rnic-drivers-and-toolkits">Install RNIC Drivers and Toolkits</h3>
+<p>In this tutorial, I will use Mellanox ConnextX RDMA NIC (RNIC) as an example to demonstrate configuration steps.</p>
+<p>Note that some configuration steps are vendor-specific, which means for different vendor's RNIC, you may need to find the alternative solution if my approach is not applicable for your RNIC. Also I didn't test GDR on a NIC made by vendors other than Mellanox. (I suspect only Mellanox's RNIC supports GDR).</p>
+<p>For ConnextX RNIC, the corresponding drivers and toolkits are bundled in <a href="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/">Mellanox OFED</a>.</p>
+<h3 id="install-cuda-drivers-and-toolkits">Install CUDA Drivers and Toolkits</h3>
+<p>I won't introduce how to install these things as there are already many tutorials about this topic on Internet. I would recommend to check <a href="https://developer.nvidia.com/cuda-downloads">the official website</a>, and install the packages this website provides.</p>
+<p>Note that installing CUDA Drivers through <code>apt</code> and Toolkits through <code>conda</code> separately is <strong>NOT</strong> recommended.</p>
+<h3 id="verify-installation">Verify Installation</h3>
+<p>Once you properly installed them, just execute the command <code>nvidia-smi topo -m</code> and you should see something like:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ nvidia-smi topo -m</span><br><span class="line">	GPU0	GPU1	GPU2	GPU3	NIC0	NIC1	CPU Affinity	NUMA Affinity</span><br><span class="line">GPU0	 X 	NV4	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU1	NV4	 X 	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU2	NV4	NV4	 X 	NV4	PHB	PHB	0-127		N/A</span><br><span class="line">GPU3	NV4	NV4	NV4	 X 	SYS	SYS	0-127		N/A</span><br><span class="line">NIC0	SYS	SYS	PHB	SYS	 X 	PIX</span><br><span class="line">NIC1	SYS	SYS	PHB	SYS	PIX	 X</span><br><span class="line"></span><br><span class="line">Legend:</span><br><span class="line"></span><br><span class="line">  X    = Self</span><br><span class="line">  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)</span><br><span class="line">  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node</span><br><span class="line">  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)</span><br><span class="line">  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)</span><br><span class="line">  PIX  = Connection traversing at most a single PCIe bridge</span><br><span class="line">  NV<span class="comment">#  = Connection traversing a bonded set of # NVLinks</span></span><br><span class="line"></span><br><span class="line">NIC Legend:</span><br><span class="line"></span><br><span class="line">  NIC0: mlx5_0</span><br><span class="line">  NIC1: mlx5_1</span><br></pre></td></tr></table></figure>
+<p>We will discuss what this output represents in the following section. For now, you should be able to identify both your GPUs and NICs from this output.</p>
+<h3 id="check-gdr-hardware-support">Check GDR Hardware Support</h3>
+<p>Every system is not created equal. Continue the above example, we can see the types of relationship between GPU and NIC include <code>SYS</code> and <code>PHB</code>. But, as far as I know, these relationships become much complicated nowadays thanks to chip-let design.</p>
+<h4 id="intel-platform">Intel Platform</h4>
+<ul>
+<li>Earlier than Sapphire Rapids (4th Xeon Scalable Processor)
+<ul>
+<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>1 NUMA Node per Socket</strong>. Thus,
+<ul>
+<li>GDR Performance should be good: <code>PIX</code>, <code>PXB</code></li>
+<li>GDR Performance may be bad: <code>PHB</code>
+<ul>
+<li>Here are <a href="https://github.com/NVIDIA/nccl/issues/489">discussion about PHB</a> and <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">description about P2P Level</a></li>
+</ul></li>
+<li>GDR Performance should be bad: <code>SYS</code>, <code>NODE</code></li>
+</ul></li>
+</ul></li>
+<li>Later than (incl.) Sapphire Rapids
+<ul>
+<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
+<ul>
+<li>I don't know</li>
+</ul></li>
+</ul></li>
+</ul>
+<h4 id="amd-platform">AMD Platform</h4>
+<ul>
+<li>Later than EPYC 7001 Series
+<ul>
+<li>Processor is designed to be <strong>1 PCIe Controller per Socket (Shared I/O Die)</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
+<ul>
+<li>GDR Performance should be good: <code>PIX</code>, <code>PXB</code></li>
+<li>GDR Performance can be good: <code>PHB</code>, <code>SYS</code>
+<ul>
+<li>If the NIC and GPU connect to same socket</li>
+</ul></li>
+<li>Otherwise, I don't know</li>
+<li>Note that some servers can be configured to expose either a single NUMA node or multiple NUMA nodes to OS. It is likely that this setting doesn't affect the GDR performance.</li>
+</ul></li>
+</ul></li>
+<li>Earlier than (incl.) EPYC 7001 Series
+<ul>
+<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
+<ul>
+<li>I don't know</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="install-nv_peer_mem-kernel-module">Install NV_PEER_MEM Kernel Module</h2>
+<p>For unknown reasons, this kernel module is not packed into neither CUDA SDK nor OFED SDK.</p>
+<p>To install this module manually, just follow <a href="https://github.com/Mellanox/nv_peer_memory">the official tutorial</a> to compile and install generated DEB or RPM packages.</p>
+<p>To enable this module, execute the command <code>sudo service nv_peer_mem start</code>.</p>
+<p>To check this module is loaded correctly, execute the command <code>lsmod | grep nv_peer_mem</code> and see if this module exists in the output.</p>
+<h2 id="disable-pcie-acs">Disable PCIe ACS</h2>
+<p>Many reports (<a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">[1]</a>, <a href="https://github.com/NVIDIA/nccl/issues/631">[2]</a>) have mentioned PCIe ACS may hurt the GDR performance. PCIe ACS is a security feature, but we never care about the security when we are hungry for performance. Here is the script to disable it. Note that this script is only for your reference. You may need to modify the content according to your machine's configuration.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Author: OmniReduce Team</span></span><br><span class="line"><span class="comment"># This script applies what was mentioned in:</span></span><br><span class="line"><span class="comment"># https://forums.developer.nvidia.com/t/multi-gpu-peer-to-peer-access-failing-on-tesla-k80/39748/9</span></span><br><span class="line"><span class="comment"># To disable PCIe ACS</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Before===========================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line">pcis=$(lspci | grep -i plx | cut -d<span class="string">&#x27; &#x27;</span> -f1 | tr <span class="string">&#x27;\r\n&#x27;</span> <span class="string">&#x27; &#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Disabling ACS on <span class="variable">$pcis</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> pci <span class="keyword">in</span> <span class="variable">$pcis</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">	setpci -s <span class="variable">$pci</span> f2a.w=0000</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;After============================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Make sure all ACS features are disabled as ACSCtl: SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="verification">Verification</h2>
+<p>Up to now, GDR supposed to work. To verify that, I would recommend to use <a href="https://github.com/linux-rdma/perftest.git">OFED PerfTest</a>.</p>
+<p>Note that,</p>
+<ul>
+<li><strong>DO NOT</strong> use PerfTest provided by OFED or APT. You should compile PerfTest by yourself because the binary distribution doesn't support GDR by default</li>
+<li>Both Client and Server are capable of utilizing GDR</li>
+<li><code>ib_send_bw</code> is not able to utilize GDR yet</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Compile</span></span><br><span class="line">./autogen.sh &amp;&amp; ./configure CUDA_H_PATH=/usr/<span class="built_in">local</span>/cuda/include/cuda.h &amp;&amp; make -j</span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as server</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a <span class="comment"># Run on GPU0 and MLX5_0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as client</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a &lt;server ip addr&gt;</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a 10.200.0.10 <span class="comment"># Run on GPU0 and MLX5_0</span></span><br></pre></td></tr></table></figure>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
+<p>A fast and dirty way to temporarily fix this issue is to run the program as root user. Once this dirty fix works, you can refer <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">this article</a> to permanently solve this issue.</p>
 ]]></content>
   </entry>
   <entry>
