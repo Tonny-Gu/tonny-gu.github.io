@@ -1479,15 +1479,19 @@
 <blockquote>
 <p>My benchmark result of GDR performance with 100 Gbps RoCE Network:</p>
 <ul>
-<li>Dual Intel Xeon 4112 System
+<li>Dual Intel Xeon 4112 + NVIDIA Tesla V100
 <ul>
-<li><code>SYS</code>: ~2GB/s</li>
-<li><code>PIX</code>: ~10GB/s</li>
+<li><code>SYS</code>: ~2 GB/s</li>
+<li><code>PIX</code>: ~10 GB/s</li>
 </ul></li>
-<li>Single AMD EPYC 7763 System
+<li>Single AMD EPYC 7763 + NVIDIA Tesla A100
 <ul>
-<li><code>SYS</code>: ~6GB/s</li>
-<li><code>PHB</code>: ~10GB/s</li>
+<li><code>SYS</code>: ~6 GB/s</li>
+<li><code>PHB</code>: ~10 GB/s</li>
+</ul></li>
+<li>Dual Intel Xeon E5-2630 v4 + NVIDIA Tesla P100
+<ul>
+<li><code>SYS</code>: ~0.3 GB/s</li>
 </ul></li>
 </ul>
 </blockquote>
@@ -2616,6 +2620,75 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
+    <title>使用virt-manager创建LXC容器</title>
+    <url>/2020/11/14/%E4%BD%BF%E7%94%A8virt-manager%E5%88%9B%E5%BB%BALXC%E5%AE%B9%E5%99%A8/</url>
+    <content><![CDATA[<p><del>virt-manager创建LXC容器是怎么回事呢？virt-manager相信大家都很熟悉，但是virt-manager创建LXC容器是怎么回事呢，下面就让小编带大家一起了解吧。virt-manager创建LXC容器，其实就是可以创建LXC容器，大家可能会很惊讶virt-manager怎么会创建LXC容器呢？但事实就是这样，小编也感到非常惊讶。</del></p>
+<h2 id="下载容器rootfs">下载容器RootFS</h2>
+<p>当然对于dalao来说，的确是可以用bootstrap或者busybox创建Linux的RootFS。显然为了省事，还是直接下载一个现成的比较方便。在<a href="http://uk.images.linuxcontainers.org/images">http://uk.images.linuxcontainers.org/images</a>选一个合适的镜像下载，注意要下载xz压缩包。我比较喜欢Ubuntu 20.04，就下载了<a href="http://uk.images.linuxcontainers.org/images/ubuntu/focal/amd64/default/20201114_07:42/rootfs.tar.xz">这个文件</a>。</p>
+<h2 id="解压rootfs">解压RootFS</h2>
+<p>找个合适的地方放镜像，比如<code>/data/tonny/ubuntu2004</code>，这里<code>/data</code>目录是我挂载的数据盘，然后解压<code>xz</code>文件。我的文件叫做<code>rootfs.tar.xz</code>，那么解压的命令如下。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">xz -d rootfs.tar.xz</span><br><span class="line">tar -xvf rootfs.tar</span><br></pre></td></tr></table></figure>
+<figure>
+<img data-src="/images/pasted-55.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="使用chroot修改密码">使用chroot修改密码</h2>
+<p>反正我查了半天都没查到Image的默认密码是啥，但知道有个<code>ubuntu</code>的账户，不如直接切进RootFS改密码。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo chroot /data/tonny/ubuntu2004</span><br><span class="line">passwd ubuntu <span class="comment"># 或者可以直接passwd修改root密码</span></span><br></pre></td></tr></table></figure>
+<figure>
+<img data-src="/images/pasted-57.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="创建lxc容器">创建LXC容器</h2>
+<p>首先要<code>Add Connection</code>，然后<code>Hypervisor</code>选择<code>Libvirt-LXC</code>再<code>Connect</code>。</p>
+<figure>
+<img data-src="/images/pasted-58.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure>
+<img data-src="/images/pasted-59.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>接着<code>New Virtual Machine</code>，参数如下图。</p>
+<figure>
+<img data-src="/images/pasted-60.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>之后<code>root directory</code>选择<code>Browse</code>-&gt;<code>Browse Local</code>，找到<code>/data/tonny/ubuntu2004</code>并<code>Open</code>。最后像设置虚拟机一样配置CPU内存网络就可以启动LXC容器了。</p>
+<figure>
+<img data-src="/images/pasted-61.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+]]></content>
+  </entry>
+  <entry>
+    <title>修复Chrome OS Crostini图标</title>
+    <url>/2020/12/15/%E4%BF%AE%E5%A4%8DChrome-OS-Crostini%E5%9B%BE%E6%A0%87/</url>
+    <content><![CDATA[<p>反正不知道为什么Chrome OS对Linux容器内的软件图标的支持偶尔会出问题，虽然不影响使用，但就是有点丑。</p>
+<h2 id="参考文章">参考文章</h2>
+<p><a href="https://www.reddit.com/r/Crostini/comments/bgcag0/how_to_force_the_app_launcher_to_update_the_icon/">how to force the app launcher to update the icon cache?</a></p>
+<h2 id="刷新图标缓存">刷新图标缓存</h2>
+<p>有时候可以更新图标缓存就可以恢复正常，或许是因为<code>apt</code>先创建了<code>desktop</code>文件再保存的图标，就迷惑到Chrome OS了。</p>
+<h3 id="进入application文件夹">进入<code>application</code>文件夹</h3>
+<p>即保存<code>desktop</code>文件的文件夹，这里以<code>xterm</code>为例，<code>xterm</code>的<code>desktop</code>文件保存在<code>/usr/share/applications</code>, 进入这个目录。</p>
+<h3 id="移动desktop文件">移动<code>desktop</code>文件</h3>
+<p>找到软件对应的<code>desktop</code>文件，如<code>debian-xterm.desktop</code>文件，把该文件暂时移到别的地方，如上级目录<code>..</code>。</p>
+<h3 id="等待chrome-os内的图标消失">等待Chrome OS内的图标消失</h3>
+<p>一段时间后，Chrome OS下的目标Linux软件就会自动消失。</p>
+<h3 id="移回desktop文件">移回<code>desktop</code>文件</h3>
+<p>把之前的<code>desktop</code>文件，如<code>debian-xterm.desktop</code>移回<code>application</code>文件夹。一段时间后软件图标会重新出现在Chrome OS的软件列表里。</p>
+<h2 id="转换图标格式">转换图标格式</h2>
+<p>截至Version 87，Chrome OS都不支持<code>xpm</code>格式的图标，所以有时候需要手动转换图标的格式。</p>
+<h3 id="安装imagemagick">安装imagemagick</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install imagemagick</span><br></pre></td></tr></table></figure>
+<h3 id="找到图标的名字">找到图标的名字</h3>
+<p>以<code>xterm</code>为例，打开<code>/usr/share/applications</code>下的<code>debian-xterm.desktop</code>文件。发现<code>Icon=mini.xterm</code>，所以图标的文件必须叫<code>mini.xterm.png</code>。</p>
+<h3 id="进入存储图标的文件夹">进入存储图标的文件夹</h3>
+<p><code>xterm</code>将图标保存在<code>/usr/share/pixmaps</code>里，发现两个图标文件<code>mini.xterm_32x32.xpm</code>, <code>mini.xterm_48x48.xpm</code>。把分辨率高的<code>mini.xterm_48x48.xpm</code>转换为<code>mini.xterm.png</code>。注意不同的程序会把图标存在不同的地方。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo convert mini.xterm_48x48.xpm mini.xterm.png</span><br></pre></td></tr></table></figure>
+<h3 id="刷新图标缓存-1">刷新图标缓存</h3>
+<p>参考上一章节刷新图标的缓存。</p>
+<h2 id="查看错误日志">查看错误日志</h2>
+<p>如果以上两个章节不能解决问题，试着查看错误报告来定位问题。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo journalctl -b -t garcon</span><br></pre></td></tr></table></figure>
+<p>有一些错误应该不会产生什么影响，比如<code>[540]: MIME types file does not exist at: /home/user/.mime.types</code>。</p>
+]]></content>
+  </entry>
+  <entry>
     <title>个人博客CDN选型和进阶玩法指北</title>
     <url>/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/</url>
     <content><![CDATA[<p>网上几乎所有的文章都直接忽悠上CDN的车，难道上CDN就是提升速度的最优解？在CDN这条弯路上折腾了快两年，玩了一圈免备案的CDN，踩了各种各样的坑以后，恍然大悟，茅厕顿开，便在此大放厥词写下此文。本文主要介绍CDN的正确用法，以及性价比爆炸，便宜又效果好的网站加速方案。</p>
@@ -2741,75 +2814,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <h2 id="summary">Summary</h2>
 <p>Azure CDN (Microsoft Standard) + GitHub Pages这套方案可能比较绕，但一个月花不了几个钱（估计5rmb不到）速度又倍棒。不过还有一个问题值得思考，上这套方案就能让网站访问速度无人能敌？其实不是，从谷歌PageSpeed的分数看来，我从单回源（新加坡）+AWS CDN换到上述这套方案，PageSpeed也就提升了3分左右（国外访问速度）。另外提升的20多分靠的是对网站自身的调整，如减少了外部文件的加载数量。我曾今遇到过一个高度优化的网站，哪怕用的是Cloudflare，走国内国外网络的PageSpeed都是满分（用Chrome Lightroom测试）。</p>
 <p>写到这里我才意识到这套方案最大的意义是给我省了一点钱，比起上腾讯云还便宜了不少，顺便提升了国内访问速度。</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>使用virt-manager创建LXC容器</title>
-    <url>/2020/11/14/%E4%BD%BF%E7%94%A8virt-manager%E5%88%9B%E5%BB%BALXC%E5%AE%B9%E5%99%A8/</url>
-    <content><![CDATA[<p><del>virt-manager创建LXC容器是怎么回事呢？virt-manager相信大家都很熟悉，但是virt-manager创建LXC容器是怎么回事呢，下面就让小编带大家一起了解吧。virt-manager创建LXC容器，其实就是可以创建LXC容器，大家可能会很惊讶virt-manager怎么会创建LXC容器呢？但事实就是这样，小编也感到非常惊讶。</del></p>
-<h2 id="下载容器rootfs">下载容器RootFS</h2>
-<p>当然对于dalao来说，的确是可以用bootstrap或者busybox创建Linux的RootFS。显然为了省事，还是直接下载一个现成的比较方便。在<a href="http://uk.images.linuxcontainers.org/images">http://uk.images.linuxcontainers.org/images</a>选一个合适的镜像下载，注意要下载xz压缩包。我比较喜欢Ubuntu 20.04，就下载了<a href="http://uk.images.linuxcontainers.org/images/ubuntu/focal/amd64/default/20201114_07:42/rootfs.tar.xz">这个文件</a>。</p>
-<h2 id="解压rootfs">解压RootFS</h2>
-<p>找个合适的地方放镜像，比如<code>/data/tonny/ubuntu2004</code>，这里<code>/data</code>目录是我挂载的数据盘，然后解压<code>xz</code>文件。我的文件叫做<code>rootfs.tar.xz</code>，那么解压的命令如下。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">xz -d rootfs.tar.xz</span><br><span class="line">tar -xvf rootfs.tar</span><br></pre></td></tr></table></figure>
-<figure>
-<img data-src="/images/pasted-55.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<h2 id="使用chroot修改密码">使用chroot修改密码</h2>
-<p>反正我查了半天都没查到Image的默认密码是啥，但知道有个<code>ubuntu</code>的账户，不如直接切进RootFS改密码。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo chroot /data/tonny/ubuntu2004</span><br><span class="line">passwd ubuntu <span class="comment"># 或者可以直接passwd修改root密码</span></span><br></pre></td></tr></table></figure>
-<figure>
-<img data-src="/images/pasted-57.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<h2 id="创建lxc容器">创建LXC容器</h2>
-<p>首先要<code>Add Connection</code>，然后<code>Hypervisor</code>选择<code>Libvirt-LXC</code>再<code>Connect</code>。</p>
-<figure>
-<img data-src="/images/pasted-58.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<figure>
-<img data-src="/images/pasted-59.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<p>接着<code>New Virtual Machine</code>，参数如下图。</p>
-<figure>
-<img data-src="/images/pasted-60.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<p>之后<code>root directory</code>选择<code>Browse</code>-&gt;<code>Browse Local</code>，找到<code>/data/tonny/ubuntu2004</code>并<code>Open</code>。最后像设置虚拟机一样配置CPU内存网络就可以启动LXC容器了。</p>
-<figure>
-<img data-src="/images/pasted-61.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-]]></content>
-  </entry>
-  <entry>
-    <title>修复Chrome OS Crostini图标</title>
-    <url>/2020/12/15/%E4%BF%AE%E5%A4%8DChrome-OS-Crostini%E5%9B%BE%E6%A0%87/</url>
-    <content><![CDATA[<p>反正不知道为什么Chrome OS对Linux容器内的软件图标的支持偶尔会出问题，虽然不影响使用，但就是有点丑。</p>
-<h2 id="参考文章">参考文章</h2>
-<p><a href="https://www.reddit.com/r/Crostini/comments/bgcag0/how_to_force_the_app_launcher_to_update_the_icon/">how to force the app launcher to update the icon cache?</a></p>
-<h2 id="刷新图标缓存">刷新图标缓存</h2>
-<p>有时候可以更新图标缓存就可以恢复正常，或许是因为<code>apt</code>先创建了<code>desktop</code>文件再保存的图标，就迷惑到Chrome OS了。</p>
-<h3 id="进入application文件夹">进入<code>application</code>文件夹</h3>
-<p>即保存<code>desktop</code>文件的文件夹，这里以<code>xterm</code>为例，<code>xterm</code>的<code>desktop</code>文件保存在<code>/usr/share/applications</code>, 进入这个目录。</p>
-<h3 id="移动desktop文件">移动<code>desktop</code>文件</h3>
-<p>找到软件对应的<code>desktop</code>文件，如<code>debian-xterm.desktop</code>文件，把该文件暂时移到别的地方，如上级目录<code>..</code>。</p>
-<h3 id="等待chrome-os内的图标消失">等待Chrome OS内的图标消失</h3>
-<p>一段时间后，Chrome OS下的目标Linux软件就会自动消失。</p>
-<h3 id="移回desktop文件">移回<code>desktop</code>文件</h3>
-<p>把之前的<code>desktop</code>文件，如<code>debian-xterm.desktop</code>移回<code>application</code>文件夹。一段时间后软件图标会重新出现在Chrome OS的软件列表里。</p>
-<h2 id="转换图标格式">转换图标格式</h2>
-<p>截至Version 87，Chrome OS都不支持<code>xpm</code>格式的图标，所以有时候需要手动转换图标的格式。</p>
-<h3 id="安装imagemagick">安装imagemagick</h3>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install imagemagick</span><br></pre></td></tr></table></figure>
-<h3 id="找到图标的名字">找到图标的名字</h3>
-<p>以<code>xterm</code>为例，打开<code>/usr/share/applications</code>下的<code>debian-xterm.desktop</code>文件。发现<code>Icon=mini.xterm</code>，所以图标的文件必须叫<code>mini.xterm.png</code>。</p>
-<h3 id="进入存储图标的文件夹">进入存储图标的文件夹</h3>
-<p><code>xterm</code>将图标保存在<code>/usr/share/pixmaps</code>里，发现两个图标文件<code>mini.xterm_32x32.xpm</code>, <code>mini.xterm_48x48.xpm</code>。把分辨率高的<code>mini.xterm_48x48.xpm</code>转换为<code>mini.xterm.png</code>。注意不同的程序会把图标存在不同的地方。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo convert mini.xterm_48x48.xpm mini.xterm.png</span><br></pre></td></tr></table></figure>
-<h3 id="刷新图标缓存-1">刷新图标缓存</h3>
-<p>参考上一章节刷新图标的缓存。</p>
-<h2 id="查看错误日志">查看错误日志</h2>
-<p>如果以上两个章节不能解决问题，试着查看错误报告来定位问题。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo journalctl -b -t garcon</span><br></pre></td></tr></table></figure>
-<p>有一些错误应该不会产生什么影响，比如<code>[540]: MIME types file does not exist at: /home/user/.mime.types</code>。</p>
 ]]></content>
   </entry>
   <entry>
