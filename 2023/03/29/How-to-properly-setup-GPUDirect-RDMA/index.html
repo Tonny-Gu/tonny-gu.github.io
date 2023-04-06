@@ -28,7 +28,7 @@
 <meta property="og:description" content="GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU&#39;s memory. However, there are not many online resources discussing about this technology.">
 <meta property="og:locale">
 <meta property="article:published_time" content="2023-03-29T15:05:35.000Z">
-<meta property="article:modified_time" content="2023-04-06T23:33:28.714Z">
+<meta property="article:modified_time" content="2023-04-06T23:42:50.775Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 
@@ -281,7 +281,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Last updated on</span>
-      <time title="Modified: 2023-04-07 07:33:28" itemprop="dateModified" datetime="2023-04-07T07:33:28+08:00">2023-04-07</time>
+      <time title="Modified: 2023-04-07 07:42:50" itemprop="dateModified" datetime="2023-04-07T07:42:50+08:00">2023-04-07</time>
     </span>
 
   
@@ -368,6 +368,9 @@
 </ul>
 </blockquote>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Compile</span></span><br><span class="line">./autogen.sh &amp;&amp; ./configure CUDA_H_PATH=/usr/<span class="built_in">local</span>/cuda/include/cuda.h &amp;&amp; make -j</span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as server</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a <span class="comment"># Run on GPU0 and MLX5_0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as client</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a &lt;server ip addr&gt;</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a 10.200.0.10 <span class="comment"># Run on GPU0 and MLX5_0</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>If you would like to test with NCCL, it is recommended to refer <a target="_blank" rel="noopener" href="https://www.alibabacloud.com/help/en/elastic-compute-service/latest/sccgn-series-instance-instructions">this article</a>.</p>
+</blockquote>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
 <p>A fast and dirty way to temporarily fix this issue is to run the program as root user. Once this dirty fix works, you can refer <a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">this article</a> to permanently solve this issue.</p>
