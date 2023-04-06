@@ -1452,12 +1452,12 @@
   <entry>
     <title>How to properly setup GPUDirect RDMA</title>
     <url>/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</url>
-    <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there isn't many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
+    <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there are not many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
 <h2 id="prerequisite">Prerequisite</h2>
 <h3 id="install-rnic-drivers-and-toolkits">Install RNIC Drivers and Toolkits</h3>
 <p>In this tutorial, I will use Mellanox ConnextX RDMA NIC (RNIC) as an example to demonstrate configuration steps.</p>
 <p>Note that some configuration steps are vendor-specific, which means for different vendor's RNIC, you may need to find the alternative solution if my approach is not applicable for your RNIC. Also I didn't test GDR on a NIC made by vendors other than Mellanox. (I suspect only Mellanox's RNIC supports GDR).</p>
-<p>For ConnextX RNIC, the corresponding drivers and toolkits are bundled in <a href="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/">Mellanox OFED</a>.</p>
+<p>For ConnextX RNIC, the corresponding drivers and toolkits are all packed in <a href="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/">Mellanox OFED</a>.</p>
 <h3 id="install-cuda-drivers-and-toolkits">Install CUDA Drivers and Toolkits</h3>
 <p>I won't introduce how to install these things as there are already many tutorials about this topic on Internet. I would recommend to check <a href="https://developer.nvidia.com/cuda-downloads">the official website</a>, and install the packages this website provides.</p>
 <p>Note that installing CUDA Drivers through <code>apt</code> and Toolkits through <code>conda</code> separately is <strong>NOT</strong> recommended.</p>
@@ -1466,68 +1466,61 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ nvidia-smi topo -m</span><br><span class="line">	GPU0	GPU1	GPU2	GPU3	NIC0	NIC1	CPU Affinity	NUMA Affinity</span><br><span class="line">GPU0	 X 	NV4	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU1	NV4	 X 	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU2	NV4	NV4	 X 	NV4	PHB	PHB	0-127		N/A</span><br><span class="line">GPU3	NV4	NV4	NV4	 X 	SYS	SYS	0-127		N/A</span><br><span class="line">NIC0	SYS	SYS	PHB	SYS	 X 	PIX</span><br><span class="line">NIC1	SYS	SYS	PHB	SYS	PIX	 X</span><br><span class="line"></span><br><span class="line">Legend:</span><br><span class="line"></span><br><span class="line">  X    = Self</span><br><span class="line">  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)</span><br><span class="line">  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node</span><br><span class="line">  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)</span><br><span class="line">  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)</span><br><span class="line">  PIX  = Connection traversing at most a single PCIe bridge</span><br><span class="line">  NV<span class="comment">#  = Connection traversing a bonded set of # NVLinks</span></span><br><span class="line"></span><br><span class="line">NIC Legend:</span><br><span class="line"></span><br><span class="line">  NIC0: mlx5_0</span><br><span class="line">  NIC1: mlx5_1</span><br></pre></td></tr></table></figure>
 <p>We will discuss what this output represents in the following section. For now, you should be able to identify both your GPUs and NICs from this output.</p>
 <h3 id="check-gdr-hardware-support">Check GDR Hardware Support</h3>
-<p>Every system is not created equal. Continue the above example, we can see the types of relationship between GPU and NIC include <code>SYS</code> and <code>PHB</code>. But, as far as I know, these relationships become much complicated nowadays thanks to chip-let design.</p>
-<h4 id="intel-platform">Intel Platform</h4>
+<p>Every system is not created equal. Continue the above example, we can see there are many types of relationship between individual GPU and NIC such as <code>SYS</code> and <code>PHB</code>. In fact, they will greatly affect the GDR performance.</p>
+<p>From my experience, I believe:</p>
 <ul>
-<li>Earlier than Sapphire Rapids (4th Xeon Scalable Processor)
+<li>GDR Performance is good: <code>PIX</code>, <code>PXB</code></li>
+<li>GDR Performance is likely to be good: <code>PHB</code>
 <ul>
-<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>1 NUMA Node per Socket</strong>. Thus,
-<ul>
-<li>GDR Performance should be good: <code>PIX</code>, <code>PXB</code></li>
-<li>GDR Performance may be bad: <code>PHB</code>
-<ul>
-<li>Here are <a href="https://github.com/NVIDIA/nccl/issues/489">discussion about PHB</a> and <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">description about P2P Level</a></li>
+<li>Might be as good as <code>PIX</code> and <code>PXB</code></li>
 </ul></li>
-<li>GDR Performance should be bad: <code>SYS</code>, <code>NODE</code></li>
-</ul></li>
-</ul></li>
-<li>Later than (incl.) Sapphire Rapids
+<li>GDR Performance is bad: <code>SYS</code>, <code>NODE</code></li>
+</ul>
+<blockquote>
+<p>My benchmark result of GDR performance with 100 Gbps RoCE Network:</p>
 <ul>
-<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
+<li>Dual Intel Xeon 4112 System
 <ul>
-<li>I don't know</li>
+<li><code>SYS</code>: ~2GB/s</li>
+<li><code>PIX</code>: ~10GB/s</li>
 </ul></li>
+<li>Single AMD EPYC 7763 System
+<ul>
+<li><code>SYS</code>: ~6GB/s</li>
+<li><code>PHB</code>: ~10GB/s</li>
 </ul></li>
 </ul>
-<h4 id="amd-platform">AMD Platform</h4>
+</blockquote>
+<blockquote>
+<p>Here are <a href="https://github.com/NVIDIA/nccl/issues/489">discussion about PHB</a> and <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">description about P2P Level</a>.</p>
+</blockquote>
+<p>If you unfortunately got some <code>SYS</code> or <code>NODE</code>, this relationship can be possibly corrected by plugging your GPU or NIC into proper PCIe slots.</p>
 <ul>
-<li>Later than EPYC 7001 Series
+<li>For multi-socket system, some certain PCIe slots are physically connected to one CPU socket while the other slots are connected to other sockets.</li>
+<li>For system with chiplet-based CPU (e.g., AMD EPYC), some certain PCIe might be physically connected to one chipet.
 <ul>
-<li>Processor is designed to be <strong>1 PCIe Controller per Socket (Shared I/O Die)</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
-<ul>
-<li>GDR Performance should be good: <code>PIX</code>, <code>PXB</code></li>
-<li>GDR Performance can be good: <code>PHB</code>, <code>SYS</code>
-<ul>
-<li>If the NIC and GPU connect to same socket</li>
-</ul></li>
-<li>Otherwise, I don't know</li>
-<li>Note that some servers can be configured to expose either a single NUMA node or multiple NUMA nodes to OS. It is likely that this setting doesn't affect the GDR performance.</li>
-</ul></li>
-</ul></li>
-<li>Earlier than (incl.) EPYC 7001 Series
-<ul>
-<li>Processor is designed to be <strong>1 PCIe Controller per NUMA node</strong> and <strong>multiple NUMA Nodes per Socket</strong>. Thus,
-<ul>
-<li>I don't know</li>
-</ul></li>
+<li>That is still the case for AMD EPYC 7003 Series which has a separate I/O die.</li>
 </ul></li>
 </ul>
-<h2 id="install-nv_peer_mem-kernel-module">Install NV_PEER_MEM Kernel Module</h2>
-<p>For unknown reasons, this kernel module is not packed into neither CUDA SDK nor OFED SDK.</p>
-<p>To install this module manually, just follow <a href="https://github.com/Mellanox/nv_peer_memory">the official tutorial</a> to compile and install generated DEB or RPM packages.</p>
-<p>To enable this module, execute the command <code>sudo service nv_peer_mem start</code>.</p>
-<p>To check this module is loaded correctly, execute the command <code>lsmod | grep nv_peer_mem</code> and see if this module exists in the output.</p>
+<h2 id="load-nvidia-peer-memory-kernel-module">Load NVIDIA Peer Memory Kernel Module</h2>
+<p><code>nvidia_peermem</code> module is bundled in CUDA Toolkit downloaded from <a href="https://developer.nvidia.com/cuda-downloads">here</a>. By default, this kernel module will be not loaded automatically. Thus, we could manually load this module with the command <code>sudo modprobe nvidia_peermem</code>.</p>
+<p>To check this module is loaded correctly, execute the command <code>lsmod | grep nvidia_peermem</code> and see if this module name exists in the output.</p>
+<p>If you cannot find this kernel module in the system, you might consider to install the latest CUDA Toolkit.</p>
+<blockquote>
+<p>There is another version of this module that you can find on <a href="https://github.com/Mellanox/nv_peer_memory">this repo</a>, and it is called <code>nv_peer_mem</code> instead. But it appears to be no longer maintained.</p>
+</blockquote>
 <h2 id="disable-pcie-acs">Disable PCIe ACS</h2>
 <p>Many reports (<a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">[1]</a>, <a href="https://github.com/NVIDIA/nccl/issues/631">[2]</a>) have mentioned PCIe ACS may hurt the GDR performance. PCIe ACS is a security feature, but we never care about the security when we are hungry for performance. Here is the script to disable it. Note that this script is only for your reference. You may need to modify the content according to your machine's configuration.</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Author: OmniReduce Team</span></span><br><span class="line"><span class="comment"># This script applies what was mentioned in:</span></span><br><span class="line"><span class="comment"># https://forums.developer.nvidia.com/t/multi-gpu-peer-to-peer-access-failing-on-tesla-k80/39748/9</span></span><br><span class="line"><span class="comment"># To disable PCIe ACS</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Before===========================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line">pcis=$(lspci | grep -i plx | cut -d<span class="string">&#x27; &#x27;</span> -f1 | tr <span class="string">&#x27;\r\n&#x27;</span> <span class="string">&#x27; &#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Disabling ACS on <span class="variable">$pcis</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> pci <span class="keyword">in</span> <span class="variable">$pcis</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">	setpci -s <span class="variable">$pci</span> f2a.w=0000</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;After============================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Make sure all ACS features are disabled as ACSCtl: SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-&quot;</span></span><br></pre></td></tr></table></figure>
 <h2 id="verification">Verification</h2>
 <p>Up to now, GDR supposed to work. To verify that, I would recommend to use <a href="https://github.com/linux-rdma/perftest.git">OFED PerfTest</a>.</p>
-<p>Note that,</p>
+<blockquote>
 <ul>
-<li><strong>DO NOT</strong> use PerfTest provided by OFED or APT. You should compile PerfTest by yourself because the binary distribution doesn't support GDR by default</li>
+<li><strong>DO NOT</strong> use PerfTest provided by OFED or APT. You should compile PerfTest by yourself because the binary distribution doesn't support GDR</li>
 <li>Both Client and Server are capable of utilizing GDR</li>
-<li><code>ib_send_bw</code> is not able to utilize GDR yet</li>
+<li><code>ib_send_bw</code> has some bugs in GDR tests</li>
 </ul>
+</blockquote>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Compile</span></span><br><span class="line">./autogen.sh &amp;&amp; ./configure CUDA_H_PATH=/usr/<span class="built_in">local</span>/cuda/include/cuda.h &amp;&amp; make -j</span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as server</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a <span class="comment"># Run on GPU0 and MLX5_0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as client</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a &lt;server ip addr&gt;</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a 10.200.0.10 <span class="comment"># Run on GPU0 and MLX5_0</span></span><br></pre></td></tr></table></figure>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
