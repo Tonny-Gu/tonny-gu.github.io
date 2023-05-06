@@ -6,7 +6,7 @@
   <link href="https://nekodaemon.com/atom.xml" rel="self"/>
   
   <link href="https://nekodaemon.com/"/>
-  <updated>2023-05-06T21:26:12.632Z</updated>
+  <updated>2023-05-06T21:49:28.587Z</updated>
   <id>https://nekodaemon.com/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>Quick way to fix wrong font size exported by PowerPoint Save as Picture on Mac</title>
+    <title>Quick way to fix wrong font size and location exported by PowerPoint Save as Picture on Mac</title>
     <link href="https://nekodaemon.com/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/"/>
     <id>https://nekodaemon.com/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/</id>
     <published>2023-05-06T21:19:04.000Z</published>
-    <updated>2023-05-06T21:26:12.632Z</updated>
+    <updated>2023-05-06T21:49:28.587Z</updated>
     
     <content type="html"><![CDATA[<p>Microsoft is always on its way of producing bugs...</p><h2 id="tldr">TL;DR</h2><ul><li>Select and <strong>Copy</strong> the object to export</li><li>Click <strong>Edit</strong> -&gt; <strong>Paste Special</strong> -&gt; <strong>PDF</strong></li><li>Click <strong>Save as Picture</strong> in the right-click menu to export the newly created object</li></ul><p>This method is working on PowerPoint 16.72</p>]]></content>
     
