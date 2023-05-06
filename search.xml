@@ -2025,7 +2025,7 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <li>Click <strong>Edit</strong> -&gt; <strong>Paste Special</strong> -&gt; <strong>PDF</strong></li>
 <li>Click <strong>Save as Picture</strong> in the right-click menu to export the newly created object</li>
 </ul>
-<p>This method is tested on PowerPoint 16.72</p>
+<p>This method is working on PowerPoint 16.72</p>
 ]]></content>
   </entry>
   <entry>
