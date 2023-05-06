@@ -2016,6 +2016,19 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
+    <title>Quick way to fix wrong font size exported by PowerPoint Save as Picture on Mac</title>
+    <url>/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/</url>
+    <content><![CDATA[<p>Microsoft is always on its way of producing bugs...</p>
+<h2 id="tldr">TL;DR</h2>
+<ul>
+<li>Select and <strong>Copy</strong> the object to export</li>
+<li>Click <strong>Edit</strong> -&gt; <strong>Paste Special</strong> -&gt; <strong>PDF</strong></li>
+<li>Click <strong>Save as Picture</strong> in the right-click menu to export the newly created object</li>
+</ul>
+<p>This method is tested on PowerPoint 16.72</p>
+]]></content>
+  </entry>
+  <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
     <url>/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</url>
     <content><![CDATA[<p>SC21又又又又是在线上打的。第二年痛失美帝免费旅游机会了！！！第二年了！！！<del>没有机票，酒店，和大吃大喝的比赛能叫比赛吗！</del>不过结果还是不错的，远远的超出我的预期（原因请看下文分解）。</p>
