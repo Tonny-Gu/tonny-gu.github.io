@@ -874,7 +874,7 @@
     <content><![CDATA[<p>DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observed that the system would suffer severe performance fluctuation if disabling PFC under certain scenarios.</p>
 <h2 id="l2-pfc-v.s.-l3-pfc">L2 PFC v.s. L3 PFC</h2>
 <p>It is recommended to set up L3 PFC since L2 PFC expects us to properly configure VLAN because it relies on something embedded in VLAN headers.</p>
-<h2 id="prerequisite">****Prerequisite****</h2>
+<h2 id="prerequisite">Prerequisite</h2>
 <p>If the network traffic goes through network switches, ensure <strong>L3 PFC</strong> and <strong>ECN</strong> are enabled on switches. We omitted the detailed steps to configure switches here as they depend on the particular Switch OS.</p>
 <p>It is worth mentioning that we could set up a direct connection between two nodes to eliminate the effects caused by network switches.</p>
 <h2 id="steps">Steps</h2>
