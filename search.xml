@@ -532,53 +532,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
-    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
-    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
-<figure>
-<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<h2 id="preparing-environment">Preparing Environment</h2>
-<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
-<h2 id="compile-the-source-code">Compile the source code</h2>
-<p>First of all, configure the project and build it.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
-<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
-<p>As for the bazel build flag,</p>
-<ul>
-<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
-<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
-</ul>
-<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
-<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
-<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
-<p>Let pick a simple test first to validate the code is compiled correctly.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
-<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
-<p>Then pick a test you interest, and repeat the steps above.</p>
-<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
-<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
-<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
-<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h2 id="configuring-vscode">Configuring VSCode</h2>
-<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
-<blockquote>
-<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
-</blockquote>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
-<h2 id="reference">Reference</h2>
-<ul>
-<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
-<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>Easy way to build a virtual cluster with KVM</title>
     <url>/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</url>
     <content><![CDATA[<p><em>Updated on 16 May, 2021.</em> The quality of the original version is not satisfying. I've rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.</p>
@@ -814,6 +767,53 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
+    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
+    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
+<figure>
+<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="preparing-environment">Preparing Environment</h2>
+<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
+<h2 id="compile-the-source-code">Compile the source code</h2>
+<p>First of all, configure the project and build it.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
+<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
+<p>As for the bazel build flag,</p>
+<ul>
+<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
+<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
+</ul>
+<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
+<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
+<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
+<p>Let pick a simple test first to validate the code is compiled correctly.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
+<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
+<p>Then pick a test you interest, and repeat the steps above.</p>
+<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
+<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
+<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
+<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="configuring-vscode">Configuring VSCode</h2>
+<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
+<blockquote>
+<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
+<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Easy ways to setup Reverse Proxy for NAT-Passthrough</title>
     <url>/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</url>
     <content><![CDATA[<p>It's time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it's possible to set up a reliable reverse proxy with single command.</p>
@@ -866,6 +866,65 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Before</span></span><br><span class="line"><span class="comment">#GatewayPorts no</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># After</span></span><br><span class="line">GatewayPorts yes</span><br></pre></td></tr></table></figure>
 <p>Then restart the SSH server.</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">public-server$ sudo service sshd restart</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
+    <title>Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs</title>
+    <url>/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/</url>
+    <content><![CDATA[<p>DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observed that the system would suffer severe performance fluctuation if disabling PFC under certain scenarios.</p>
+<h2 id="l2-pfc-v.s.-l3-pfc">L2 PFC v.s. L3 PFC</h2>
+<p>It is recommended to set up L3 PFC since L2 PFC expects us to properly configure VLAN because it relies on something embedded in VLAN headers.</p>
+<h2 id="prerequisite">****Prerequisite****</h2>
+<p>If the network traffic goes through network switches, ensure <strong>L3 PFC</strong> and <strong>ECN</strong> are enabled on switches. We omitted the detailed steps to configure switches here as they depend on the particular Switch OS.</p>
+<p>It is worth mentioning that we could set up a direct connection between two nodes to eliminate the effects caused by network switches.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="enable-dcqcn">Enable DCQCN</h3>
+<p>DCQCN is enabled by default on ConnextX NICs.</p>
+<h3 id="enable-l3-pfc">Enable L3 PFC</h3>
+<p>Firstly, we could check the interface name and device name with <code>show_gids</code>, which should output something like below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">DEV	PORT	INDEX	GID					IPv4  		VER	DEV</span><br><span class="line">---	----	-----	---					------------  	---	---</span><br><span class="line">mlx5_1	1	3	0000:0000:0000:0000:0000:ffff:0ac8:000e	10.200.0.14  	v2	enp216s0f1np1</span><br></pre></td></tr></table></figure>
+<p>Then execute the following commands (root is required): +</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mlnx_qos -i enp216s0f1np1 --trust dscp <span class="comment"># use L3 PFC, default=pcp (L2 PFC)</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;tclass=-1&quot;</span> &gt; /sys/class/infiniband/mlx5_1/tc/1/traffic_class <span class="comment"># clear DSCP settings</span></span><br><span class="line"><span class="built_in">echo</span> 106 &gt; /sys/class/infiniband/mlx5_1/tc/1/traffic_class <span class="comment"># set default ToS (DSCP value * 4) for RoCE traffic</span></span><br><span class="line">cma_roce_tos -d mlx5_1 -t 106 <span class="comment"># set default ToS for RoCE traffic</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --pfc 0,0,0,1,0,0,0,0 <span class="comment"># enable PFC on PFC Priority 3</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --buffer_size=262016,0,0,0,0,0,0,0 <span class="comment"># allocate buffer 0</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --prio2buffer=0,0,0,0,0,0,0,0 <span class="comment"># let all PFC Priorities share buffer 0</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>(Optional) Set alternative TSA</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># set to vendor (default)</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --tsa=vendor,vendor,vendor,vendor,vendor,vendor,vendor,vendor</span><br><span class="line"><span class="comment"># set to ets</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --tsa=ets,ets,ets,ets,ets,ets,ets,ets --tcbw=0,0,0,100,0,0,0,0</span><br></pre></td></tr></table></figure></p></li>
+<li><p>(Optional) Remap DSCP value to specified PFC Priority</p>
+<p><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mlnx_qos -i enp216s0f1np1 --dcsp2prio=<span class="string">&#x27;set,3,3&#x27;</span> <span class="comment"># Map DSCP 3 to Prio 3</span></span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<p>Lastly, we could check the current configuration with <code>mlnx_qos -i enp216s0f1np1</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">DCBX mode: OS controlled</span><br><span class="line">Priority trust state: dscp</span><br><span class="line">dscp2prio mapping:</span><br><span class="line">	prio:0 dscp:07,06,05,04,03,02,01,00,</span><br><span class="line">	prio:1 dscp:15,14,13,12,11,10,09,08,</span><br><span class="line">	prio:2 dscp:23,22,21,20,19,18,17,16,</span><br><span class="line">	prio:3 dscp:31,30,29,28,27,26,25,24,</span><br><span class="line">	prio:4 dscp:39,38,37,36,35,34,33,32,</span><br><span class="line">	prio:5 dscp:47,46,45,44,43,42,41,40,</span><br><span class="line">	prio:6 dscp:55,54,53,52,51,50,49,48,</span><br><span class="line">	prio:7 dscp:63,62,61,60,59,58,57,56,</span><br><span class="line">default priority:</span><br><span class="line">Receive buffer size (bytes): 262016,0,0,0,0,0,0,0,</span><br><span class="line">Cable len: 7</span><br><span class="line">PFC configuration:</span><br><span class="line">	priority    0   1   2   3   4   5   6   7</span><br><span class="line">	enabled     0   0   0   1   0   0   0   0</span><br><span class="line">	buffer      0   0   0   0   0   0   0   0</span><br><span class="line">tc: 1 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  0</span><br><span class="line">tc: 0 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  1</span><br><span class="line">tc: 2 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  2</span><br><span class="line">tc: 3 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  3</span><br><span class="line">tc: 4 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  4</span><br><span class="line">tc: 5 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  5</span><br><span class="line">tc: 6 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  6</span><br><span class="line">tc: 7 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  7</span><br></pre></td></tr></table></figure>
+<h2 id="miscellaneous">Miscellaneous</h2>
+<h3 id="relationship-among-service-level-dscp-value-type-of-service-tos-traffic-class-pfc-priority">Relationship among Service Level, DSCP Value, Type of Service (ToS), Traffic Class, PFC Priority</h3>
+<ul>
+<li>Service Level is a concept of Infiniband networks. Not related to RoCE networks.</li>
+<li>Traffic Class could refer to either DSCP Value or PFC Priority.</li>
+<li>For L3 PFC, <code>ToS &gt;&gt; 2 = DSCP Value</code>. (e.g., ToS 106 is equivalent to DSCP 26)</li>
+<li>There is a table (shown by <code>mlnx_qos</code>) mapping DSCP Value to PFC Priority. (e.g., In the above case, DSCP 26 is mapped to Priority 3)</li>
+</ul>
+<h3 id="check-dcqcn-is-functioning">Check DCQCN is functioning</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Check DCQCN is enabled on Prio 3</span></span><br><span class="line">cat /sys/class/net/enp216s0f1np1/ecn/roce_np/<span class="built_in">enable</span>/3</span><br><span class="line">cat /sys/class/net/enp216s0f1np1/ecn/roce_rp/<span class="built_in">enable</span>/3</span><br><span class="line"></span><br><span class="line"><span class="comment"># Check counters related to DCQCN</span></span><br><span class="line">cat /sys/class/infiniband/mlx5_1/ports/1/hw_counters/np_cnp_sent</span><br><span class="line">cat /sys/class/infiniband/mlx5_1/ports/1/hw_counters/np_ecn_marked_roce_packets</span><br><span class="line">/sys/class/infiniband/mlx5_1/ports/1/hw_counters/rp_cnp_handled</span><br></pre></td></tr></table></figure>
+<p>Note: Two cases triggering NP to send CNP packets:</p>
+<ul>
+<li>NP’s NIC receives a packet with an ECN mark (marked by the switch indicating the switch’s buffer is about to be out of capacity).</li>
+<li>NP’s NIC receives an out-of-order packet (packet loss occurred).</li>
+</ul>
+<h3 id="check-pfc-is-functioning">Check PFC is functioning</h3>
+<p>Use command <code>ethtool -S enp216s0f1np1 | grep prio3</code>. Here is an example output.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rx_prio3_bytes: 462536457742</span><br><span class="line">rx_prio3_packets: 500098087</span><br><span class="line">rx_prio3_discards: 0</span><br><span class="line">tx_prio3_bytes: 1180912512618</span><br><span class="line">tx_prio3_packets: 1155032777</span><br><span class="line">rx_prio3_pause: 214479</span><br><span class="line">rx_prio3_pause_duration: 213496</span><br><span class="line">tx_prio3_pause: 12</span><br><span class="line">tx_prio3_pause_duration: 13</span><br><span class="line">rx_prio3_pause_transition: 107222</span><br></pre></td></tr></table></figure>
+<h3 id="read-performance-counters-on-nics">Read Performance Counters on NICs</h3>
+<p>Refer to this article: <a href="https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters">https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters</a>.</p>
+<h3 id="failed-to-map-roce-traffic-to-specified-pfc-priority">Failed to map RoCE traffic to specified PFC Priority</h3>
+<p>Consider upgrading OFED drivers. And inspect the source code. <code>ibv_modify_qp</code> and <code>ibv_qp_attr.ah_attr.grh.traffic_class</code> may override default ToS Value.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://docs.nvidia.com/networking/pages/viewpage.action?pageId=39264632">https://docs.nvidia.com/networking/pages/viewpage.action?pageId=39264632</a></li>
+<li><a href="https://enterprise-support.nvidia.com/s/article/lossless-roce-configuration-for-linux-drivers-in-dscp-based-qos-mode">https://enterprise-support.nvidia.com/s/article/lossless-roce-configuration-for-linux-drivers-in-dscp-based-qos-mode</a></li>
+<li><a href="https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters">https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters</a></li>
+<li><a href="https://support.huawei.com/enterprise/zh/doc/EDOC1100197616/3dfff4ec">https://support.huawei.com/enterprise/zh/doc/EDOC1100197616/3dfff4ec</a></li>
+<li><a href="https://www.rdmamojo.com/2013/01/12/ibv_modify_qp/">https://www.rdmamojo.com/2013/01/12/ibv_modify_qp/</a></li>
+<li><a href="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p523.pdf">https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p523.pdf</a></li>
+<li>An incoming SIGCOMM’23 paper</li>
+</ul>
 ]]></content>
   </entry>
   <entry>
@@ -1201,47 +1260,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>Hexo 第二次魔改记录</title>
-    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
-<h2 id="接入cdn">接入CDN</h2>
-<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
-<h2 id="主题美化">主题美化</h2>
-<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
-<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
-<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
-<h2 id="总结">总结</h2>
-<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
-<ul>
-<li>加载进度条</li>
-<li>阅读进度条</li>
-<li>文章目录</li>
-<li>访问量统计</li>
-<li>版权声明</li>
-<li>图片缩放</li>
-</ul>
-<p>以及速度优化</p>
-<ul>
-<li>CDN</li>
-<li>Lazyload</li>
-<li>PJAX局部刷新</li>
-<li>HTTP2 + HSTS</li>
-</ul>
-<figure>
-<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<figure>
-<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
-<hr />
-<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
-<figure>
-<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-]]></content>
-  </entry>
-  <entry>
     <title>Hexo 第一次魔改全记录</title>
     <url>/2020/01/12/Hexo-%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%AD%94%E6%94%B9%E5%85%A8%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h2 id="hexo-pug-主题修改-非典型教程">Hexo Pug 主题修改 非典型教程</h2>
@@ -1355,88 +1373,44 @@
       </tags>
   </entry>
   <entry>
-    <title>How to properly setup GPUDirect RDMA</title>
-    <url>/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</url>
-    <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there are not many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
-<h2 id="prerequisite">Prerequisite</h2>
-<h3 id="install-rnic-drivers-and-toolkits">Install RNIC Drivers and Toolkits</h3>
-<p>In this tutorial, I will use Mellanox ConnextX RDMA NIC (RNIC) as an example to demonstrate configuration steps.</p>
-<p>Note that some configuration steps are vendor-specific, which means for different vendor's RNIC, you may need to find the alternative solution if my approach is not applicable for your RNIC. Also I didn't test GDR on a NIC made by vendors other than Mellanox. (I suspect only Mellanox's RNIC supports GDR).</p>
-<p>For ConnextX RNIC, the corresponding drivers and toolkits are all packed in <a href="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/">Mellanox OFED</a>.</p>
-<h3 id="install-cuda-drivers-and-toolkits">Install CUDA Drivers and Toolkits</h3>
-<p>I won't introduce how to install these things as there are already many tutorials about this topic on Internet. I would recommend to check <a href="https://developer.nvidia.com/cuda-downloads">the official website</a>, and install the packages this website provides.</p>
-<p>Note that installing CUDA Drivers through <code>apt</code> and Toolkits through <code>conda</code> separately is <strong>NOT</strong> recommended.</p>
-<h3 id="verify-installation">Verify Installation</h3>
-<p>Once you properly installed them, just execute the command <code>nvidia-smi topo -m</code> and you should see something like:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ nvidia-smi topo -m</span><br><span class="line">	GPU0	GPU1	GPU2	GPU3	NIC0	NIC1	CPU Affinity	NUMA Affinity</span><br><span class="line">GPU0	 X 	NV4	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU1	NV4	 X 	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU2	NV4	NV4	 X 	NV4	PHB	PHB	0-127		N/A</span><br><span class="line">GPU3	NV4	NV4	NV4	 X 	SYS	SYS	0-127		N/A</span><br><span class="line">NIC0	SYS	SYS	PHB	SYS	 X 	PIX</span><br><span class="line">NIC1	SYS	SYS	PHB	SYS	PIX	 X</span><br><span class="line"></span><br><span class="line">Legend:</span><br><span class="line"></span><br><span class="line">  X    = Self</span><br><span class="line">  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)</span><br><span class="line">  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node</span><br><span class="line">  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)</span><br><span class="line">  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)</span><br><span class="line">  PIX  = Connection traversing at most a single PCIe bridge</span><br><span class="line">  NV<span class="comment">#  = Connection traversing a bonded set of # NVLinks</span></span><br><span class="line"></span><br><span class="line">NIC Legend:</span><br><span class="line"></span><br><span class="line">  NIC0: mlx5_0</span><br><span class="line">  NIC1: mlx5_1</span><br></pre></td></tr></table></figure>
-<p>We will discuss what this output represents in the following section. For now, you should be able to identify both your GPUs and NICs from this output.</p>
-<h3 id="check-gdr-hardware-support">Check GDR Hardware Support</h3>
-<p>Every system is not created equal. Continue the above example, we can see there are many types of relationship between individual GPU and NIC such as <code>SYS</code> and <code>PHB</code>. In fact, they will greatly affect the GDR performance.</p>
-<p>From my experience, I believe:</p>
+    <title>Hexo 第二次魔改记录</title>
+    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
+<h2 id="接入cdn">接入CDN</h2>
+<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
+<h2 id="主题美化">主题美化</h2>
+<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
+<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
+<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
+<h2 id="总结">总结</h2>
+<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
 <ul>
-<li>GDR Performance is good: <code>PIX</code>, <code>PXB</code></li>
-<li>GDR Performance is likely to be good: <code>PHB</code>
-<ul>
-<li>Might be as good as <code>PIX</code> and <code>PXB</code></li>
-</ul></li>
-<li>GDR Performance is bad: <code>SYS</code>, <code>NODE</code></li>
+<li>加载进度条</li>
+<li>阅读进度条</li>
+<li>文章目录</li>
+<li>访问量统计</li>
+<li>版权声明</li>
+<li>图片缩放</li>
 </ul>
-<blockquote>
-<p>My benchmark result of GDR performance with 100 Gbps RoCE Network:</p>
+<p>以及速度优化</p>
 <ul>
-<li>Dual Intel Xeon 4112 + NVIDIA Tesla V100
-<ul>
-<li><code>SYS</code>: ~2 GB/s</li>
-<li><code>PIX</code>: ~10 GB/s</li>
-</ul></li>
-<li>Single AMD EPYC 7763 + NVIDIA Tesla A100
-<ul>
-<li><code>SYS</code>: ~6 GB/s</li>
-<li><code>PHB</code>: ~10 GB/s</li>
-</ul></li>
-<li>Dual Intel Xeon E5-2630 v4 + NVIDIA Tesla P100
-<ul>
-<li><code>SYS</code>: ~0.3 GB/s</li>
-</ul></li>
+<li>CDN</li>
+<li>Lazyload</li>
+<li>PJAX局部刷新</li>
+<li>HTTP2 + HSTS</li>
 </ul>
-</blockquote>
-<blockquote>
-<p>Here are <a href="https://github.com/NVIDIA/nccl/issues/489">discussion about PHB</a> and <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">description about P2P Level</a>.</p>
-</blockquote>
-<p>If you unfortunately got some <code>SYS</code> or <code>NODE</code>, this relationship can be possibly corrected by plugging your GPU or NIC into proper PCIe slots.</p>
-<ul>
-<li>For multi-socket system, some certain PCIe slots are physically connected to one CPU socket while the other slots are connected to other sockets.</li>
-<li>For system with chiplet-based CPU (e.g., AMD EPYC), some certain PCIe might be physically connected to one chipet.
-<ul>
-<li>That is still the case for AMD EPYC 7003 Series which has a separate I/O die.</li>
-</ul></li>
-</ul>
-<h2 id="load-nvidia-peer-memory-kernel-module">Load NVIDIA Peer Memory Kernel Module</h2>
-<p><code>nvidia_peermem</code> module is bundled in CUDA Toolkit downloaded from <a href="https://developer.nvidia.com/cuda-downloads">here</a>. By default, this kernel module will be not loaded automatically. Thus, we could manually load this module with the command <code>sudo modprobe nvidia_peermem</code>.</p>
-<p>To check this module is loaded correctly, execute the command <code>lsmod | grep nvidia_peermem</code> and see if this module name exists in the output.</p>
-<p>If you cannot find this kernel module in the system, you might consider to install the latest CUDA Toolkit.</p>
-<blockquote>
-<p>There is another version of this module that you can find on <a href="https://github.com/Mellanox/nv_peer_memory">this repo</a>, and it is called <code>nv_peer_mem</code> instead. But it appears to be no longer maintained.</p>
-</blockquote>
-<h2 id="disable-pcie-acs">Disable PCIe ACS</h2>
-<p>Many reports (<a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">[1]</a>, <a href="https://github.com/NVIDIA/nccl/issues/631">[2]</a>) have mentioned PCIe ACS may hurt the GDR performance. PCIe ACS is a security feature, but we never care about the security when we are hungry for performance. Here is the script to disable it. Note that this script is only for your reference. You may need to modify the content according to your machine's configuration.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Author: OmniReduce Team</span></span><br><span class="line"><span class="comment"># This script applies what was mentioned in:</span></span><br><span class="line"><span class="comment"># https://forums.developer.nvidia.com/t/multi-gpu-peer-to-peer-access-failing-on-tesla-k80/39748/9</span></span><br><span class="line"><span class="comment"># To disable PCIe ACS</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Before===========================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line">pcis=$(lspci | grep -i plx | cut -d<span class="string">&#x27; &#x27;</span> -f1 | tr <span class="string">&#x27;\r\n&#x27;</span> <span class="string">&#x27; &#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Disabling ACS on <span class="variable">$pcis</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> pci <span class="keyword">in</span> <span class="variable">$pcis</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">	setpci -s <span class="variable">$pci</span> f2a.w=0000</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;After============================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Make sure all ACS features are disabled as ACSCtl: SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-&quot;</span></span><br></pre></td></tr></table></figure>
-<h2 id="verification">Verification</h2>
-<p>Up to now, GDR supposed to work. To verify that, I would recommend to use <a href="https://github.com/linux-rdma/perftest.git">OFED PerfTest</a>.</p>
-<blockquote>
-<ul>
-<li><strong>DO NOT</strong> use PerfTest provided by OFED or APT. You should compile PerfTest by yourself because the binary distribution doesn't support GDR</li>
-<li>Both Client and Server are capable of utilizing GDR</li>
-<li><code>ib_send_bw</code> has some bugs in GDR tests</li>
-</ul>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Compile</span></span><br><span class="line">./autogen.sh &amp;&amp; ./configure CUDA_H_PATH=/usr/<span class="built_in">local</span>/cuda/include/cuda.h &amp;&amp; make -j</span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as server</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a <span class="comment"># Run on GPU0 and MLX5_0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as client</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a &lt;server ip addr&gt;</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a 10.200.0.10 <span class="comment"># Run on GPU0 and MLX5_0</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>If you would like to test with NCCL, it is recommended to refer <a href="https://www.alibabacloud.com/help/en/elastic-compute-service/latest/sccgn-series-instance-instructions">this article</a>.</p>
-</blockquote>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
-<p>A fast and dirty way to temporarily fix this issue is to run the program as root user. Once this dirty fix works, you can refer <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">this article</a> to permanently solve this issue.</p>
+<figure>
+<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure>
+<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
+<hr />
+<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
+<figure>
+<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
 ]]></content>
   </entry>
   <entry>
@@ -1535,6 +1509,94 @@
 ]]></content>
   </entry>
   <entry>
+    <title>How to properly setup GPUDirect RDMA</title>
+    <url>/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</url>
+    <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there are not many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<h3 id="install-rnic-drivers-and-toolkits">Install RNIC Drivers and Toolkits</h3>
+<p>In this tutorial, I will use Mellanox ConnextX RDMA NIC (RNIC) as an example to demonstrate configuration steps.</p>
+<p>Note that some configuration steps are vendor-specific, which means for different vendor's RNIC, you may need to find the alternative solution if my approach is not applicable for your RNIC. Also I didn't test GDR on a NIC made by vendors other than Mellanox. (I suspect only Mellanox's RNIC supports GDR).</p>
+<p>For ConnextX RNIC, the corresponding drivers and toolkits are all packed in <a href="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/">Mellanox OFED</a>.</p>
+<h3 id="install-cuda-drivers-and-toolkits">Install CUDA Drivers and Toolkits</h3>
+<p>I won't introduce how to install these things as there are already many tutorials about this topic on Internet. I would recommend to check <a href="https://developer.nvidia.com/cuda-downloads">the official website</a>, and install the packages this website provides.</p>
+<p>Note that installing CUDA Drivers through <code>apt</code> and Toolkits through <code>conda</code> separately is <strong>NOT</strong> recommended.</p>
+<h3 id="verify-installation">Verify Installation</h3>
+<p>Once you properly installed them, just execute the command <code>nvidia-smi topo -m</code> and you should see something like:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ nvidia-smi topo -m</span><br><span class="line">	GPU0	GPU1	GPU2	GPU3	NIC0	NIC1	CPU Affinity	NUMA Affinity</span><br><span class="line">GPU0	 X 	NV4	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU1	NV4	 X 	NV4	NV4	SYS	SYS	0-127		N/A</span><br><span class="line">GPU2	NV4	NV4	 X 	NV4	PHB	PHB	0-127		N/A</span><br><span class="line">GPU3	NV4	NV4	NV4	 X 	SYS	SYS	0-127		N/A</span><br><span class="line">NIC0	SYS	SYS	PHB	SYS	 X 	PIX</span><br><span class="line">NIC1	SYS	SYS	PHB	SYS	PIX	 X</span><br><span class="line"></span><br><span class="line">Legend:</span><br><span class="line"></span><br><span class="line">  X    = Self</span><br><span class="line">  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)</span><br><span class="line">  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node</span><br><span class="line">  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)</span><br><span class="line">  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)</span><br><span class="line">  PIX  = Connection traversing at most a single PCIe bridge</span><br><span class="line">  NV<span class="comment">#  = Connection traversing a bonded set of # NVLinks</span></span><br><span class="line"></span><br><span class="line">NIC Legend:</span><br><span class="line"></span><br><span class="line">  NIC0: mlx5_0</span><br><span class="line">  NIC1: mlx5_1</span><br></pre></td></tr></table></figure>
+<p>We will discuss what this output represents in the following section. For now, you should be able to identify both your GPUs and NICs from this output.</p>
+<h3 id="check-gdr-hardware-support">Check GDR Hardware Support</h3>
+<p>Every system is not created equal. Continue the above example, we can see there are many types of relationship between individual GPU and NIC such as <code>SYS</code> and <code>PHB</code>. In fact, they will greatly affect the GDR performance.</p>
+<p>From my experience, I believe:</p>
+<ul>
+<li>GDR Performance is good: <code>PIX</code>, <code>PXB</code></li>
+<li>GDR Performance is likely to be good: <code>PHB</code>
+<ul>
+<li>Might be as good as <code>PIX</code> and <code>PXB</code></li>
+</ul></li>
+<li>GDR Performance is bad: <code>SYS</code>, <code>NODE</code></li>
+</ul>
+<blockquote>
+<p>My benchmark result of GDR performance with 100 Gbps RoCE Network:</p>
+<ul>
+<li>Dual Intel Xeon 4112 + NVIDIA Tesla V100
+<ul>
+<li><code>SYS</code>: ~2 GB/s</li>
+<li><code>PIX</code>: ~10 GB/s</li>
+</ul></li>
+<li>Single AMD EPYC 7763 + NVIDIA Tesla A100
+<ul>
+<li><code>SYS</code>: ~6 GB/s</li>
+<li><code>PHB</code>: ~10 GB/s</li>
+</ul></li>
+<li>Dual Intel Xeon E5-2630 v4 + NVIDIA Tesla P100
+<ul>
+<li><code>SYS</code>: ~0.3 GB/s</li>
+</ul></li>
+</ul>
+</blockquote>
+<blockquote>
+<p>Here are <a href="https://github.com/NVIDIA/nccl/issues/489">discussion about PHB</a> and <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">description about P2P Level</a>.</p>
+</blockquote>
+<blockquote>
+<p>(Updated on Jun 9, 2023) Here is a <a href="https://dshcherb.github.io/2019/02/02/interpreting-pcie-device-to-cpu-locality-information.html">systematic introduction to PCIe Affinity</a>.</p>
+</blockquote>
+<p>If you unfortunately got some <code>SYS</code> or <code>NODE</code>, this relationship can be possibly corrected by plugging your GPU or NIC into proper PCIe slots.</p>
+<ul>
+<li>For multi-socket system, some certain PCIe slots are physically connected to one CPU socket (package) while the other slots are connected to other sockets.</li>
+<li>For system with chiplet-based CPU (e.g., AMD EPYC), some certain PCIe might be physically connected to one chipet.
+<ul>
+<li>That is still the case for AMD EPYC 7003 Series which has a separate I/O die.</li>
+</ul></li>
+</ul>
+<h2 id="load-nvidia-peer-memory-kernel-module">Load NVIDIA Peer Memory Kernel Module</h2>
+<p><code>nvidia_peermem</code> module is bundled in CUDA Toolkit downloaded from <a href="https://developer.nvidia.com/cuda-downloads">here</a>. By default, this kernel module will be not loaded automatically. Thus, we could manually load this module with the command <code>sudo modprobe nvidia_peermem</code>.</p>
+<p>To check this module is loaded correctly, execute the command <code>lsmod | grep nvidia_peermem</code> and see if this module name exists in the output.</p>
+<p>If you cannot find this kernel module in the system, you might consider to install the latest CUDA Toolkit.</p>
+<blockquote>
+<p>There is another version of this module that you can find on <a href="https://github.com/Mellanox/nv_peer_memory">this repo</a>, and it is called <code>nv_peer_mem</code> instead. But it appears to be no longer maintained.</p>
+</blockquote>
+<h2 id="disable-pcie-acs">Disable PCIe ACS</h2>
+<p>Many reports (<a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">[1]</a>, <a href="https://github.com/NVIDIA/nccl/issues/631">[2]</a>) have mentioned PCIe ACS may hurt the GDR performance. PCIe ACS is a security feature, but we never care about the security when we are hungry for performance. Here is the script to disable it. Note that this script is only for your reference. You may need to modify the content according to your machine's configuration.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Author: OmniReduce Team</span></span><br><span class="line"><span class="comment"># This script applies what was mentioned in:</span></span><br><span class="line"><span class="comment"># https://forums.developer.nvidia.com/t/multi-gpu-peer-to-peer-access-failing-on-tesla-k80/39748/9</span></span><br><span class="line"><span class="comment"># To disable PCIe ACS</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Before===========================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line">pcis=$(lspci | grep -i plx | cut -d<span class="string">&#x27; &#x27;</span> -f1 | tr <span class="string">&#x27;\r\n&#x27;</span> <span class="string">&#x27; &#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Disabling ACS on <span class="variable">$pcis</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> pci <span class="keyword">in</span> <span class="variable">$pcis</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">	setpci -s <span class="variable">$pci</span> f2a.w=0000</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;After============================&quot;</span></span><br><span class="line">sudo lspci -vvv | grep -i acsctl</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=================================&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Make sure all ACS features are disabled as ACSCtl: SrcValid- TransBlk- ReqRedir- CmpltRedir- UpstreamFwd- EgressCtrl- DirectTrans-&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="verification">Verification</h2>
+<p>Up to now, GDR supposed to work. To verify that, I would recommend to use <a href="https://github.com/linux-rdma/perftest.git">OFED PerfTest</a>.</p>
+<blockquote>
+<ul>
+<li><strong>DO NOT</strong> use PerfTest provided by OFED or APT. You should compile PerfTest by yourself because the binary distribution doesn't support GDR</li>
+<li>Both Client and Server are capable of utilizing GDR</li>
+<li><code>ib_send_bw</code> has some bugs in GDR tests</li>
+</ul>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Compile</span></span><br><span class="line">./autogen.sh &amp;&amp; ./configure CUDA_H_PATH=/usr/<span class="built_in">local</span>/cuda/include/cuda.h &amp;&amp; make -j</span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as server</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a <span class="comment"># Run on GPU0 and MLX5_0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Launch as client</span></span><br><span class="line">./ib_write_bw -d ib_dev --use_cuda=&lt;gpu index&gt; -a &lt;server ip addr&gt;</span><br><span class="line">./ib_write_bw -d mlx5_0 --use_cuda=0 -a 10.200.0.10 <span class="comment"># Run on GPU0 and MLX5_0</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>If you would like to test with NCCL, it is recommended to refer <a href="https://www.alibabacloud.com/help/en/elastic-compute-service/latest/sccgn-series-instance-instructions">this article</a>.</p>
+</blockquote>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
+<p>A fast and dirty way to temporarily fix this issue is to run the program as root user. Once this dirty fix works, you can refer <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">this article</a> to permanently solve this issue.</p>
+]]></content>
+  </entry>
+  <entry>
     <title>How to resize the root LVM partition of Ubuntu</title>
     <url>/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</url>
     <content><![CDATA[<p>When we resize the virtual hard disk of a virtual machine or restore a disk image to a larger disk, the free space of the partition detected by Ubuntu will not increase because the partition table is unchanged. In the past, we could easily resize the ext4 root partition with the help of <code>resize2fs</code>. However, things get complex when Ubuntu utilizes LVM partition as their default root partition.</p>
@@ -1591,17 +1653,6 @@
 <li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/">https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/</a></li>
 <li><a href="https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png">https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png</a></li>
 </ul>
-]]></content>
-  </entry>
-  <entry>
-    <title>Jetson Nano的USB共享网络</title>
-    <url>/2020/11/07/Jetson-Nano%E7%9A%84USB%E5%85%B1%E4%BA%AB%E7%BD%91%E7%BB%9C/</url>
-    <content><![CDATA[<h2 id="通过usb连接jetson-nano">通过USB连接Jetson Nano</h2>
-<p>在完成初始化，设置好用户的账号密码后，Jetson Nano官方的L4T系统默认开启了RNDIS将自己虚拟为一张网卡。当用电脑连接到Nano的USB供电接口时，电脑会将Nano识别为一张网卡，并且可以获取到IP地址（NVIDIA贴心的帮你配好了DHCP和SSH）。此时用SSH连接到<code>192.168.50.1</code>就可以连接上Jetson Nano了。</p>
-<p>如果没有完成初始化，碰巧手边没有显示器，可以参考<a href="https://desertbot.io/blog/jetson-nano-headless-wifi-setup">这篇文章</a>完成headless下的初始化设置，通过Jetson Nano假扮成的USB Modem完成初始化。</p>
-<h2 id="关闭或启动jetson-nano">关闭或启动Jetson Nano</h2>
-<p>对于绝大多数人来说是没有这个需要的，但是碰巧我用电脑给Nano供电，碰巧用Chrome OS系统，没有禁用网卡的选项，也不能改路由表，不关掉这个网络就没法上网。还好NVIDIA有脚本。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 禁用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode-stop.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode.sh</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
   <entry>
@@ -1758,6 +1809,17 @@
       <tags>
         <tag>Jetson</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>Jetson Nano的USB共享网络</title>
+    <url>/2020/11/07/Jetson-Nano%E7%9A%84USB%E5%85%B1%E4%BA%AB%E7%BD%91%E7%BB%9C/</url>
+    <content><![CDATA[<h2 id="通过usb连接jetson-nano">通过USB连接Jetson Nano</h2>
+<p>在完成初始化，设置好用户的账号密码后，Jetson Nano官方的L4T系统默认开启了RNDIS将自己虚拟为一张网卡。当用电脑连接到Nano的USB供电接口时，电脑会将Nano识别为一张网卡，并且可以获取到IP地址（NVIDIA贴心的帮你配好了DHCP和SSH）。此时用SSH连接到<code>192.168.50.1</code>就可以连接上Jetson Nano了。</p>
+<p>如果没有完成初始化，碰巧手边没有显示器，可以参考<a href="https://desertbot.io/blog/jetson-nano-headless-wifi-setup">这篇文章</a>完成headless下的初始化设置，通过Jetson Nano假扮成的USB Modem完成初始化。</p>
+<h2 id="关闭或启动jetson-nano">关闭或启动Jetson Nano</h2>
+<p>对于绝大多数人来说是没有这个需要的，但是碰巧我用电脑给Nano供电，碰巧用Chrome OS系统，没有禁用网卡的选项，也不能改路由表，不关掉这个网络就没法上网。还好NVIDIA有脚本。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 禁用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode-stop.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用USB共享网络</span></span><br><span class="line">sudo /opt/nvidia/l4t-usb-device-mode/nv-l4t-usb-device-mode.sh</span><br></pre></td></tr></table></figure>
+]]></content>
   </entry>
   <entry>
     <title>MATLAB 一些向量化思路和例子</title>

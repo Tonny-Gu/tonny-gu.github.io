@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs">
+<meta property="og:url" content="https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observe">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-07-23T18:02:17.000Z">
+<meta property="article:modified_time" content="2023-07-23T18:02:25.574Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/","path":"2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/","title":"Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#l2-pfc-v.s.-l3-pfc"><span class="nav-text">L2 PFC v.s. L3 PFC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#prerequisite"><span class="nav-text">****Prerequisite****</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#steps"><span class="nav-text">Steps</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#enable-dcqcn"><span class="nav-text">Enable DCQCN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#enable-l3-pfc"><span class="nav-text">Enable L3 PFC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#miscellaneous"><span class="nav-text">Miscellaneous</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#relationship-among-service-level-dscp-value-type-of-service-tos-traffic-class-pfc-priority"><span class="nav-text">Relationship among Service Level, DSCP Value, Type of Service (ToS), Traffic Class, PFC Priority</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#check-dcqcn-is-functioning"><span class="nav-text">Check DCQCN is functioning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#check-pfc-is-functioning"><span class="nav-text">Check PFC is functioning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#read-performance-counters-on-nics"><span class="nav-text">Read Performance Counters on NICs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#failed-to-map-roce-traffic-to-specified-pfc-priority"><span class="nav-text">Failed to map RoCE traffic to specified PFC Priority</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">52</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://victoryang00.cn/wordpress/" title="https:&#x2F;&#x2F;victoryang00.cn&#x2F;wordpress&#x2F;" rel="noopener" target="_blank">victoryang</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-07-24 02:02:17 / Modified: 02:02:25" itemprop="dateCreated datePublished" datetime="2023-07-24T02:02:17+08:00">2023-07-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observed that the system would suffer severe performance fluctuation if disabling PFC under certain scenarios.</p>
+<h2 id="l2-pfc-v.s.-l3-pfc">L2 PFC v.s. L3 PFC</h2>
+<p>It is recommended to set up L3 PFC since L2 PFC expects us to properly configure VLAN because it relies on something embedded in VLAN headers.</p>
+<h2 id="prerequisite">****Prerequisite****</h2>
+<p>If the network traffic goes through network switches, ensure <strong>L3 PFC</strong> and <strong>ECN</strong> are enabled on switches. We omitted the detailed steps to configure switches here as they depend on the particular Switch OS.</p>
+<p>It is worth mentioning that we could set up a direct connection between two nodes to eliminate the effects caused by network switches.</p>
+<h2 id="steps">Steps</h2>
+<h3 id="enable-dcqcn">Enable DCQCN</h3>
+<p>DCQCN is enabled by default on ConnextX NICs.</p>
+<h3 id="enable-l3-pfc">Enable L3 PFC</h3>
+<p>Firstly, we could check the interface name and device name with <code>show_gids</code>, which should output something like below.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DEV	PORT	INDEX	GID					IPv4  		VER	DEV</span><br><span class="line">---	----	-----	---					------------  	---	---</span><br><span class="line">mlx5_1	1	3	0000:0000:0000:0000:0000:ffff:0ac8:000e	10.200.0.14  	v2	enp216s0f1np1</span><br></pre></td></tr></table></figure>
+<p>Then execute the following commands (root is required): +</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mlnx_qos -i enp216s0f1np1 --trust dscp <span class="comment"># use L3 PFC, default=pcp (L2 PFC)</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;tclass=-1&quot;</span> &gt; /sys/class/infiniband/mlx5_1/tc/1/traffic_class <span class="comment"># clear DSCP settings</span></span><br><span class="line"><span class="built_in">echo</span> 106 &gt; /sys/class/infiniband/mlx5_1/tc/1/traffic_class <span class="comment"># set default ToS (DSCP value * 4) for RoCE traffic</span></span><br><span class="line">cma_roce_tos -d mlx5_1 -t 106 <span class="comment"># set default ToS for RoCE traffic</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --pfc 0,0,0,1,0,0,0,0 <span class="comment"># enable PFC on PFC Priority 3</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --buffer_size=262016,0,0,0,0,0,0,0 <span class="comment"># allocate buffer 0</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --prio2buffer=0,0,0,0,0,0,0,0 <span class="comment"># let all PFC Priorities share buffer 0</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>(Optional) Set alternative TSA</p>
+<p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># set to vendor (default)</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --tsa=vendor,vendor,vendor,vendor,vendor,vendor,vendor,vendor</span><br><span class="line"><span class="comment"># set to ets</span></span><br><span class="line">mlnx_qos -i enp216s0f1np1 --tsa=ets,ets,ets,ets,ets,ets,ets,ets --tcbw=0,0,0,100,0,0,0,0</span><br></pre></td></tr></table></figure></p></li>
+<li><p>(Optional) Remap DSCP value to specified PFC Priority</p>
+<p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mlnx_qos -i enp216s0f1np1 --dcsp2prio=<span class="string">&#x27;set,3,3&#x27;</span> <span class="comment"># Map DSCP 3 to Prio 3</span></span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<p>Lastly, we could check the current configuration with <code>mlnx_qos -i enp216s0f1np1</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">DCBX mode: OS controlled</span><br><span class="line">Priority trust state: dscp</span><br><span class="line">dscp2prio mapping:</span><br><span class="line">	prio:0 dscp:07,06,05,04,03,02,01,00,</span><br><span class="line">	prio:1 dscp:15,14,13,12,11,10,09,08,</span><br><span class="line">	prio:2 dscp:23,22,21,20,19,18,17,16,</span><br><span class="line">	prio:3 dscp:31,30,29,28,27,26,25,24,</span><br><span class="line">	prio:4 dscp:39,38,37,36,35,34,33,32,</span><br><span class="line">	prio:5 dscp:47,46,45,44,43,42,41,40,</span><br><span class="line">	prio:6 dscp:55,54,53,52,51,50,49,48,</span><br><span class="line">	prio:7 dscp:63,62,61,60,59,58,57,56,</span><br><span class="line">default priority:</span><br><span class="line">Receive buffer size (bytes): 262016,0,0,0,0,0,0,0,</span><br><span class="line">Cable len: 7</span><br><span class="line">PFC configuration:</span><br><span class="line">	priority    0   1   2   3   4   5   6   7</span><br><span class="line">	enabled     0   0   0   1   0   0   0   0</span><br><span class="line">	buffer      0   0   0   0   0   0   0   0</span><br><span class="line">tc: 1 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  0</span><br><span class="line">tc: 0 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  1</span><br><span class="line">tc: 2 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  2</span><br><span class="line">tc: 3 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  3</span><br><span class="line">tc: 4 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  4</span><br><span class="line">tc: 5 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  5</span><br><span class="line">tc: 6 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  6</span><br><span class="line">tc: 7 ratelimit: unlimited, tsa: vendor</span><br><span class="line">	 priority:  7</span><br></pre></td></tr></table></figure>
+<h2 id="miscellaneous">Miscellaneous</h2>
+<h3 id="relationship-among-service-level-dscp-value-type-of-service-tos-traffic-class-pfc-priority">Relationship among Service Level, DSCP Value, Type of Service (ToS), Traffic Class, PFC Priority</h3>
+<ul>
+<li>Service Level is a concept of Infiniband networks. Not related to RoCE networks.</li>
+<li>Traffic Class could refer to either DSCP Value or PFC Priority.</li>
+<li>For L3 PFC, <code>ToS &gt;&gt; 2 = DSCP Value</code>. (e.g., ToS 106 is equivalent to DSCP 26)</li>
+<li>There is a table (shown by <code>mlnx_qos</code>) mapping DSCP Value to PFC Priority. (e.g., In the above case, DSCP 26 is mapped to Priority 3)</li>
+</ul>
+<h3 id="check-dcqcn-is-functioning">Check DCQCN is functioning</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Check DCQCN is enabled on Prio 3</span></span><br><span class="line">cat /sys/class/net/enp216s0f1np1/ecn/roce_np/<span class="built_in">enable</span>/3</span><br><span class="line">cat /sys/class/net/enp216s0f1np1/ecn/roce_rp/<span class="built_in">enable</span>/3</span><br><span class="line"></span><br><span class="line"><span class="comment"># Check counters related to DCQCN</span></span><br><span class="line">cat /sys/class/infiniband/mlx5_1/ports/1/hw_counters/np_cnp_sent</span><br><span class="line">cat /sys/class/infiniband/mlx5_1/ports/1/hw_counters/np_ecn_marked_roce_packets</span><br><span class="line">/sys/class/infiniband/mlx5_1/ports/1/hw_counters/rp_cnp_handled</span><br></pre></td></tr></table></figure>
+<p>Note: Two cases triggering NP to send CNP packets:</p>
+<ul>
+<li>NP’s NIC receives a packet with an ECN mark (marked by the switch indicating the switch’s buffer is about to be out of capacity).</li>
+<li>NP’s NIC receives an out-of-order packet (packet loss occurred).</li>
+</ul>
+<h3 id="check-pfc-is-functioning">Check PFC is functioning</h3>
+<p>Use command <code>ethtool -S enp216s0f1np1 | grep prio3</code>. Here is an example output.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">rx_prio3_bytes: 462536457742</span><br><span class="line">rx_prio3_packets: 500098087</span><br><span class="line">rx_prio3_discards: 0</span><br><span class="line">tx_prio3_bytes: 1180912512618</span><br><span class="line">tx_prio3_packets: 1155032777</span><br><span class="line">rx_prio3_pause: 214479</span><br><span class="line">rx_prio3_pause_duration: 213496</span><br><span class="line">tx_prio3_pause: 12</span><br><span class="line">tx_prio3_pause_duration: 13</span><br><span class="line">rx_prio3_pause_transition: 107222</span><br></pre></td></tr></table></figure>
+<h3 id="read-performance-counters-on-nics">Read Performance Counters on NICs</h3>
+<p>Refer to this article: <a target="_blank" rel="noopener" href="https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters">https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters</a>.</p>
+<h3 id="failed-to-map-roce-traffic-to-specified-pfc-priority">Failed to map RoCE traffic to specified PFC Priority</h3>
+<p>Consider upgrading OFED drivers. And inspect the source code. <code>ibv_modify_qp</code> and <code>ibv_qp_attr.ah_attr.grh.traffic_class</code> may override default ToS Value.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/networking/pages/viewpage.action?pageId=39264632">https://docs.nvidia.com/networking/pages/viewpage.action?pageId=39264632</a></li>
+<li><a target="_blank" rel="noopener" href="https://enterprise-support.nvidia.com/s/article/lossless-roce-configuration-for-linux-drivers-in-dscp-based-qos-mode">https://enterprise-support.nvidia.com/s/article/lossless-roce-configuration-for-linux-drivers-in-dscp-based-qos-mode</a></li>
+<li><a target="_blank" rel="noopener" href="https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters">https://enterprise-support.nvidia.com/s/article/understanding-mlx5-linux-counters-and-status-parameters</a></li>
+<li><a target="_blank" rel="noopener" href="https://support.huawei.com/enterprise/zh/doc/EDOC1100197616/3dfff4ec">https://support.huawei.com/enterprise/zh/doc/EDOC1100197616/3dfff4ec</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rdmamojo.com/2013/01/12/ibv_modify_qp/">https://www.rdmamojo.com/2013/01/12/ibv_modify_qp/</a></li>
+<li><a target="_blank" rel="noopener" href="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p523.pdf">https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p523.pdf</a></li>
+<li>An incoming SIGCOMM’23 paper</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/" title="Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs">https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
