@@ -886,7 +886,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Egress:</span><br><span class="line">ToS -----------------------&gt; DSCP / dot11p </span><br><span class="line">    (ToS &gt;&gt; 2 = DSCP Value)</span><br><span class="line"></span><br><span class="line">Ingress:</span><br><span class="line">DSCP / dot11p -----------------&gt; Priority ----------------&gt; Traffic Class</span><br><span class="line">               (Mapping Table)             (Mapping Table)</span><br></pre></td></tr></table></figure>
 <p>Note: the definition of terms may vary from vendor to vendor.</p>
-<h2 id="prerequisite">****Prerequisite****</h2>
+<h2 id="prerequisite">Prerequisite</h2>
 <p>If network traffic goes through network switches, ensure <strong>L3 PFC</strong> and <strong>ECN</strong> are enabled on switches. We omitted the detailed steps to configure switches here as they depend on the particular switch SKU and OS.</p>
 <p>Note: we could set up a direct connection to test whether our configuration on NICs works or not.</p>
 <h2 id="steps">Steps</h2>
