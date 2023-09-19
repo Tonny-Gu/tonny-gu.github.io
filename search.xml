@@ -1029,7 +1029,7 @@
 <h2 id="optional-step-2.-reinstall-nvidia-docker-runtime">(Optional) Step 2. Reinstall NVIDIA Docker Runtime</h2>
 <p>The previous step will also remove NVIDIA Docker Runtime, which may lead to this error if you use Docker.</p>
 <blockquote>
-<p><code>Error response from daemon: Cannot restart container ...: could not select device driver "" with capabilities: [[gpu]]</code></p>
+<p>Error response from daemon: Cannot restart container ...: could not select device driver "" with capabilities: [[gpu]]</p>
 </blockquote>
 <p>Thus, we need to install it back too.</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install -y nvidia-container-toolkit</span><br></pre></td></tr></table></figure>
@@ -1297,47 +1297,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>Hexo 第二次魔改记录</title>
-    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
-<h2 id="接入cdn">接入CDN</h2>
-<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
-<h2 id="主题美化">主题美化</h2>
-<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
-<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
-<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
-<h2 id="总结">总结</h2>
-<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
-<ul>
-<li>加载进度条</li>
-<li>阅读进度条</li>
-<li>文章目录</li>
-<li>访问量统计</li>
-<li>版权声明</li>
-<li>图片缩放</li>
-</ul>
-<p>以及速度优化</p>
-<ul>
-<li>CDN</li>
-<li>Lazyload</li>
-<li>PJAX局部刷新</li>
-<li>HTTP2 + HSTS</li>
-</ul>
-<figure>
-<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<figure>
-<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
-<hr />
-<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
-<figure>
-<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-]]></content>
-  </entry>
-  <entry>
     <title>Hexo 第一次魔改全记录</title>
     <url>/2020/01/12/Hexo-%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%AD%94%E6%94%B9%E5%85%A8%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h2 id="hexo-pug-主题修改-非典型教程">Hexo Pug 主题修改 非典型教程</h2>
@@ -1449,6 +1408,47 @@
         <tag>Hexo</tag>
         <tag>Pug</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>Hexo 第二次魔改记录</title>
+    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
+<h2 id="接入cdn">接入CDN</h2>
+<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
+<h2 id="主题美化">主题美化</h2>
+<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
+<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
+<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
+<h2 id="总结">总结</h2>
+<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
+<ul>
+<li>加载进度条</li>
+<li>阅读进度条</li>
+<li>文章目录</li>
+<li>访问量统计</li>
+<li>版权声明</li>
+<li>图片缩放</li>
+</ul>
+<p>以及速度优化</p>
+<ul>
+<li>CDN</li>
+<li>Lazyload</li>
+<li>PJAX局部刷新</li>
+<li>HTTP2 + HSTS</li>
+</ul>
+<figure>
+<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure>
+<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
+<hr />
+<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
+<figure>
+<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+]]></content>
   </entry>
   <entry>
     <title>How to make an unattended Ubuntu Server Installation ISO with cloud-init</title>
