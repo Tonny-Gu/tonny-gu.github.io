@@ -269,9 +269,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-09-19 23:28:54 / Modified: 23:34:02" itemprop="dateCreated datePublished" datetime="2023-09-19T23:28:54+08:00">2023-09-19</time>
+      <time title="Created: 2023-09-19 23:28:54" itemprop="dateCreated datePublished" datetime="2023-09-19T23:28:54+08:00">2023-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2023-09-20 01:19:20" itemprop="dateModified" datetime="2023-09-20T01:19:20+08:00">2023-09-20</time>
     </span>
 
   
@@ -336,9 +342,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-07-24 02:02:17 / Modified: 02:05:40" itemprop="dateCreated datePublished" datetime="2023-07-24T02:02:17+08:00">2023-07-24</time>
+      <time title="Created: 2023-07-24 02:02:17" itemprop="dateCreated datePublished" datetime="2023-07-24T02:02:17+08:00">2023-07-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Last updated on</span>
+      <time title="Modified: 2023-09-20 01:18:45" itemprop="dateModified" datetime="2023-09-20T01:18:45+08:00">2023-09-20</time>
     </span>
 
   
@@ -351,7 +363,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>DCQCN is a congestion control algorithm for RoCE networks, and it is implemented on hardware. According to the original paper, PFC is required to guarantee the network is lossless, and we also observed that the system would suffer severe performance fluctuation if disabling PFC under certain scenarios.</p>
+          <p>RoCE networks, a high-performance implementation of RDMA networks, offload flow control and congestion control algorithms to hardware to achieve high performance. However, these algorithms target lossless networks so they can be simple enough to implement on hardware. Thus, we should mitigate packet loss issues and guarantee lossless networks to our best. DCQCN (Congestion Control) + PFC (Flow Control) is a common option for many data centers. We observed that our system would suffer severe performance fluctuation if disabling them.</p>
           <!--noindex-->
           <!--/noindex-->
         
