@@ -20,27 +20,25 @@
   <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
-<meta name="description" content="CMake和GCC+NVCC+OpenMPI那一套屁事没有，但CMake和PGI+NVCC+OpenMPI就经常出现各种各样的毛病，哦现在PGI改名叫NVIDIA HPC SDK了，改名也只是把错误信息改了改，反正还是照样报错。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="修复NVIDIA HPC SDK与CMake兼容问题">
-<meta property="og:url" content="https://nekodaemon.com/2021/01/10/%E4%BF%AE%E5%A4%8DNVIDIA-HPC-SDK%E4%B8%8ECMake%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98/index.html">
+<meta name="description" content="人菜精神在，瘾大技术烂">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NekoDaemon&#39;s Blog">
+<meta property="og:url" content="https://nekodaemon.com/archives/2023/09/index.html">
 <meta property="og:site_name" content="NekoDaemon&#39;s Blog">
-<meta property="og:description" content="CMake和GCC+NVCC+OpenMPI那一套屁事没有，但CMake和PGI+NVCC+OpenMPI就经常出现各种各样的毛病，哦现在PGI改名叫NVIDIA HPC SDK了，改名也只是把错误信息改了改，反正还是照样报错。">
+<meta property="og:description" content="人菜精神在，瘾大技术烂">
 <meta property="og:locale">
-<meta property="article:published_time" content="2021-01-10T01:13:28.000Z">
-<meta property="article:modified_time" content="2021-01-10T09:15:07.000Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://nekodaemon.com/2021/01/10/%E4%BF%AE%E5%A4%8DNVIDIA-HPC-SDK%E4%B8%8ECMake%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98/">
+<link rel="canonical" href="https://nekodaemon.com/archives/2023/09/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/01/10/%E4%BF%AE%E5%A4%8DNVIDIA-HPC-SDK%E4%B8%8ECMake%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98/","path":"2021/01/10/修复NVIDIA-HPC-SDK与CMake兼容问题/","title":"修复NVIDIA HPC SDK与CMake兼容问题"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"neko","comments":"","permalink":"","path":"archives/2023/09/index.html","title":""}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>修复NVIDIA HPC SDK与CMake兼容问题 | NekoDaemon's Blog</title>
+<title>Archive | NekoDaemon's Blog</title>
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
   <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
@@ -74,7 +72,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <p class="site-title">NekoDaemon's Blog</p>
+      <h1 class="site-title">NekoDaemon's Blog</h1>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -136,7 +134,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+    <div class="sidebar-inner sidebar-overview-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Sections
@@ -149,7 +147,6 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%BE%E4%B8%8D%E5%88%B0cuda-toolkit"><span class="nav-text">找不到CUDA Toolkit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nvcc%E4%B8%8D%E5%85%BC%E5%AE%B9%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-text">NVCC不兼容编译器</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -239,103 +236,51 @@
 </noscript>
 
 
-    <div class="main-inner post posts-expand">
+    <div class="main-inner archive posts-collapse">
 
 
   
-
-
-<div class="post-block">
   
   
+  <div class="post-block">
+    <div class="post-content">
+      <div class="collection-title">
+        
+        <span class="collection-header">Nice! 53 posts in total. Keep on posting.</span>
+      </div>
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/01/10/%E4%BF%AE%E5%A4%8DNVIDIA-HPC-SDK%E4%B8%8ECMake%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="NekoDaemon">
-      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="NekoDaemon's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          修复NVIDIA HPC SDK与CMake兼容问题
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
       
-
-      <time title="Created: 2021-01-10 09:13:28 / Modified: 17:15:07" itemprop="dateCreated datePublished" datetime="2021-01-10T09:13:28+08:00">2021-01-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-        <p><code>CMake</code>和<code>GCC</code>+<code>NVCC</code>+<code>OpenMPI</code>那一套屁事没有，但<code>CMake</code>和<code>PGI</code>+<code>NVCC</code>+<code>OpenMPI</code>就经常出现各种各样的毛病，哦现在<code>PGI</code>改名叫<code>NVIDIA HPC SDK</code>了，改名也只是把错误信息改了改，反正还是照样报错。</p>
-<h2 id="找不到cuda-toolkit">找不到CUDA Toolkit</h2>
-<p><code>CMake</code>报<code>Could NOT find CUDA (missing: CUDA_INCLUDE_DIRS CUDA_CUDART_LIBRARY)</code>这样的错误，可以通过手动指定<code>CUDA Toolkit</code>的目录解决。有趣的是<code>NVIDIA HPC SDK</code>里自带的精简版<code>CUDA Toolkit</code>是可以给<code>CMake</code>使用的。</p>
-<p>给<code>CMake</code>指定参数<code>CUDA_TOOLKIT_ROOT_DIR</code>，比如：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用NVIDIA HPC SDK里自带的精简版Toolkit</span></span><br><span class="line">cmake -DCUDA_TOOLKIT_ROOT_DIR=/home/apac/hpc_sdk/Linux_x86_64/2020/cuda/11.0</span><br><span class="line"><span class="comment"># 或者使用常规方法安装的Toolkit</span></span><br><span class="line">cmake -DCUDA_TOOLKIT_ROOT_DIR=/usr/<span class="built_in">local</span>/cuda-11.0</span><br></pre></td></tr></table></figure>
-<h2 id="nvcc不兼容编译器">NVCC不兼容编译器</h2>
-<p>在<code>make</code>的时候报错<code>nvcc fatal   : Unsupported PGI compiler found.  pgc++ is the only PGI compiler that is supported.</code>或者<code>Host compiler targets unsupported OS</code>，这个时候可以通过<code>make VERBOSE=1</code>来输出更多调试信息。</p>
-<p>在输出中的出错的那几句话中找到调用<code>nvcc</code>的命令，然后找名为<code>--ccbin</code>的参数，这个参数可能会被愚蠢的<code>CMake</code>设置成了<code>gcc</code>或者<code>nvc</code>等一票C编译器而不是C++编译器，因此通过手动指定一个Host端的C++编译器可以解决问题。</p>
-<p>给CMake指定参数<code>DCUDA_HOST_COMPILER</code>，比如：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用mpic++包装的C++编译器</span></span><br><span class="line">cmake -DCUDA_HOST_COMPILER=$(<span class="built_in">which</span> mpic++)</span><br></pre></td></tr></table></figure>
-
+    <div class="collection-year">
+      <span class="collection-header">2023</span>
     </div>
 
-    
-    
-    
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+      <div class="post-meta-container">
+        <time itemprop="dateCreated"
+              datetime="2023-09-19T23:28:54+08:00"
+              content="2023-09-19">
+          09-19
+        </time>
+      </div>
 
-    <footer class="post-footer">
-          
+      <div class="post-title">
+          <a class="post-title-link" href="/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/" itemprop="url">
+            <span itemprop="name">Fix corrupted NVIDIA Driver after Upgrading / Downgrading Ubuntu Kernel</span>
+          </a>
+      </div>
 
-<div class="post-copyright">
-<ul>
-  <li class="post-copyright-author">
-      <strong>Author:  </strong>NekoDaemon
-  </li>
-  <li class="post-copyright-link">
-      <strong>Link: </strong>
-      <a href="https://nekodaemon.com/2021/01/10/%E4%BF%AE%E5%A4%8DNVIDIA-HPC-SDK%E4%B8%8ECMake%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98/" title="修复NVIDIA HPC SDK与CMake兼容问题">https://nekodaemon.com/2021/01/10/修复NVIDIA-HPC-SDK与CMake兼容问题/</a>
-  </li>
-  <li class="post-copyright-license">
-    <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
-  </li>
-</ul>
-</div>
-
-
-        
-
-    </footer>
+      
+    </header>
   </article>
-</div>
 
 
+    </div>
+  </div>
+  
+  
+  
 
-
-
-
-    <div class="comments utterances-container"></div>
 </div>
   </main>
 

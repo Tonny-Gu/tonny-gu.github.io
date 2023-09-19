@@ -532,53 +532,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
-    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
-    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
-<figure>
-<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<h2 id="preparing-environment">Preparing Environment</h2>
-<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
-<h2 id="compile-the-source-code">Compile the source code</h2>
-<p>First of all, configure the project and build it.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
-<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
-<p>As for the bazel build flag,</p>
-<ul>
-<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
-<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
-</ul>
-<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
-<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
-<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
-<p>Let pick a simple test first to validate the code is compiled correctly.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
-<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
-<p>Then pick a test you interest, and repeat the steps above.</p>
-<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
-<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
-<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
-<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h2 id="configuring-vscode">Configuring VSCode</h2>
-<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
-<blockquote>
-<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
-</blockquote>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
-<h2 id="reference">Reference</h2>
-<ul>
-<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
-<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>Easy way to build a virtual cluster with KVM</title>
     <url>/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</url>
     <content><![CDATA[<p><em>Updated on 16 May, 2021.</em> The quality of the original version is not satisfying. I've rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.</p>
@@ -814,6 +767,53 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
+    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
+    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
+<figure>
+<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="preparing-environment">Preparing Environment</h2>
+<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
+<h2 id="compile-the-source-code">Compile the source code</h2>
+<p>First of all, configure the project and build it.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
+<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
+<p>As for the bazel build flag,</p>
+<ul>
+<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
+<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
+</ul>
+<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
+<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
+<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
+<p>Let pick a simple test first to validate the code is compiled correctly.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
+<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
+<p>Then pick a test you interest, and repeat the steps above.</p>
+<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
+<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
+<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
+<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="configuring-vscode">Configuring VSCode</h2>
+<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
+<blockquote>
+<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
+<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Easy ways to setup Reverse Proxy for NAT-Passthrough</title>
     <url>/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</url>
     <content><![CDATA[<p>It's time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it's possible to set up a reliable reverse proxy with single command.</p>
@@ -1000,6 +1000,43 @@
 <ul>
 <li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/mpi.html#inter-gpu-communication-with-cuda-aware-mpi">NCCL and MPI — NCCL 2.11.4 documentation (nvidia.com)</a></li>
 <li><a href="https://developer.nvidia.com/blog/fast-multi-gpu-collectives-nccl/">Fast Multi-GPU collectives with NCCL</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>Fix corrupted NVIDIA Driver after Upgrading / Downgrading Ubuntu Kernel</title>
+    <url>/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/</url>
+    <content><![CDATA[<p>One day, you rebooted your server and suddenly found your cute GPUs had all disappeared. Then you executed <code>nvidia-smi</code> to see what was going on, but you only got this error message.</p>
+<blockquote>
+<p>NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.</p>
+</blockquote>
+<p>I know what you're gonna say: Nvidia F*** You!</p>
+<h2 id="causes">Causes</h2>
+<p>Actually, I encountered this problem many times. It is most likely caused by upgrading or downgrading the Linux kernel without properly generating kernel modules, which might be essential parts of GPU drivers.</p>
+<h2 id="step-0.-check-system-status">Step 0. Check System Status</h2>
+<p>Right now <code>nvidia</code> module is supposed not to be loaded (Could check with <code>lsmod | grep nvidia</code>). We could try to load the kernel manually.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo modprobe nvidia</span><br></pre></td></tr></table></figure>
+<p>You should get an error message like this.</p>
+<blockquote>
+<p>modprobe: FATAL: Module nvidia not found in directory /lib/modules/5.15.0-84-generic</p>
+</blockquote>
+<p>Meanwhile, check whether <code>/usr/lib/modules/5.15.0-84-generic/updates/dkms/nvidia.ko</code> is missing.</p>
+<p>If you don’t see the error message above and that kernel module file does exist, you might have other issues, such as hardware failure. At this time, try to read kernel logs through <code>dmesg</code> and check the existence of GPUs through <code>lspci -vvv</code>, which should give you some clues.</p>
+<h2 id="step-1.-reinstall-dkms-and-nvidia-drivers">Step 1. Reinstall DKMS and NVIDIA Drivers</h2>
+<p>DKMS, a utility that manages drivers, as well as NVIDIA Drivers, might be broken. We could fix them by removing them first and installing them back later.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo rm -r /var/lib/dkms/nvidia</span><br><span class="line">sudo apt install --reinstall dkms</span><br><span class="line">sudo apt autoremove --purge nvidia* cuda*</span><br><span class="line"></span><br><span class="line"><span class="comment"># Please refer to https://developer.nvidia.com/cuda-downloads to install the latest CUDA toolkits</span></span><br><span class="line"><span class="comment"># Commands below work only on Ubuntu 22.04</span></span><br><span class="line">wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb</span><br><span class="line">sudo dpkg -i cuda-keyring_1.1-1_all.deb</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cuda</span><br></pre></td></tr></table></figure>
+<p>Note: Installing the full CUDA Toolkits is the <strong>only</strong> way I recommend to install drivers. Using the drivers provided by the Ubuntu official repo is <strong>NOT</strong> recommended.</p>
+<h2 id="optional-step-2.-reinstall-nvidia-docker-runtime">(Optional) Step 2. Reinstall NVIDIA Docker Runtime</h2>
+<p>The previous step will also remove NVIDIA Docker Runtime, which may lead to this error if you use Docker.</p>
+<blockquote>
+<p><code>Error response from daemon: Cannot restart container ...: could not select device driver "" with capabilities: [[gpu]]</code></p>
+</blockquote>
+<p>Thus, we need to install it back too.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt install -y nvidia-container-toolkit</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://askubuntu.com/questions/1122512/nvidia-modules-are-missing-after-each-kernel-upgrade-in-18-04">https://askubuntu.com/questions/1122512/nvidia-modules-are-missing-after-each-kernel-upgrade-in-18-04</a></li>
+<li><a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html</a></li>
 </ul>
 ]]></content>
   </entry>
@@ -1260,6 +1297,47 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Hexo 第二次魔改记录</title>
+    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
+<h2 id="接入cdn">接入CDN</h2>
+<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
+<h2 id="主题美化">主题美化</h2>
+<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
+<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
+<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
+<h2 id="总结">总结</h2>
+<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
+<ul>
+<li>加载进度条</li>
+<li>阅读进度条</li>
+<li>文章目录</li>
+<li>访问量统计</li>
+<li>版权声明</li>
+<li>图片缩放</li>
+</ul>
+<p>以及速度优化</p>
+<ul>
+<li>CDN</li>
+<li>Lazyload</li>
+<li>PJAX局部刷新</li>
+<li>HTTP2 + HSTS</li>
+</ul>
+<figure>
+<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<figure>
+<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
+<hr />
+<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
+<figure>
+<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+]]></content>
+  </entry>
+  <entry>
     <title>Hexo 第一次魔改全记录</title>
     <url>/2020/01/12/Hexo-%E7%AC%AC%E4%B8%80%E6%AC%A1%E9%AD%94%E6%94%B9%E5%85%A8%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h2 id="hexo-pug-主题修改-非典型教程">Hexo Pug 主题修改 非典型教程</h2>
@@ -1371,47 +1449,6 @@
         <tag>Hexo</tag>
         <tag>Pug</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Hexo 第二次魔改记录</title>
-    <url>/2020/05/20/Hexo-%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</url>
-    <content><![CDATA[<p>为了迎接即将来临的本博客成功活过一周内的大喜日子，我决定全面魔改博客以表示庆祝。这一次魔改博客主要的目标是提升浏览体验，切入点是链路质量和美化博客。</p>
-<h2 id="接入cdn">接入CDN</h2>
-<p>博客当前扔在<del>白嫖来的</del>腾讯云香港VPS上，<del>不过这个博客都是用Docker打包好的，随时可以跑路</del>。腾讯云香港的链路质量一言难尽，好的时候是真的好，烂的时候是真的烂，基本上和4G上网和4G回落2G上网的体验差不多。香港CN2应该早就被广大劳动人民玩坏了。另外比较坑的一点是有传言腾讯云会干扰SSL，本站<del>顺手</del>使用极为先进的HTTPS沦为极为卡顿的原因之一。所以找了一阵子免备案免信用卡按量计费的CDN，CloudFlare就不说了还不如不用，CloudCone的表现和不挂CDN差不多（主观感受），现在用的UDomain的China Routing CDN，在CN2卡得不能自理的时候，还可以提供不错的体验。</p>
-<h2 id="主题美化">主题美化</h2>
-<p>之前用的主题是<code>Terminal</code>魔改版，说实话我挺喜欢这个主题的风格的，美中不足的就是缺功能，没有目录等常见功能。所以最后选择了完成度很高的<del>烂大街的</del><code>NexT.Gemini</code>，为了避免博客主题Hash碰撞，<del>不被一眼就看出来是什么大路货主题</del>，决定魔改这个主题，并且继承<code>Terminal</code>的设计风格，<del>复制粘贴CSS</del>。另外还参考了这学期写作业用的<code>Typora</code>主题<code>typora-markdown-resume</code>。</p>
-<p>下面是一部分对该主题的调整内容 - 强制文章标题使用<code>h1</code>标签 - 添加<code>utterances</code>评论模块 - 调整版权声明的颜色 - 调整正文的字间距，粗细，大小，字体，颜色 - 调整导航菜单的边距 - 调整导航菜单字体粗细，大小，颜色 - 调整导航栏的背景颜色 - 调整标题字体的粗细 - 修改<code>h2</code>标签的风格 - 使用圆角矩形，添加阴影 - 调整正文页的最大宽度，页边距 - 调整圆角矩形间距 - 调整页面和正文的背景颜色</p>
-<p>最后，看起来很像<code>Terminal</code>主题和<code>typora-markdown-resume</code>主题的<code>NexT.Gemini Remix</code>主题就这么诞生了。</p>
-<h2 id="总结">总结</h2>
-<p>这波操作给博客带来了一堆功能更新和界面优化（特别是移动端），包括但不限于</p>
-<ul>
-<li>加载进度条</li>
-<li>阅读进度条</li>
-<li>文章目录</li>
-<li>访问量统计</li>
-<li>版权声明</li>
-<li>图片缩放</li>
-</ul>
-<p>以及速度优化</p>
-<ul>
-<li>CDN</li>
-<li>Lazyload</li>
-<li>PJAX局部刷新</li>
-<li>HTTP2 + HSTS</li>
-</ul>
-<figure>
-<img data-src="/images/pasted-37.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<figure>
-<img data-src="/images/pasted-38.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<p>把CDN配置为全球网络优化Google PageSpeed的分数会更高一些（当前是只针对中国链路优化）</p>
-<hr />
-<p>2020.5.22更新。CDN回源策略从HTTPS回源改成了HTTP回源，降低后端响应时间（虽然还是很长，毕竟CDN的回源时间还在）。</p>
-<figure>
-<img data-src="/images/pasted-45.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-]]></content>
   </entry>
   <entry>
     <title>How to make an unattended Ubuntu Server Installation ISO with cloud-init</title>
@@ -3020,83 +3057,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
-    <title>滥用Docker容器当作虚拟机的方法</title>
-    <url>/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</url>
-    <content><![CDATA[<p>把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。</p>
-<h2 id="注意事项">注意事项</h2>
-<h3 id="best-practice">Best Practice</h3>
-<p>理想情况下Docker Image最好使用Dockerfile来构建。把Docker Container当做虚拟机来构建Docker Image这个方法虽然非常省事，但该方法很容易做出来很大一坨镜像，很不轻量，所以仅推荐在测试时使用，不推荐在正式场合（如企业的生产环境）使用。</p>
-<h3 id="权限问题">权限问题</h3>
-<p>Docker的安装和使用（创建销毁容器等）都需要超级用户权限。若非系统管理员，务必确认环境里已经安装了Docker和拥有Docker的使用权限（已加入<code>docker</code>用户组）</p>
-<p>注：Docker也有Rootless模式，但需要额外的配置。</p>
-<h2 id="基础知识">基础知识</h2>
-<h3 id="容器与镜像">容器与镜像</h3>
-<p>镜像可以说是容器在某一个时刻的所有文件数据，包括运行环境，程序，临时文件等。而容器才是能产生进程运行程序的东西。所以镜像是静态的，容器是动态的。他们的生命周期和转换关系如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      |---------push--&gt; (Docker Hub)</span><br><span class="line">      |---------save--&gt; (tar File)</span><br><span class="line">      |</span><br><span class="line">Docker Image----run---&gt; Docker Container    </span><br><span class="line">      ↑                       |</span><br><span class="line">      |---------commit--------|</span><br><span class="line">      |---------pull----(Docker Hub)</span><br><span class="line">      |---------load----(tar File)</span><br><span class="line">      |---------build---(Dockerfile)</span><br></pre></td></tr></table></figure>
-<h3 id="命名">命名</h3>
-<p>容器的名字没有太多讲究，镜像名字的构成是：<code>镜像名:Tag</code>，如<code>Ubuntu:18.04</code>的镜像名是<code>Ubuntu</code>，Tag是<code>18.04</code>。</p>
-<h3 id="其他实用命令">其他实用命令</h3>
-<ul>
-<li><code>docker ps</code> 查看运行中的容器
-<ul>
-<li><code>docker ps -a</code> 查看所有容器（包含未运行的容器）</li>
-</ul></li>
-<li><code>docker rm -f</code> 删除容器</li>
-<li><code>docker images</code> 查看已下载的镜像</li>
-<li><code>docker pull</code> 下载镜像</li>
-<li><code>docker rmi</code> 删除镜像</li>
-</ul>
-<h3 id="dockerhub下载加速">DockerHub下载加速</h3>
-<p>暂未找到什么很好的加速方法</p>
-<h2 id="创建容器">创建容器</h2>
-<p>推荐命令：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always ubuntu:18.04 bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>-d</code> + <code>-i</code> + <code>bash</code> 组合会启动容器里的<code>bash</code>，目的是让容器挂在后台</li>
-<li><code>--restart always</code> 主机重启后自动启动容器，挂在后台</li>
-<li><code>ubuntu:18.04</code> 推荐使用Ubuntu 18.04镜像</li>
-<li><code>--privileged</code> 允许容器使用更多的内核功能</li>
-<li><code>--network host</code> 使用主机网络（禁用网络空间隔离）</li>
-</ul>
-</blockquote>
-<p>也可以使用老黄家的CUDA开发环境镜像：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always --gpus all nvidia/cuda:11.0.3-devel-ubuntu18.04 bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>nvidia/cuda:11.0.3-devel-ubuntu18.04</code> 是包含CUDA 11.0.3对应工具链的Ubuntu 18.04镜像
-<ul>
-<li>镜像的CUDA版本需要和驱动支持的版本对应，<code>nvidia-smi</code> 右上角会显示最高支持的CUDA版本</li>
-<li><code>devel</code>版镜像包含<code>nvcc</code>编译器等工具链，<code>runtime</code>版不含工具链</li>
-</ul></li>
-<li><code>--gpus all</code> 使用所有可用的GPU</li>
-</ul>
-</blockquote>
-<p>所有黄家容器列表：<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
-<h2 id="进入容器交互式bash">进入容器（交互式bash）</h2>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>-i</code> + <code>-t</code> 启动交互式模式</li>
-</ul>
-</blockquote>
-<blockquote>
-<p>进入容器后如果想换apt源，建议使用下面的命令来换，因为镜像为了节约空间，往往不包含文字编辑器</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s#archive.ubuntu.com#mirrors.sustech.edu.cn#g&quot;</span> /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="容器镜像文件的转换">容器、镜像、文件的转换</h2>
-<p>容器到镜像</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker commit your_ct_name your_images_name:your_tag</span><br></pre></td></tr></table></figure>
-<p>镜像到文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker save your_images_name:your_tag -o your_file.tar</span><br></pre></td></tr></table></figure>
-<p>文件到镜像</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker load -i your_file.tar</span><br></pre></td></tr></table></figure>
-]]></content>
-  </entry>
-  <entry>
     <title>快速理解并行 Makefile</title>
     <url>/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/</url>
     <content><![CDATA[<p>本教程为南科大2022年超算校内赛第二题扩展教程，<a href="https://github.com/Tonny-Gu/HelloHPC">赛题的repo</a>。</p>
@@ -3381,6 +3341,83 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <ul>
 <li>https://makefiletutorial.com/</li>
 </ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>滥用Docker容器当作虚拟机的方法</title>
+    <url>/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</url>
+    <content><![CDATA[<p>把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。</p>
+<h2 id="注意事项">注意事项</h2>
+<h3 id="best-practice">Best Practice</h3>
+<p>理想情况下Docker Image最好使用Dockerfile来构建。把Docker Container当做虚拟机来构建Docker Image这个方法虽然非常省事，但该方法很容易做出来很大一坨镜像，很不轻量，所以仅推荐在测试时使用，不推荐在正式场合（如企业的生产环境）使用。</p>
+<h3 id="权限问题">权限问题</h3>
+<p>Docker的安装和使用（创建销毁容器等）都需要超级用户权限。若非系统管理员，务必确认环境里已经安装了Docker和拥有Docker的使用权限（已加入<code>docker</code>用户组）</p>
+<p>注：Docker也有Rootless模式，但需要额外的配置。</p>
+<h2 id="基础知识">基础知识</h2>
+<h3 id="容器与镜像">容器与镜像</h3>
+<p>镜像可以说是容器在某一个时刻的所有文件数据，包括运行环境，程序，临时文件等。而容器才是能产生进程运行程序的东西。所以镜像是静态的，容器是动态的。他们的生命周期和转换关系如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      |---------push--&gt; (Docker Hub)</span><br><span class="line">      |---------save--&gt; (tar File)</span><br><span class="line">      |</span><br><span class="line">Docker Image----run---&gt; Docker Container    </span><br><span class="line">      ↑                       |</span><br><span class="line">      |---------commit--------|</span><br><span class="line">      |---------pull----(Docker Hub)</span><br><span class="line">      |---------load----(tar File)</span><br><span class="line">      |---------build---(Dockerfile)</span><br></pre></td></tr></table></figure>
+<h3 id="命名">命名</h3>
+<p>容器的名字没有太多讲究，镜像名字的构成是：<code>镜像名:Tag</code>，如<code>Ubuntu:18.04</code>的镜像名是<code>Ubuntu</code>，Tag是<code>18.04</code>。</p>
+<h3 id="其他实用命令">其他实用命令</h3>
+<ul>
+<li><code>docker ps</code> 查看运行中的容器
+<ul>
+<li><code>docker ps -a</code> 查看所有容器（包含未运行的容器）</li>
+</ul></li>
+<li><code>docker rm -f</code> 删除容器</li>
+<li><code>docker images</code> 查看已下载的镜像</li>
+<li><code>docker pull</code> 下载镜像</li>
+<li><code>docker rmi</code> 删除镜像</li>
+</ul>
+<h3 id="dockerhub下载加速">DockerHub下载加速</h3>
+<p>暂未找到什么很好的加速方法</p>
+<h2 id="创建容器">创建容器</h2>
+<p>推荐命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always ubuntu:18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-d</code> + <code>-i</code> + <code>bash</code> 组合会启动容器里的<code>bash</code>，目的是让容器挂在后台</li>
+<li><code>--restart always</code> 主机重启后自动启动容器，挂在后台</li>
+<li><code>ubuntu:18.04</code> 推荐使用Ubuntu 18.04镜像</li>
+<li><code>--privileged</code> 允许容器使用更多的内核功能</li>
+<li><code>--network host</code> 使用主机网络（禁用网络空间隔离）</li>
+</ul>
+</blockquote>
+<p>也可以使用老黄家的CUDA开发环境镜像：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always --gpus all nvidia/cuda:11.0.3-devel-ubuntu18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>nvidia/cuda:11.0.3-devel-ubuntu18.04</code> 是包含CUDA 11.0.3对应工具链的Ubuntu 18.04镜像
+<ul>
+<li>镜像的CUDA版本需要和驱动支持的版本对应，<code>nvidia-smi</code> 右上角会显示最高支持的CUDA版本</li>
+<li><code>devel</code>版镜像包含<code>nvcc</code>编译器等工具链，<code>runtime</code>版不含工具链</li>
+</ul></li>
+<li><code>--gpus all</code> 使用所有可用的GPU</li>
+</ul>
+</blockquote>
+<p>所有黄家容器列表：<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
+<h2 id="进入容器交互式bash">进入容器（交互式bash）</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-i</code> + <code>-t</code> 启动交互式模式</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>进入容器后如果想换apt源，建议使用下面的命令来换，因为镜像为了节约空间，往往不包含文字编辑器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s#archive.ubuntu.com#mirrors.sustech.edu.cn#g&quot;</span> /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="容器镜像文件的转换">容器、镜像、文件的转换</h2>
+<p>容器到镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker commit your_ct_name your_images_name:your_tag</span><br></pre></td></tr></table></figure>
+<p>镜像到文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker save your_images_name:your_tag -o your_file.tar</span><br></pre></td></tr></table></figure>
+<p>文件到镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker load -i your_file.tar</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
   <entry>
