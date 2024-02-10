@@ -532,53 +532,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
-    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
-    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
-<figure>
-<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
-</figure>
-<h2 id="preparing-environment">Preparing Environment</h2>
-<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
-<h2 id="compile-the-source-code">Compile the source code</h2>
-<p>First of all, configure the project and build it.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
-<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
-<p>As for the bazel build flag,</p>
-<ul>
-<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
-<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
-</ul>
-<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
-<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
-<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
-<p>Let pick a simple test first to validate the code is compiled correctly.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
-<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
-<p>Then pick a test you interest, and repeat the steps above.</p>
-<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
-<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
-<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
-<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h2 id="configuring-vscode">Configuring VSCode</h2>
-<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
-<blockquote>
-<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
-</blockquote>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
-<h2 id="reference">Reference</h2>
-<ul>
-<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
-<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>Easy way to build a virtual cluster with KVM</title>
     <url>/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</url>
     <content><![CDATA[<p><em>Updated on 16 May, 2021.</em> The quality of the original version is not satisfying. I've rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.</p>
@@ -814,6 +767,53 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
+    <url>/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</url>
+    <content><![CDATA[<p>It would be easier to read the source code if we are aware of the runtime information, including call stacks and variable values. This tutorial introduces how to utilize our powerful VSCode to trace XLA Compiler.</p>
+<figure>
+<img data-src="/images/pasted-82.png" alt="upload successful" /><figcaption>upload successful</figcaption>
+</figure>
+<h2 id="preparing-environment">Preparing Environment</h2>
+<p>Of course we need to download the source code of TensorFlow, and install all the dependencies. I suggest to use Conda to manage the environment, and use build-in GCC on Ubuntu 18.04 (or above, maybe) to build the code. Note that building from source requires about 50GiB of free space.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Fetch Source Code</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/tensorflow/tensorflow.git</span><br><span class="line"><span class="built_in">cd</span> tensorflow</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install dependencies</span></span><br><span class="line">conda create -n tf_dev python numpy wheel -y</span><br><span class="line">conda activate tf_dev</span><br><span class="line">pip install keras_preprocessing</span><br><span class="line">conda install -c conda-forge bazel -y</span><br></pre></td></tr></table></figure>
+<h2 id="compile-the-source-code">Compile the source code</h2>
+<p>First of all, configure the project and build it.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./configure</span><br><span class="line">bazel build --config=dbg //tensorflow/tools/pip_package:build_pip_package</span><br></pre></td></tr></table></figure>
+<p>During the configuration process, it is recommended to choose <strong>ALL</strong> the default options if it is not a must to debug on GPU, since enabling GPU support needs additional configuration (Please refer to <a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">this article</a>) and much more time to compile.</p>
+<p>As for the bazel build flag,</p>
+<ul>
+<li><code>--config=dbg</code> adds debugging symbols. Required.</li>
+<li><code>--config=monolithic</code> should generate the binary code as a single dynamic library. But this option seems to be buggy. Not recommended.</li>
+</ul>
+<p>Compiling TensorFlow is quite time-consuming, and it took about 20min using 48 CPU threads on my server. Time for coffee now.</p>
+<h2 id="pick-a-unit-test-to-compile">Pick a unit test to compile</h2>
+<p>In fact, we don't have to write something in Python frontend to trigger breakpoints inside XLA compiler, as there are already tons of unit tests that covers most of codes and demonstrates the capability of the compiler.</p>
+<p>Let pick a simple test first to validate the code is compiled correctly.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bazel <span class="built_in">test</span> --config=dbg //tensorflow/compiler/xla/tests:tuple_test_cpu</span><br></pre></td></tr></table></figure>
+<p>From the compiling log, we could find the executable file locates at <code>bazel-bin/tensorflow/compiler/xla/tests/tuple_test_cpu</code>. Execute it! If everything works well, the program will print out the message below.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[----------] Global <span class="built_in">test</span> environment tear-down</span><br><span class="line">[==========] 25 tests from 2 <span class="built_in">test</span> suites ran. (3618 ms total)</span><br><span class="line">[  PASSED  ] 25 tests.</span><br></pre></td></tr></table></figure>
+<p>Then pick a test you interest, and repeat the steps above.</p>
+<h2 id="fix-broken-dependency-optional">Fix broken dependency (Optional)</h2>
+<p>Take <code>spmd_partitioner_test</code> as an example. This unit test can be compiled without any error message, but when you directly run the executable, you will see this message.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[ RUN      ] SpmdPartitioningTest.BroadcastAsReplicate3</span><br><span class="line">2021-08-04 10:44:13.324501: I tensorflow/compiler/xla/service/platform_util.cc:72] platform Host present but no XLA compiler available: could not find registered compiler for platform Host -- check target linkage (hint: try adding tensorflow/compiler/jit:xla_cpu_jit as a dependency)</span><br><span class="line">[       OK ] SpmdPartitioningTest.BroadcastAsReplicate3 (6 ms)</span><br></pre></td></tr></table></figure>
+<p>This is because this executable is not linked to a valid backend, which means this executable doesn't contain the code of JIT Execution Environment. The solution is modifying the <code>BUILD</code> file manually to fix the dependency as the message suggests.</p>
+<p>Open the <code>BUILD</code> file in the directory where the unit test locates. In this example, the test <code>tensorflow/compiler/xla/service/spmd/spmd_partitioner_test.cc</code> corresponds to <code>tensorflow/compiler/xla/service/spmd/BUILD</code>. And add this dependency <code>//tensorflow/compiler/jit:xla_cpu_jit</code>.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">tf_cc_test(</span><br><span class="line">    name = <span class="string">&quot;spmd_partitioner_test&quot;</span>,</span><br><span class="line">    srcs = [<span class="string">&quot;spmd_partitioner_test.cc&quot;</span>],</span><br><span class="line">    deps = [</span><br><span class="line">        <span class="string">&quot;:spmd_partitioner&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:util&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla:xla_data_proto_cc&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_casting_utils&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_matchers&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_parser&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_pass_pipeline&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/service:hlo_verifier&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:hlo_test_base&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/xla/tests:xla_internal_test_main&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/compiler/jit:xla_cpu_jit&quot;</span>,</span><br><span class="line">        <span class="string">&quot;//tensorflow/core:test&quot;</span>,</span><br><span class="line">    ],</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="configuring-vscode">Configuring VSCode</h2>
+<p>Since the unit test was built as an executable with debugging symbols, there is nothing special about the configuration of VSCode. Install <code>C/C++</code> Extension, and write the following lines to <code>.vscode/launch.json</code>.</p>
+<blockquote>
+<p>You could open that json file by clicking <code>ctrl/command</code>+<code>shift</code>+<code>p</code>, typing <code>launch.json</code>, and selecting <code>Add Configuration</code> -&gt; <code>C/C++: (gdb) Launch</code></p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;(gdb) Launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;cppdbg&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;request&quot;</span>: <span class="string">&quot;launch&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;program&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;/bazel-bin/tensorflow/compiler/xla/service/spmd/spmd_partitioner_test&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;args&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;stopAtEntry&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;cwd&quot;</span>: <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;environment&quot;</span>: [],</span><br><span class="line">  <span class="attr">&quot;externalConsole&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="attr">&quot;MIMode&quot;</span>: <span class="string">&quot;gdb&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;setupCommands&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;Enable pretty-printing for gdb&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;text&quot;</span>: <span class="string">&quot;-enable-pretty-printing&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;ignoreFailures&quot;</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Everything is all set! Press <code>F5</code> to start debugging.</p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="https://www.tensorflow.org/install/source#ubuntu">https://www.tensorflow.org/install/source#ubuntu</a></li>
+<li><a href="https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md">https://github.com/tensorflow/tensorflow/blob/master/CONTRIBUTING.md</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Easy ways to setup Reverse Proxy for NAT-Passthrough</title>
     <url>/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</url>
     <content><![CDATA[<p>It's time to abandon NPS, Frp, or other solutions that are hard to configure or no longer maintained. Thanks to Docker, it's possible to set up a reliable reverse proxy with single command.</p>
@@ -1020,6 +1020,26 @@
 <li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/mpi.html#inter-gpu-communication-with-cuda-aware-mpi">NCCL and MPI — NCCL 2.11.4 documentation (nvidia.com)</a></li>
 <li><a href="https://developer.nvidia.com/blog/fast-multi-gpu-collectives-nccl/">Fast Multi-GPU collectives with NCCL</a></li>
 </ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>Fastest way to Install WireGuard-Go on Ubuntu 22.04</title>
+    <url>/2024/02/10/Fastest-way-to-Install-WireGuard-Go-on-Ubuntu-22-04/</url>
+    <content><![CDATA[<p>I am surprised that there is no documentation about how to install WireGuard-Go from the Ubuntu official repo via APT, and even the installation process is a little bit tricky.</p>
+<h2 id="prerequisite">Prerequisite</h2>
+<p>This method only applies to <strong>Ubuntu 22.04</strong> (or higher version, maybe), and you should be able to create TUN/TAP devices. For Ubuntu 20.04 or older, the official repo doesn't provide WireGuard-Go.</p>
+<p>Note that if you are allowed to load kernel modules, for example, you are not setting up a VPN inside OpenVZ or Docker Containers, you may consider Kernel Space WireGuard instead of User Space WireGuard (e.g., WireGuard-Go introduced in this post).</p>
+<h2 id="step-1.-install-dependencies">Step 1. Install Dependencies</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install wireguard-go wireguard-tools</span><br></pre></td></tr></table></figure>
+<p>Note: The package <code>wireguard</code> should <strong>NOT</strong> be installed. If you have installed it, just remove it.</p>
+<h2 id="step-2.-create-soft-link-to-binary-file">Step 2. Create Soft Link to Binary File</h2>
+<p>Surprisingly, the binary file installed by <code>apt</code> is named <code>wireguard</code> instead of <code>wireguard-go</code>, which is not recognized by <code>wg-quick</code>. So the workaround here is just simply creating a soft link to <code>wireguard</code> file.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /bin</span><br><span class="line">sudo ln -s wireguard wireguard-go</span><br></pre></td></tr></table></figure>
+<h2 id="step-3.-launch-wireguard-go">Step 3. Launch WireGuard-Go</h2>
+<p>The tutorial about writing the configuration file of <code>wg-quick</code> is omitted here since we can use the same configuration for both Kernel Space and User Space WireGuard, and we can launch WireGuard-Go in the same way as Kernel Space WireGuard using <code>wg-quick</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Configuration file is written to /etc/wireguard/wg0.conf</span></span><br><span class="line">sudo wg-quick up wg0</span><br></pre></td></tr></table></figure>
+<h2 id="optional-step-4.-run-wireguard-go-on-startup">(Optional) Step 4. Run WireGuard-Go on Startup</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo systemctl <span class="built_in">enable</span> wg-quick@wg0</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
   <entry>
@@ -1566,65 +1586,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>How to resize the root LVM partition of Ubuntu</title>
-    <url>/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</url>
-    <content><![CDATA[<p>When we resize the virtual hard disk of a virtual machine or restore a disk image to a larger disk, the free space of the partition detected by Ubuntu will not increase because the partition table is unchanged. In the past, we could easily resize the ext4 root partition with the help of <code>resize2fs</code>. However, things get complex when Ubuntu utilizes LVM partition as their default root partition.</p>
-<h2 id="quick-intro-to-lvm">Quick Intro to LVM</h2>
-<p>Logical Volume Manager (LVM) is similar to Dynamic Disks under Windows, which can take several GPT / MBR partitions on different hard disks as a storage pool (LVM call it Volume Groups, VG), and allocate spaces from this pool, then Linux will recognize each space (LVM call it Logical Volume, LV) as an useable partition.</p>
-<figure>
-<img data-src="/images/pasted-99.png" alt="Lvm Layout" /><figcaption>Lvm Layout</figcaption>
-</figure>
-<p>Thus, we should modify not only <strong>the GPT / MBR partition table</strong>, but also <strong>the LVM configuration</strong>.</p>
-<h2 id="update-gpt-mbr-partition-table">Update GPT / MBR partition table</h2>
-<p><strong>I suggest all the operations should be done under live CD environment to avoid the occurrence of unpredictable problems.</strong> I didn't test online resizing on the root partition so far.</p>
-<ol type="1">
-<li>The following instructions in this section assume <strong>the last partition on your disk is the LVM Physical Volume</strong>. You could verify this with the command <code>lsblk --fs</code>. <code>nvme0n1p3</code> is the last GPT partition on the disk <code>nvme0n1</code>, and it is easy to identify this partition is a LVM PV, and <code>ubuntu--vg-ubuntu--lv</code> is the corresponding LV.</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ lsblk --fs</span><br><span class="line">NAME                      FSTYPE      FSVER        </span><br><span class="line">loop3</span><br><span class="line">└─loop3p1                 LVM2_member LVM2 001 </span><br><span class="line">  └─test--vg-test--lv     ext4        1.0      </span><br><span class="line">nvme0n1</span><br><span class="line">├─nvme0n1p1               vfat        FAT32    </span><br><span class="line">├─nvme0n1p2               ext4        1.0      </span><br><span class="line">└─nvme0n1p3               LVM2_member LVM2 001 </span><br><span class="line">  └─ubuntu--vg-ubuntu--lv ext4        1.0      </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>Note that <code>ubuntu--vg-ubuntu--lv</code> is the root partition of the system here.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -Th</span><br><span class="line">Filesystem                        Type   Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv ext4    78G  7.7G   67G  11% /</span><br><span class="line">/dev/nvme0n1p2                    ext4   974M   87M  820M  10% /boot</span><br><span class="line">/dev/nvme0n1p1                    vfat   511M  3.6M  508M   1% /boot/efi</span><br><span class="line">/dev/mapper/test--vg-test--lv     ext4   464M   24K  429M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
-<p>Also you could check the LVM Volume Group status by <code>vgs</code>.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize   VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 496.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n- &lt;78.50g    0</span><br></pre></td></tr></table></figure>
-</blockquote>
-<ol start="2" type="1">
-<li>Update the GPT / MBR partition table using <code>fdisk</code>. I will use an emulated disk <code>/dev/loop3</code> to demonstrate the whole process. Don't worry, you won't loss your data under normal circumstances. These commands will only modify the partition table, but make sure <strong>DO NOT remove the LVM's signature</strong>, otherwise the system may no longer recognize your LVM PV.</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo fdisk /dev/loop3 <span class="comment"># replace with your hard disk, such as /dev/nvme0n1p3</span></span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.36.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 1026047 1024000  500M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): d</span><br><span class="line">Selected partition 1</span><br><span class="line">Partition 1 has been deleted.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-2097118, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-2097118, default 2097118):</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 1023 MiB.</span><br><span class="line">Partition <span class="comment">#1 contains a LVM2_member signature.</span></span><br><span class="line"></span><br><span class="line">Do you want to remove the signature? [Y]es/[N]o: N</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line"></span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 2097118 2095071 1023M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
-<h2 id="update-lvm-configuration">Update LVM Configuration</h2>
-<ol type="1">
-<li>Notify LVM there is an update on the partition table.</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo partprobe <span class="comment"># ask kernel to read the new partition table</span></span><br><span class="line">tonny@vm:~$ sudo pvresize /dev/loop3p1 <span class="comment"># replace with your partition</span></span><br><span class="line">  Physical volume <span class="string">&quot;/dev/loop3p1&quot;</span> changed</span><br><span class="line">  1 physical volume(s) resized or updated / 0 physical volume(s) not resized</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>At this moment, the LVM Volume Group status has changed to,</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m 524.00m</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g      0</span><br></pre></td></tr></table></figure>
-<p>Observe that <code>VFree</code> of <code>test-vg</code> has increased by 524.00 MB.</p>
-</blockquote>
-<ol start="2" type="1">
-<li>Resize LVM Logical Volume. The following command will allocate all the free space of VG to the LV.</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo lvextend -l +100%FREE /dev/mapper/test--vg-test--lv</span><br><span class="line">  Size of logical volume test-vg/test-lv changed from 496.00 MiB (124 extents) to 1020.00 MiB (255 extents).</span><br><span class="line">  Logical volume test-vg/test-lv successfully resized.</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>The free space of VG is used up now.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g    0</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="resize-ext4-file-system">Resize ext4 File System</h2>
-<p>Up to now, although LVM LV is resized, the ext4 file system is not aware of the extra available space. Simply run <code>resize2fs</code> to let it know.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo resize2fs /dev/mapper/test--vg-test--lv</span><br><span class="line">resize2fs 1.46.3 (27-Jul-2021)</span><br><span class="line">Filesystem at /dev/mapper/test--vg-test--lv is mounted on /home/tonny/mnt; on-line resizing required</span><br><span class="line">old_desc_blocks = 1, new_desc_blocks = 1</span><br><span class="line">The filesystem on /dev/mapper/test--vg-test--lv is now 261120 (4k) blocks long.</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>We can see the available space of <code>test--vg-test--lv</code> has been enlarged.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/test--vg-test--lv      973M  1.3M  917M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://www.linuxtechi.com/extend-lvm-partitions/">https://www.linuxtechi.com/extend-lvm-partitions/</a></li>
-<li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/">https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/</a></li>
-<li><a href="https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png">https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png</a></li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>How to properly setup GPUDirect RDMA</title>
     <url>/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</url>
     <content><![CDATA[<p>GPUDirect RDMA (GDR) is an incredible technology allowing remote machines directly to manipulate the local GPU's memory. However, there are not many online resources discussing about this technology. So, I felt very confused when I encountered issues relevant to RDMA, especially for GDR.</p>
@@ -1710,6 +1671,65 @@
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you still encounter errors like <code>ibv_create_qp failed</code> or <code>ibv_reg_mr failed</code>, this might be caused by Linux user limits (ulimit).</p>
 <p>A fast and dirty way to temporarily fix this issue is to run the program as root user. Once this dirty fix works, you can refer <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html">this article</a> to permanently solve this issue.</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to resize the root LVM partition of Ubuntu</title>
+    <url>/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</url>
+    <content><![CDATA[<p>When we resize the virtual hard disk of a virtual machine or restore a disk image to a larger disk, the free space of the partition detected by Ubuntu will not increase because the partition table is unchanged. In the past, we could easily resize the ext4 root partition with the help of <code>resize2fs</code>. However, things get complex when Ubuntu utilizes LVM partition as their default root partition.</p>
+<h2 id="quick-intro-to-lvm">Quick Intro to LVM</h2>
+<p>Logical Volume Manager (LVM) is similar to Dynamic Disks under Windows, which can take several GPT / MBR partitions on different hard disks as a storage pool (LVM call it Volume Groups, VG), and allocate spaces from this pool, then Linux will recognize each space (LVM call it Logical Volume, LV) as an useable partition.</p>
+<figure>
+<img data-src="/images/pasted-99.png" alt="Lvm Layout" /><figcaption>Lvm Layout</figcaption>
+</figure>
+<p>Thus, we should modify not only <strong>the GPT / MBR partition table</strong>, but also <strong>the LVM configuration</strong>.</p>
+<h2 id="update-gpt-mbr-partition-table">Update GPT / MBR partition table</h2>
+<p><strong>I suggest all the operations should be done under live CD environment to avoid the occurrence of unpredictable problems.</strong> I didn't test online resizing on the root partition so far.</p>
+<ol type="1">
+<li>The following instructions in this section assume <strong>the last partition on your disk is the LVM Physical Volume</strong>. You could verify this with the command <code>lsblk --fs</code>. <code>nvme0n1p3</code> is the last GPT partition on the disk <code>nvme0n1</code>, and it is easy to identify this partition is a LVM PV, and <code>ubuntu--vg-ubuntu--lv</code> is the corresponding LV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ lsblk --fs</span><br><span class="line">NAME                      FSTYPE      FSVER        </span><br><span class="line">loop3</span><br><span class="line">└─loop3p1                 LVM2_member LVM2 001 </span><br><span class="line">  └─test--vg-test--lv     ext4        1.0      </span><br><span class="line">nvme0n1</span><br><span class="line">├─nvme0n1p1               vfat        FAT32    </span><br><span class="line">├─nvme0n1p2               ext4        1.0      </span><br><span class="line">└─nvme0n1p3               LVM2_member LVM2 001 </span><br><span class="line">  └─ubuntu--vg-ubuntu--lv ext4        1.0      </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Note that <code>ubuntu--vg-ubuntu--lv</code> is the root partition of the system here.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -Th</span><br><span class="line">Filesystem                        Type   Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/ubuntu--vg-ubuntu--lv ext4    78G  7.7G   67G  11% /</span><br><span class="line">/dev/nvme0n1p2                    ext4   974M   87M  820M  10% /boot</span><br><span class="line">/dev/nvme0n1p1                    vfat   511M  3.6M  508M   1% /boot/efi</span><br><span class="line">/dev/mapper/test--vg-test--lv     ext4   464M   24K  429M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
+<p>Also you could check the LVM Volume Group status by <code>vgs</code>.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize   VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 496.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n- &lt;78.50g    0</span><br></pre></td></tr></table></figure>
+</blockquote>
+<ol start="2" type="1">
+<li>Update the GPT / MBR partition table using <code>fdisk</code>. I will use an emulated disk <code>/dev/loop3</code> to demonstrate the whole process. Don't worry, you won't loss your data under normal circumstances. These commands will only modify the partition table, but make sure <strong>DO NOT remove the LVM's signature</strong>, otherwise the system may no longer recognize your LVM PV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo fdisk /dev/loop3 <span class="comment"># replace with your hard disk, such as /dev/nvme0n1p3</span></span><br><span class="line"></span><br><span class="line">Welcome to fdisk (util-linux 2.36.1).</span><br><span class="line">Changes will remain <span class="keyword">in</span> memory only, until you decide to write them.</span><br><span class="line">Be careful before using the write <span class="built_in">command</span>.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 1026047 1024000  500M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): d</span><br><span class="line">Selected partition 1</span><br><span class="line">Partition 1 has been deleted.</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): n</span><br><span class="line">Partition number (1-128, default 1):</span><br><span class="line">First sector (2048-2097118, default 2048):</span><br><span class="line">Last sector, +/-sectors or +/-size&#123;K,M,G,T,P&#125; (2048-2097118, default 2097118):</span><br><span class="line"></span><br><span class="line">Created a new partition 1 of <span class="built_in">type</span> <span class="string">&#x27;Linux filesystem&#x27;</span> and of size 1023 MiB.</span><br><span class="line">Partition <span class="comment">#1 contains a LVM2_member signature.</span></span><br><span class="line"></span><br><span class="line">Do you want to remove the signature? [Y]es/[N]o: N</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): p</span><br><span class="line"></span><br><span class="line">Disk /dev/loop3: 1 GiB, 1073741824 bytes, 2097152 sectors</span><br><span class="line">Units: sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disklabel <span class="built_in">type</span>: gpt</span><br><span class="line">Disk identifier: C5F55056-8C56-5448-81E4-567F59AD93ED</span><br><span class="line"></span><br><span class="line">Device       Start     End Sectors  Size Type</span><br><span class="line">/dev/loop3p1  2048 2097118 2095071 1023M Linux filesystem</span><br><span class="line"></span><br><span class="line">Command (m <span class="keyword">for</span> <span class="built_in">help</span>): w</span><br><span class="line">The partition table has been altered.</span><br><span class="line">Calling ioctl() to re-read partition table.</span><br><span class="line">Syncing disks.</span><br></pre></td></tr></table></figure>
+<h2 id="update-lvm-configuration">Update LVM Configuration</h2>
+<ol type="1">
+<li>Notify LVM there is an update on the partition table.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo partprobe <span class="comment"># ask kernel to read the new partition table</span></span><br><span class="line">tonny@vm:~$ sudo pvresize /dev/loop3p1 <span class="comment"># replace with your partition</span></span><br><span class="line">  Physical volume <span class="string">&quot;/dev/loop3p1&quot;</span> changed</span><br><span class="line">  1 physical volume(s) resized or updated / 0 physical volume(s) not resized</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>At this moment, the LVM Volume Group status has changed to,</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m 524.00m</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g      0</span><br></pre></td></tr></table></figure>
+<p>Observe that <code>VFree</code> of <code>test-vg</code> has increased by 524.00 MB.</p>
+</blockquote>
+<ol start="2" type="1">
+<li>Resize LVM Logical Volume. The following command will allocate all the free space of VG to the LV.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo lvextend -l +100%FREE /dev/mapper/test--vg-test--lv</span><br><span class="line">  Size of logical volume test-vg/test-lv changed from 496.00 MiB (124 extents) to 1020.00 MiB (255 extents).</span><br><span class="line">  Logical volume test-vg/test-lv successfully resized.</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The free space of VG is used up now.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo vgs</span><br><span class="line">  VG        <span class="comment">#PV #LV #SN Attr   VSize    VFree</span></span><br><span class="line">  test-vg     1   1   0 wz--n- 1020.00m    0</span><br><span class="line">  ubuntu-vg   1   1   0 wz--n-  &lt;78.50g    0</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="resize-ext4-file-system">Resize ext4 File System</h2>
+<p>Up to now, although LVM LV is resized, the ext4 file system is not aware of the extra available space. Simply run <code>resize2fs</code> to let it know.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ sudo resize2fs /dev/mapper/test--vg-test--lv</span><br><span class="line">resize2fs 1.46.3 (27-Jul-2021)</span><br><span class="line">Filesystem at /dev/mapper/test--vg-test--lv is mounted on /home/tonny/mnt; on-line resizing required</span><br><span class="line">old_desc_blocks = 1, new_desc_blocks = 1</span><br><span class="line">The filesystem on /dev/mapper/test--vg-test--lv is now 261120 (4k) blocks long.</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>We can see the available space of <code>test--vg-test--lv</code> has been enlarged.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tonny@vm:~$ df -h</span><br><span class="line">Filesystem                         Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/test--vg-test--lv      973M  1.3M  917M   1% /home/tonny/mnt</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.linuxtechi.com/extend-lvm-partitions/">https://www.linuxtechi.com/extend-lvm-partitions/</a></li>
+<li><a href="https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/">https://www.thegeekdiary.com/centos-rhel-how-to-extend-physical-volume-in-lvm-by-extending-the-disk-partition-used/</a></li>
+<li><a href="https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png">https://i0.wp.com/manjaro.site/wp-content/uploads/2017/08/lvm-layout.png</a></li>
+</ul>
 ]]></content>
   </entry>
   <entry>
