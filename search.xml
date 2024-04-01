@@ -869,6 +869,90 @@
 ]]></content>
   </entry>
   <entry>
+    <title>Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC</title>
+    <url>/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/</url>
+    <content><![CDATA[<p>This article is only for reference, as Edgecore SONiC, a customized variant with a lot of proprietary commands, is quite different from community SONiC. Also, some commands and configurations are specialized for certain switch ASICs, such as Intel Tofino I use right now. Thus, I would still suggest do not throw the official guidebook away, read it carefully, and it will save your life.</p>
+<h2 id="concepts">Concepts</h2>
+<ul>
+<li>DSCP / dot11p Tag: A value embedded in the packet header.</li>
+<li>Buffer: Receive buffer (SRAM) on switches partitioned into lossy pool and lossless pool.</li>
+<li>Traffic Class (TC): An intermediate value</li>
+<li>Priority Group (PG): Receive queue on switches.</li>
+<li>Queue: Send queue on switches.</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">                  Map             =               </span><br><span class="line">                 ┌────► Queue ID ───► PFC Priority</span><br><span class="line">          Map    │      (Egress)      of RX PAUSE </span><br><span class="line">DSCP Tag ─────► TC                                </span><br><span class="line">                 │                =               </span><br><span class="line">                 └────► PG ID ──────► PFC Priority</span><br><span class="line">                  Map   (Ingress)     of TX PAUSE </span><br><span class="line">                           │                      </span><br><span class="line">                           │ Bind                 </span><br><span class="line">                           ├──────► Lossless      </span><br><span class="line">                           │        Buffer        </span><br><span class="line">                           │ Bind                 </span><br><span class="line">                           └──────► Lossy         </span><br><span class="line">                                    Buffer        </span><br><span class="line">                                                  </span><br><span class="line">Fig. Numerical Relationship between terminologies </span><br><span class="line"><span class="keyword">for</span> Intel Tofino 2 on EdgeCore SONiC OS           </span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">              ┌───────────────────────────────────────────────────────────────────────┐                          </span><br><span class="line">              │ Switch                                                                │                          </span><br><span class="line">┌─────────┐   │   ┌─────────┐   ┌──────────┐   ┌────────┐   ┌─────────┐   ┌───────┐   │                          </span><br><span class="line">│ Packet  │   │   │   PG0   │   │  Lossy   │   │        │   │ Queue0  │   │       │   │                          </span><br><span class="line">│ DSCP=0  ├───┼──►│ of Eth0 ├──►│  Buffer  ├──►│        ├──►│ of Eth8 ├──►│       │   │   ┌─────────┐ ┌─────────┐</span><br><span class="line">└─────────┘   │   └─────────┘   └──────────┘   │  XBAR  │   └─────────┘   │ Sche  │   │   │ Packet  │ │ Packet  │</span><br><span class="line">              │       ...                      │ Switch │       ...       │ duler ├───┼──►│ DSCP=0  │ │ DSCP=26 │</span><br><span class="line">┌─────────┐   │   ┌─────────┐   ┌──────────┐   │        │   ┌─────────┐   │       │   │   └─────────┘ └─────────┘</span><br><span class="line">│ Packet  ├───┼──►│   PG3   ├──►│ Lossless ├──►│        ├──►│ Queue3  ├──►│       │   │                          </span><br><span class="line">│ DSCP=26 │   │   │ of Eth0 │   │  Buffer  │   │        │   │ of Eth8 │   │       │   │                          </span><br><span class="line">└─────────┘   │   └─────────┘   └──────────┘   └────────┘   └─────────┘   └───────┘   │                          </span><br><span class="line">              │                                                                       │                          </span><br><span class="line">              └───────────────────────────────────────────────────────────────────────┘                          </span><br><span class="line">                                                                                                                 </span><br><span class="line">                 Fig. Ingress/Egress procedure of Intel Tofino 2 on EdgeCore SONiC OS                            </span><br></pre></td></tr></table></figure>
+<h2 id="optional-factory-reset-configuration">(Optional) Factory Reset Configuration</h2>
+<p>If you would like to drop your modification to the system, try these commands.</p>
+<h3 id="normal">Normal</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo rm /etc/sonic/config_db.json</span><br><span class="line">sudo config-setup factory</span><br><span class="line">sudo config reload -y</span><br></pre></td></tr></table></figure>
+<h3 id="force">Force</h3>
+<p>If the system has already been trapped in a strange state, these commands might be able to do a force reset.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo rm /etc/sonic/config_db.json</span><br><span class="line">sudo config-setup factory</span><br><span class="line">sudo config reload -y -f</span><br><span class="line">sudo service swss restart</span><br></pre></td></tr></table></figure>
+<h2 id="optional-set-up-ports">(Optional) Set up Ports</h2>
+<p>If you have trouble enabling L2 forwarding, maybe there is a mismatch in the port speed or FEC configuration.</p>
+<h3 id="check-status-of-nics">Check Status of NICs</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo mlxlink -d mlx5_0 -m -c -e</span><br></pre></td></tr></table></figure>
+<p>If <code>State</code> is not <code>Active</code>, there might be something wrong with the port configuration or physical connection.</p>
+<h3 id="enable-auto-negotiation-on-nics">Enable Auto-Negotiation on NICs</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo ethtool -s enp216s0f0np0 autoneg on</span><br></pre></td></tr></table></figure>
+<h3 id="disable-auto-negotiation-on-switch">Disable Auto-Negotiation on Switch</h3>
+<p>Disable Auto-Negotition when it does not work as you expect. If it works well, just leave it alone.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config int autoneg Ethernet0 disabled</span><br><span class="line">sudo config int autoneg Ethernet8 disabled</span><br></pre></td></tr></table></figure>
+<h3 id="force-100gb-port-speed">Force 100Gb Port Speed</h3>
+<p>Change the port speed as you wish. The supported port speed varies depending on switches and NICs.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config interface breakout Ethernet0 <span class="string">&#x27;1x100G[40G](4)&#x27;</span></span><br><span class="line">sudo config interface breakout Ethernet8 <span class="string">&#x27;1x100G[40G](4)&#x27;</span></span><br></pre></td></tr></table></figure>
+<h3 id="optional-configure-fec-forward-error-correction-to-rs-mode"><strong>(Optional) Configure FEC (Forward Error Correction) to RS mode</strong></h3>
+<p>Setting FEC to <code>none</code> is also fine. Just make sure switches and NICs use the same mode.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config interface fec Ethernet0 rs</span><br><span class="line">sudo config interface fec Ethernet8 rs</span><br></pre></td></tr></table></figure>
+<h3 id="bring-up-ports">Bring up Ports</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config interface startup Ethernet0-8</span><br></pre></td></tr></table></figure>
+<h2 id="optional-enable-l2-forwarding">(Optional) Enable L2 Forwarding</h2>
+<p>By default, L2 switching is disabled on SONiC OS, unlike other switches.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config vlan add 1000</span><br><span class="line">sudo config vlan member add -u 1000 Ethernet0</span><br><span class="line">sudo config vlan member add -u 1000 Ethernet8</span><br><span class="line">sudo config inter ip add Vlan1000 10.200.0.1/24</span><br></pre></td></tr></table></figure>
+<h2 id="enable-l3-pfc">Enable L3 PFC</h2>
+<p>Since Intel Tofino 2 only supports 5 PGs, we decided to use only 5 TCs/PGs/Queues and then do 1:1 mapping between PGs/Queues and TCs.</p>
+<h3 id="load-buffer-profile">Load Buffer Profile</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config qos reload</span><br><span class="line">sudo config save -y</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-dscp-to-tc-table-for-ports">Set and Apply DSCP-to-TC Table for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config qos dscp-tc add dscp-tc-prof --dscp 0-15 --tc 1</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 16-23 --tc 2</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 24-31 --tc 3</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 32-39 --tc 4</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 40-63 --tc 5</span><br><span class="line"></span><br><span class="line">sudo config interface qos dscp-tc <span class="built_in">bind</span> Ethernet0 dscp-tc-prof</span><br><span class="line">sudo config interface qos dscp-tc <span class="built_in">bind</span> Ethernet8 dscp-tc-prof</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-tc-to-queue-table-for-ports">Set and Apply TC-to-Queue Table for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config qos tc-queue add tc-queue-prof --tc 1 --queue 1</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 2 --queue 2</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 3 --queue 3</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 4 --queue 4</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 5 --queue 5</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-tc-to-pg-priority-group-table">Set and Apply TC-to-PG (Priority Group) Table</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config qos tc-pg add tc-pg-prof --tc 1 --pg 1</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 2 --pg 2</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 3 --pg 3</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 4 --pg 4</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 5 --pg 5</span><br></pre></td></tr></table></figure>
+<h3 id="specify-queue-scheduler-ets">Specify Queue Scheduler (ETS)</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config scheduler add sched-dwrr-100 --sched_type DWRR --weight 100</span><br><span class="line">sudo config scheduler add sched-strict --sched_type STRICT</span><br><span class="line"></span><br><span class="line">sudo config interface scheduler <span class="built_in">bind</span> queue Ethernet0 3 sched-dwrr-100</span><br><span class="line">sudo config interface scheduler <span class="built_in">bind</span> queue Ethernet8 3 sched-dwrr-100</span><br></pre></td></tr></table></figure>
+<h3 id="bind-lossless-buffer-profile">Bind Lossless Buffer Profile</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config interface buffer <span class="built_in">bind</span> priority-group Ethernet0 3 ingress_lossless_profile</span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> priority-group Ethernet8 3 ingress_lossless_profile</span><br><span class="line"></span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> queue Ethernet0 3 egress_lossless_profile</span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> queue Ethernet8 3 egress_lossless_profile</span><br></pre></td></tr></table></figure>
+<h3 id="enable-pfc-for-ports">Enable PFC for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config interface pfc priority Ethernet0 3 on</span><br><span class="line">sudo config interface pfc priority Ethernet8 3 on</span><br></pre></td></tr></table></figure>
+<h2 id="enable-ecn">Enable ECN</h2>
+<p>Weighted random early detection (WRED) was initially purposed to randomly drop packets to signal the sender’s congestion control algorithm to slow the sending rate. When WRED works in ECN mode, it will randomly put ECN marks into forwarded packets instead of simply dropping them, and the possibility depends on the buffer usage.</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo config wred add wred-prof --mode ecn --gmin 1048576 --gmax 2097152 --gdrop 5</span><br><span class="line"></span><br><span class="line">sudo config interface wred <span class="built_in">bind</span> queue Ethernet0 3 wred-prof</span><br><span class="line">sudo config interface wred <span class="built_in">bind</span> queue Ethernet8 3 wred-prof</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li>Edgecore SONiC User Guide (Authentication is required)</li>
+<li><a href="https://support.edge-core.com/hc/en-us/articles/900000210426--Enterprise-SONiC-VLAN-Inter-VLAN-Routing">https://support.edge-core.com/hc/en-us/articles/900000210426--Enterprise-SONiC-VLAN-Inter-VLAN-Routing</a></li>
+<li><a href="https://support.edge-core.com/hc/en-us/articles/900006399883--Enterprise-SONiC-Reset-default-configuration">https://support.edge-core.com/hc/en-us/articles/900006399883--Enterprise-SONiC-Reset-default-configuration</a></li>
+<li><a href="https://support.edge-core.com/hc/en-us/articles/900000200743--Enterprise-SONiC-Switch-Port-Attributes">https://support.edge-core.com/hc/en-us/articles/900000200743--Enterprise-SONiC-Switch-Port-Attributes</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/issues/339">https://github.com/sonic-net/SONiC/issues/339</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/issues/181">https://github.com/sonic-net/SONiC/issues/181</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/issues/28">https://github.com/sonic-net/SONiC/issues/28</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/wiki/technical_faq">https://github.com/sonic-net/SONiC/wiki/technical_faq</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/wiki/L2-Switch-mode">https://github.com/sonic-net/SONiC/wiki/L2-Switch-mode</a></li>
+<li><a href="https://github.com/sonic-net/SONiC/wiki/Configuration-with-Minigraph-(~Sep-2017)">https://github.com/sonic-net/SONiC/wiki/Configuration-with-Minigraph-(~Sep-2017)</a></li>
+<li><a href="https://github.com/sonic-net/sonic-buildimage/issues/9470">https://github.com/sonic-net/sonic-buildimage/issues/9470</a></li>
+<li><a href="https://github.com/sonic-net/sonic-buildimage/issues/5947">https://github.com/sonic-net/sonic-buildimage/issues/5947</a></li>
+<li><a href="https://lfnetworking.org/wp-content/uploads/sites/7/2022/06/Tech-Talk5-How_does_SONiC_Operate_on_a_Programmable_Switch_Edgecore_Howard-Hsu.pdf">https://lfnetworking.org/wp-content/uploads/sites/7/2022/06/Tech-Talk5-How_does_SONiC_Operate_on_a_Programmable_Switch_Edgecore_Howard-Hsu.pdf</a></li>
+<li><a href="https://www.supermicro.com/manuals/network/Supermicro_Datacenter_SONiC_Configuration_Guide.pdf">https://www.supermicro.com/manuals/network/Supermicro_Datacenter_SONiC_Configuration_Guide.pdf</a></li>
+<li><a href="https://www.juniper.net/documentation/en_US/release-independent/nce/topics/concept/sonic-feature-config.html#wred-conf">https://www.juniper.net/documentation/en_US/release-independent/nce/topics/concept/sonic-feature-config.html</a></li>
+<li><a href="https://netbergtw.com/top-support/netberg-sonic/switching-silicon-shell/">https://netbergtw.com/top-support/netberg-sonic/switching-silicon-shell/</a></li>
+<li><a href="https://gitlab.tongyuejun.cn/zhangjx/p4_doc/-/blob/0c64dcd7e21a0815ca9da2d10d9659002cbb4590/Wedge100BF_User_Manual.org">https://gitlab.tongyuejun.cn/zhangjx/p4_doc/-/blob/0c64dcd7e21a0815ca9da2d10d9659002cbb4590/Wedge100BF_User_Manual.org</a></li>
+<li><a href="https://www.infoq.cn/article/kgucyp5s8m7hecl6qiel">https://www.infoq.cn/article/kgucyp5s8m7hecl6qiel</a></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs</title>
     <url>/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/</url>
     <content><![CDATA[<p>RoCE networks, a high-performance implementation of RDMA networks, offload flow control and congestion control algorithms to hardware to achieve high performance. However, these algorithms target lossless networks so they can be simple enough to implement on hardware. Thus, we should mitigate packet loss issues and guarantee lossless networks to our best. DCQCN (Congestion Control) + PFC (Flow Control) is a common option for many data centers. We observed that our system would suffer severe performance fluctuation if disabling them.</p>
@@ -3107,6 +3191,83 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 ]]></content>
   </entry>
   <entry>
+    <title>滥用Docker容器当作虚拟机的方法</title>
+    <url>/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</url>
+    <content><![CDATA[<p>把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。</p>
+<h2 id="注意事项">注意事项</h2>
+<h3 id="best-practice">Best Practice</h3>
+<p>理想情况下Docker Image最好使用Dockerfile来构建。把Docker Container当做虚拟机来构建Docker Image这个方法虽然非常省事，但该方法很容易做出来很大一坨镜像，很不轻量，所以仅推荐在测试时使用，不推荐在正式场合（如企业的生产环境）使用。</p>
+<h3 id="权限问题">权限问题</h3>
+<p>Docker的安装和使用（创建销毁容器等）都需要超级用户权限。若非系统管理员，务必确认环境里已经安装了Docker和拥有Docker的使用权限（已加入<code>docker</code>用户组）</p>
+<p>注：Docker也有Rootless模式，但需要额外的配置。</p>
+<h2 id="基础知识">基础知识</h2>
+<h3 id="容器与镜像">容器与镜像</h3>
+<p>镜像可以说是容器在某一个时刻的所有文件数据，包括运行环境，程序，临时文件等。而容器才是能产生进程运行程序的东西。所以镜像是静态的，容器是动态的。他们的生命周期和转换关系如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      |---------push--&gt; (Docker Hub)</span><br><span class="line">      |---------save--&gt; (tar File)</span><br><span class="line">      |</span><br><span class="line">Docker Image----run---&gt; Docker Container    </span><br><span class="line">      ↑                       |</span><br><span class="line">      |---------commit--------|</span><br><span class="line">      |---------pull----(Docker Hub)</span><br><span class="line">      |---------load----(tar File)</span><br><span class="line">      |---------build---(Dockerfile)</span><br></pre></td></tr></table></figure>
+<h3 id="命名">命名</h3>
+<p>容器的名字没有太多讲究，镜像名字的构成是：<code>镜像名:Tag</code>，如<code>Ubuntu:18.04</code>的镜像名是<code>Ubuntu</code>，Tag是<code>18.04</code>。</p>
+<h3 id="其他实用命令">其他实用命令</h3>
+<ul>
+<li><code>docker ps</code> 查看运行中的容器
+<ul>
+<li><code>docker ps -a</code> 查看所有容器（包含未运行的容器）</li>
+</ul></li>
+<li><code>docker rm -f</code> 删除容器</li>
+<li><code>docker images</code> 查看已下载的镜像</li>
+<li><code>docker pull</code> 下载镜像</li>
+<li><code>docker rmi</code> 删除镜像</li>
+</ul>
+<h3 id="dockerhub下载加速">DockerHub下载加速</h3>
+<p>暂未找到什么很好的加速方法</p>
+<h2 id="创建容器">创建容器</h2>
+<p>推荐命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always ubuntu:18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-d</code> + <code>-i</code> + <code>bash</code> 组合会启动容器里的<code>bash</code>，目的是让容器挂在后台</li>
+<li><code>--restart always</code> 主机重启后自动启动容器，挂在后台</li>
+<li><code>ubuntu:18.04</code> 推荐使用Ubuntu 18.04镜像</li>
+<li><code>--privileged</code> 允许容器使用更多的内核功能</li>
+<li><code>--network host</code> 使用主机网络（禁用网络空间隔离）</li>
+</ul>
+</blockquote>
+<p>也可以使用老黄家的CUDA开发环境镜像：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always --gpus all nvidia/cuda:11.0.3-devel-ubuntu18.04 bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>nvidia/cuda:11.0.3-devel-ubuntu18.04</code> 是包含CUDA 11.0.3对应工具链的Ubuntu 18.04镜像
+<ul>
+<li>镜像的CUDA版本需要和驱动支持的版本对应，<code>nvidia-smi</code> 右上角会显示最高支持的CUDA版本</li>
+<li><code>devel</code>版镜像包含<code>nvcc</code>编译器等工具链，<code>runtime</code>版不含工具链</li>
+</ul></li>
+<li><code>--gpus all</code> 使用所有可用的GPU</li>
+</ul>
+</blockquote>
+<p>所有黄家容器列表：<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
+<h2 id="进入容器交互式bash">进入容器（交互式bash）</h2>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数含义：</p>
+<ul>
+<li><code>-i</code> + <code>-t</code> 启动交互式模式</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>进入容器后如果想换apt源，建议使用下面的命令来换，因为镜像为了节约空间，往往不包含文字编辑器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s#archive.ubuntu.com#mirrors.sustech.edu.cn#g&quot;</span> /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="容器镜像文件的转换">容器、镜像、文件的转换</h2>
+<p>容器到镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker commit your_ct_name your_images_name:your_tag</span><br></pre></td></tr></table></figure>
+<p>镜像到文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker save your_images_name:your_tag -o your_file.tar</span><br></pre></td></tr></table></figure>
+<p>文件到镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker load -i your_file.tar</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
     <title>快速理解并行 Makefile</title>
     <url>/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/</url>
     <content><![CDATA[<p>本教程为南科大2022年超算校内赛第二题扩展教程，<a href="https://github.com/Tonny-Gu/HelloHPC">赛题的repo</a>。</p>
@@ -3391,83 +3552,6 @@ P(A_i \mid B) = \frac{P(B\mid A)P(A_i)}{\sum_{j=1}^{n}P(A_j)P(B \mid A_j)}
 <ul>
 <li>https://makefiletutorial.com/</li>
 </ul>
-]]></content>
-  </entry>
-  <entry>
-    <title>滥用Docker容器当作虚拟机的方法</title>
-    <url>/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</url>
-    <content><![CDATA[<p>把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。</p>
-<h2 id="注意事项">注意事项</h2>
-<h3 id="best-practice">Best Practice</h3>
-<p>理想情况下Docker Image最好使用Dockerfile来构建。把Docker Container当做虚拟机来构建Docker Image这个方法虽然非常省事，但该方法很容易做出来很大一坨镜像，很不轻量，所以仅推荐在测试时使用，不推荐在正式场合（如企业的生产环境）使用。</p>
-<h3 id="权限问题">权限问题</h3>
-<p>Docker的安装和使用（创建销毁容器等）都需要超级用户权限。若非系统管理员，务必确认环境里已经安装了Docker和拥有Docker的使用权限（已加入<code>docker</code>用户组）</p>
-<p>注：Docker也有Rootless模式，但需要额外的配置。</p>
-<h2 id="基础知识">基础知识</h2>
-<h3 id="容器与镜像">容器与镜像</h3>
-<p>镜像可以说是容器在某一个时刻的所有文件数据，包括运行环境，程序，临时文件等。而容器才是能产生进程运行程序的东西。所以镜像是静态的，容器是动态的。他们的生命周期和转换关系如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      |---------push--&gt; (Docker Hub)</span><br><span class="line">      |---------save--&gt; (tar File)</span><br><span class="line">      |</span><br><span class="line">Docker Image----run---&gt; Docker Container    </span><br><span class="line">      ↑                       |</span><br><span class="line">      |---------commit--------|</span><br><span class="line">      |---------pull----(Docker Hub)</span><br><span class="line">      |---------load----(tar File)</span><br><span class="line">      |---------build---(Dockerfile)</span><br></pre></td></tr></table></figure>
-<h3 id="命名">命名</h3>
-<p>容器的名字没有太多讲究，镜像名字的构成是：<code>镜像名:Tag</code>，如<code>Ubuntu:18.04</code>的镜像名是<code>Ubuntu</code>，Tag是<code>18.04</code>。</p>
-<h3 id="其他实用命令">其他实用命令</h3>
-<ul>
-<li><code>docker ps</code> 查看运行中的容器
-<ul>
-<li><code>docker ps -a</code> 查看所有容器（包含未运行的容器）</li>
-</ul></li>
-<li><code>docker rm -f</code> 删除容器</li>
-<li><code>docker images</code> 查看已下载的镜像</li>
-<li><code>docker pull</code> 下载镜像</li>
-<li><code>docker rmi</code> 删除镜像</li>
-</ul>
-<h3 id="dockerhub下载加速">DockerHub下载加速</h3>
-<p>暂未找到什么很好的加速方法</p>
-<h2 id="创建容器">创建容器</h2>
-<p>推荐命令：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always ubuntu:18.04 bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>-d</code> + <code>-i</code> + <code>bash</code> 组合会启动容器里的<code>bash</code>，目的是让容器挂在后台</li>
-<li><code>--restart always</code> 主机重启后自动启动容器，挂在后台</li>
-<li><code>ubuntu:18.04</code> 推荐使用Ubuntu 18.04镜像</li>
-<li><code>--privileged</code> 允许容器使用更多的内核功能</li>
-<li><code>--network host</code> 使用主机网络（禁用网络空间隔离）</li>
-</ul>
-</blockquote>
-<p>也可以使用老黄家的CUDA开发环境镜像：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -id --name your_ct_name --privileged --network host --restart always --gpus all nvidia/cuda:11.0.3-devel-ubuntu18.04 bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>nvidia/cuda:11.0.3-devel-ubuntu18.04</code> 是包含CUDA 11.0.3对应工具链的Ubuntu 18.04镜像
-<ul>
-<li>镜像的CUDA版本需要和驱动支持的版本对应，<code>nvidia-smi</code> 右上角会显示最高支持的CUDA版本</li>
-<li><code>devel</code>版镜像包含<code>nvcc</code>编译器等工具链，<code>runtime</code>版不含工具链</li>
-</ul></li>
-<li><code>--gpus all</code> 使用所有可用的GPU</li>
-</ul>
-</blockquote>
-<p>所有黄家容器列表：<a href="https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated">https://hub.docker.com/r/nvidia/cuda/tags?page=1&amp;ordering=last_updated</a></p>
-<h2 id="进入容器交互式bash">进入容器（交互式bash）</h2>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it your_ct_name bash</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>参数含义：</p>
-<ul>
-<li><code>-i</code> + <code>-t</code> 启动交互式模式</li>
-</ul>
-</blockquote>
-<blockquote>
-<p>进入容器后如果想换apt源，建议使用下面的命令来换，因为镜像为了节约空间，往往不包含文字编辑器</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s#archive.ubuntu.com#mirrors.sustech.edu.cn#g&quot;</span> /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-</blockquote>
-<h2 id="容器镜像文件的转换">容器、镜像、文件的转换</h2>
-<p>容器到镜像</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker commit your_ct_name your_images_name:your_tag</span><br></pre></td></tr></table></figure>
-<p>镜像到文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker save your_images_name:your_tag -o your_file.tar</span><br></pre></td></tr></table></figure>
-<p>文件到镜像</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker load -i your_file.tar</span><br></pre></td></tr></table></figure>
 ]]></content>
   </entry>
   <entry>

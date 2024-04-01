@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="neko">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="mask-icon" href="/favicon.ico" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="/lib/@fortawesome/fontawesome-free/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
+  <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="This article is only for reference, as Edgecore SONiC, a customized variant with a lot of proprietary commands, is quite different from community SONiC. Also, some commands and configurations are spec">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC">
+<meta property="og:url" content="https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/index.html">
+<meta property="og:site_name" content="NekoDaemon&#39;s Blog">
+<meta property="og:description" content="This article is only for reference, as Edgecore SONiC, a customized variant with a lot of proprietary commands, is quite different from community SONiC. Also, some commands and configurations are spec">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-01T14:59:46.000Z">
+<meta property="article:modified_time" content="2024-04-01T14:59:47.916Z">
+<meta property="article:author" content="NekoDaemon">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/","path":"2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/","title":"Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC | NekoDaemon's Blog</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LD3Y9EEN0K"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"G-LD3Y9EEN0K","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="NekoDaemon's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">NekoDaemon's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页 Home</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于 About</a></li>
+        <li class="menu-item menu-item-more"><a href="/more/" rel="section"><i class="fa fa-ellipsis-h fa-fw"></i>更多 More</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索 Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Sections
+        </li>
+        <li class="sidebar-nav-overview">
+          About
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#concepts"><span class="nav-text">Concepts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#optional-factory-reset-configuration"><span class="nav-text">(Optional) Factory Reset Configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#normal"><span class="nav-text">Normal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#force"><span class="nav-text">Force</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#optional-set-up-ports"><span class="nav-text">(Optional) Set up Ports</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#check-status-of-nics"><span class="nav-text">Check Status of NICs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#enable-auto-negotiation-on-nics"><span class="nav-text">Enable Auto-Negotiation on NICs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#disable-auto-negotiation-on-switch"><span class="nav-text">Disable Auto-Negotiation on Switch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#force-100gb-port-speed"><span class="nav-text">Force 100Gb Port Speed</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#optional-configure-fec-forward-error-correction-to-rs-mode"><span class="nav-text">(Optional) Configure FEC (Forward Error Correction) to RS mode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bring-up-ports"><span class="nav-text">Bring up Ports</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#optional-enable-l2-forwarding"><span class="nav-text">(Optional) Enable L2 Forwarding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#enable-l3-pfc"><span class="nav-text">Enable L3 PFC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#load-buffer-profile"><span class="nav-text">Load Buffer Profile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#set-and-apply-dscp-to-tc-table-for-ports"><span class="nav-text">Set and Apply DSCP-to-TC Table for Ports</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#set-and-apply-tc-to-queue-table-for-ports"><span class="nav-text">Set and Apply TC-to-Queue Table for Ports</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#set-and-apply-tc-to-pg-priority-group-table"><span class="nav-text">Set and Apply TC-to-PG (Priority Group) Table</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#specify-queue-scheduler-ets"><span class="nav-text">Specify Queue Scheduler (ETS)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-lossless-buffer-profile"><span class="nav-text">Bind Lossless Buffer Profile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#enable-pfc-for-ports"><span class="nav-text">Enable PFC for Ports</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#enable-ecn"><span class="nav-text">Enable ECN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NekoDaemon"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">NekoDaemon</p>
+  <div class="site-description" itemprop="description">人菜精神在，瘾大技术烂</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">55</span>
+          <span class="site-state-item-name">Posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">Categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">Tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Tonny-Gu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Tonny-Gu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/neko_daemon" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;neko_daemon" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll site-overview-item animated">
+    <div class="links-of-blogroll-title"><i class="fas fa-user-friends fa-fw"></i>
+      Friends
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.spinmry.moe/" title="https:&#x2F;&#x2F;blog.spinmry.moe&#x2F;" rel="noopener" target="_blank">spinmry</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://laekov.com.cn/" title="https:&#x2F;&#x2F;laekov.com.cn&#x2F;" rel="noopener" target="_blank">laekov</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.flygoat.com/" title="https:&#x2F;&#x2F;blog.flygoat.com&#x2F;" rel="noopener" target="_blank">flygoat</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.lzrnote.cn/" title="https:&#x2F;&#x2F;www.lzrnote.cn&#x2F;" rel="noopener" target="_blank">lizhirui</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.whexy.com/" title="https:&#x2F;&#x2F;www.whexy.com&#x2F;" rel="noopener" target="_blank">whexy</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zephray.me/" title="https:&#x2F;&#x2F;www.zephray.me&#x2F;" rel="noopener" target="_blank">zephray</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://victoryang00.cn/wordpress/" title="https:&#x2F;&#x2F;victoryang00.cn&#x2F;wordpress&#x2F;" rel="noopener" target="_blank">victoryang</a>
+        </li>
+    </ul>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="Back to top">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
+    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="NekoDaemon">
+      <meta itemprop="description" content="人菜精神在，瘾大技术烂">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="NekoDaemon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2024-04-01 22:59:46 / Modified: 22:59:47" itemprop="dateCreated datePublished" datetime="2024-04-01T22:59:46+08:00">2024-04-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>This article is only for reference, as Edgecore SONiC, a customized variant with a lot of proprietary commands, is quite different from community SONiC. Also, some commands and configurations are specialized for certain switch ASICs, such as Intel Tofino I use right now. Thus, I would still suggest do not throw the official guidebook away, read it carefully, and it will save your life.</p>
+<h2 id="concepts">Concepts</h2>
+<ul>
+<li>DSCP / dot11p Tag: A value embedded in the packet header.</li>
+<li>Buffer: Receive buffer (SRAM) on switches partitioned into lossy pool and lossless pool.</li>
+<li>Traffic Class (TC): An intermediate value</li>
+<li>Priority Group (PG): Receive queue on switches.</li>
+<li>Queue: Send queue on switches.</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">                  Map             =               </span><br><span class="line">                 ┌────► Queue ID ───► PFC Priority</span><br><span class="line">          Map    │      (Egress)      of RX PAUSE </span><br><span class="line">DSCP Tag ─────► TC                                </span><br><span class="line">                 │                =               </span><br><span class="line">                 └────► PG ID ──────► PFC Priority</span><br><span class="line">                  Map   (Ingress)     of TX PAUSE </span><br><span class="line">                           │                      </span><br><span class="line">                           │ Bind                 </span><br><span class="line">                           ├──────► Lossless      </span><br><span class="line">                           │        Buffer        </span><br><span class="line">                           │ Bind                 </span><br><span class="line">                           └──────► Lossy         </span><br><span class="line">                                    Buffer        </span><br><span class="line">                                                  </span><br><span class="line">Fig. Numerical Relationship between terminologies </span><br><span class="line"><span class="keyword">for</span> Intel Tofino 2 on EdgeCore SONiC OS           </span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">              ┌───────────────────────────────────────────────────────────────────────┐                          </span><br><span class="line">              │ Switch                                                                │                          </span><br><span class="line">┌─────────┐   │   ┌─────────┐   ┌──────────┐   ┌────────┐   ┌─────────┐   ┌───────┐   │                          </span><br><span class="line">│ Packet  │   │   │   PG0   │   │  Lossy   │   │        │   │ Queue0  │   │       │   │                          </span><br><span class="line">│ DSCP=0  ├───┼──►│ of Eth0 ├──►│  Buffer  ├──►│        ├──►│ of Eth8 ├──►│       │   │   ┌─────────┐ ┌─────────┐</span><br><span class="line">└─────────┘   │   └─────────┘   └──────────┘   │  XBAR  │   └─────────┘   │ Sche  │   │   │ Packet  │ │ Packet  │</span><br><span class="line">              │       ...                      │ Switch │       ...       │ duler ├───┼──►│ DSCP=0  │ │ DSCP=26 │</span><br><span class="line">┌─────────┐   │   ┌─────────┐   ┌──────────┐   │        │   ┌─────────┐   │       │   │   └─────────┘ └─────────┘</span><br><span class="line">│ Packet  ├───┼──►│   PG3   ├──►│ Lossless ├──►│        ├──►│ Queue3  ├──►│       │   │                          </span><br><span class="line">│ DSCP=26 │   │   │ of Eth0 │   │  Buffer  │   │        │   │ of Eth8 │   │       │   │                          </span><br><span class="line">└─────────┘   │   └─────────┘   └──────────┘   └────────┘   └─────────┘   └───────┘   │                          </span><br><span class="line">              │                                                                       │                          </span><br><span class="line">              └───────────────────────────────────────────────────────────────────────┘                          </span><br><span class="line">                                                                                                                 </span><br><span class="line">                 Fig. Ingress/Egress procedure of Intel Tofino 2 on EdgeCore SONiC OS                            </span><br></pre></td></tr></table></figure>
+<h2 id="optional-factory-reset-configuration">(Optional) Factory Reset Configuration</h2>
+<p>If you would like to drop your modification to the system, try these commands.</p>
+<h3 id="normal">Normal</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /etc/sonic/config_db.json</span><br><span class="line">sudo config-setup factory</span><br><span class="line">sudo config reload -y</span><br></pre></td></tr></table></figure>
+<h3 id="force">Force</h3>
+<p>If the system has already been trapped in a strange state, these commands might be able to do a force reset.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /etc/sonic/config_db.json</span><br><span class="line">sudo config-setup factory</span><br><span class="line">sudo config reload -y -f</span><br><span class="line">sudo service swss restart</span><br></pre></td></tr></table></figure>
+<h2 id="optional-set-up-ports">(Optional) Set up Ports</h2>
+<p>If you have trouble enabling L2 forwarding, maybe there is a mismatch in the port speed or FEC configuration.</p>
+<h3 id="check-status-of-nics">Check Status of NICs</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo mlxlink -d mlx5_0 -m -c -e</span><br></pre></td></tr></table></figure>
+<p>If <code>State</code> is not <code>Active</code>, there might be something wrong with the port configuration or physical connection.</p>
+<h3 id="enable-auto-negotiation-on-nics">Enable Auto-Negotiation on NICs</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ethtool -s enp216s0f0np0 autoneg on</span><br></pre></td></tr></table></figure>
+<h3 id="disable-auto-negotiation-on-switch">Disable Auto-Negotiation on Switch</h3>
+<p>Disable Auto-Negotition when it does not work as you expect. If it works well, just leave it alone.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo config int autoneg Ethernet0 disabled</span><br><span class="line">sudo config int autoneg Ethernet8 disabled</span><br></pre></td></tr></table></figure>
+<h3 id="force-100gb-port-speed">Force 100Gb Port Speed</h3>
+<p>Change the port speed as you wish. The supported port speed varies depending on switches and NICs.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo config interface breakout Ethernet0 <span class="string">&#x27;1x100G[40G](4)&#x27;</span></span><br><span class="line">sudo config interface breakout Ethernet8 <span class="string">&#x27;1x100G[40G](4)&#x27;</span></span><br></pre></td></tr></table></figure>
+<h3 id="optional-configure-fec-forward-error-correction-to-rs-mode"><strong>(Optional) Configure FEC (Forward Error Correction) to RS mode</strong></h3>
+<p>Setting FEC to <code>none</code> is also fine. Just make sure switches and NICs use the same mode.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo config interface fec Ethernet0 rs</span><br><span class="line">sudo config interface fec Ethernet8 rs</span><br></pre></td></tr></table></figure>
+<h3 id="bring-up-ports">Bring up Ports</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo config interface startup Ethernet0-8</span><br></pre></td></tr></table></figure>
+<h2 id="optional-enable-l2-forwarding">(Optional) Enable L2 Forwarding</h2>
+<p>By default, L2 switching is disabled on SONiC OS, unlike other switches.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo config vlan add 1000</span><br><span class="line">sudo config vlan member add -u 1000 Ethernet0</span><br><span class="line">sudo config vlan member add -u 1000 Ethernet8</span><br><span class="line">sudo config inter ip add Vlan1000 10.200.0.1/24</span><br></pre></td></tr></table></figure>
+<h2 id="enable-l3-pfc">Enable L3 PFC</h2>
+<p>Since Intel Tofino 2 only supports 5 PGs, we decided to use only 5 TCs/PGs/Queues and then do 1:1 mapping between PGs/Queues and TCs.</p>
+<h3 id="load-buffer-profile">Load Buffer Profile</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo config qos reload</span><br><span class="line">sudo config save -y</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-dscp-to-tc-table-for-ports">Set and Apply DSCP-to-TC Table for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo config qos dscp-tc add dscp-tc-prof --dscp 0-15 --tc 1</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 16-23 --tc 2</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 24-31 --tc 3</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 32-39 --tc 4</span><br><span class="line">sudo config qos dscp-tc update dscp-tc-prof --dscp 40-63 --tc 5</span><br><span class="line"></span><br><span class="line">sudo config interface qos dscp-tc <span class="built_in">bind</span> Ethernet0 dscp-tc-prof</span><br><span class="line">sudo config interface qos dscp-tc <span class="built_in">bind</span> Ethernet8 dscp-tc-prof</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-tc-to-queue-table-for-ports">Set and Apply TC-to-Queue Table for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo config qos tc-queue add tc-queue-prof --tc 1 --queue 1</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 2 --queue 2</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 3 --queue 3</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 4 --queue 4</span><br><span class="line">sudo config qos tc-queue update tc-queue-prof --tc 5 --queue 5</span><br></pre></td></tr></table></figure>
+<h3 id="set-and-apply-tc-to-pg-priority-group-table">Set and Apply TC-to-PG (Priority Group) Table</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo config qos tc-pg add tc-pg-prof --tc 1 --pg 1</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 2 --pg 2</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 3 --pg 3</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 4 --pg 4</span><br><span class="line">sudo config qos tc-pg update tc-pg-prof --tc 5 --pg 5</span><br></pre></td></tr></table></figure>
+<h3 id="specify-queue-scheduler-ets">Specify Queue Scheduler (ETS)</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo config scheduler add sched-dwrr-100 --sched_type DWRR --weight 100</span><br><span class="line">sudo config scheduler add sched-strict --sched_type STRICT</span><br><span class="line"></span><br><span class="line">sudo config interface scheduler <span class="built_in">bind</span> queue Ethernet0 3 sched-dwrr-100</span><br><span class="line">sudo config interface scheduler <span class="built_in">bind</span> queue Ethernet8 3 sched-dwrr-100</span><br></pre></td></tr></table></figure>
+<h3 id="bind-lossless-buffer-profile">Bind Lossless Buffer Profile</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo config interface buffer <span class="built_in">bind</span> priority-group Ethernet0 3 ingress_lossless_profile</span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> priority-group Ethernet8 3 ingress_lossless_profile</span><br><span class="line"></span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> queue Ethernet0 3 egress_lossless_profile</span><br><span class="line">sudo config interface buffer <span class="built_in">bind</span> queue Ethernet8 3 egress_lossless_profile</span><br></pre></td></tr></table></figure>
+<h3 id="enable-pfc-for-ports">Enable PFC for Ports</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo config interface pfc priority Ethernet0 3 on</span><br><span class="line">sudo config interface pfc priority Ethernet8 3 on</span><br></pre></td></tr></table></figure>
+<h2 id="enable-ecn">Enable ECN</h2>
+<p>Weighted random early detection (WRED) was initially purposed to randomly drop packets to signal the sender’s congestion control algorithm to slow the sending rate. When WRED works in ECN mode, it will randomly put ECN marks into forwarded packets instead of simply dropping them, and the possibility depends on the buffer usage.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo config wred add wred-prof --mode ecn --gmin 1048576 --gmax 2097152 --gdrop 5</span><br><span class="line"></span><br><span class="line">sudo config interface wred <span class="built_in">bind</span> queue Ethernet0 3 wred-prof</span><br><span class="line">sudo config interface wred <span class="built_in">bind</span> queue Ethernet8 3 wred-prof</span><br></pre></td></tr></table></figure>
+<h2 id="references">References</h2>
+<ul>
+<li>Edgecore SONiC User Guide (Authentication is required)</li>
+<li><a target="_blank" rel="noopener" href="https://support.edge-core.com/hc/en-us/articles/900000210426--Enterprise-SONiC-VLAN-Inter-VLAN-Routing">https://support.edge-core.com/hc/en-us/articles/900000210426--Enterprise-SONiC-VLAN-Inter-VLAN-Routing</a></li>
+<li><a target="_blank" rel="noopener" href="https://support.edge-core.com/hc/en-us/articles/900006399883--Enterprise-SONiC-Reset-default-configuration">https://support.edge-core.com/hc/en-us/articles/900006399883--Enterprise-SONiC-Reset-default-configuration</a></li>
+<li><a target="_blank" rel="noopener" href="https://support.edge-core.com/hc/en-us/articles/900000200743--Enterprise-SONiC-Switch-Port-Attributes">https://support.edge-core.com/hc/en-us/articles/900000200743--Enterprise-SONiC-Switch-Port-Attributes</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/issues/339">https://github.com/sonic-net/SONiC/issues/339</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/issues/181">https://github.com/sonic-net/SONiC/issues/181</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/issues/28">https://github.com/sonic-net/SONiC/issues/28</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/wiki/technical_faq">https://github.com/sonic-net/SONiC/wiki/technical_faq</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/wiki/L2-Switch-mode">https://github.com/sonic-net/SONiC/wiki/L2-Switch-mode</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/SONiC/wiki/Configuration-with-Minigraph-(~Sep-2017)">https://github.com/sonic-net/SONiC/wiki/Configuration-with-Minigraph-(~Sep-2017)</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/sonic-buildimage/issues/9470">https://github.com/sonic-net/sonic-buildimage/issues/9470</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sonic-net/sonic-buildimage/issues/5947">https://github.com/sonic-net/sonic-buildimage/issues/5947</a></li>
+<li><a target="_blank" rel="noopener" href="https://lfnetworking.org/wp-content/uploads/sites/7/2022/06/Tech-Talk5-How_does_SONiC_Operate_on_a_Programmable_Switch_Edgecore_Howard-Hsu.pdf">https://lfnetworking.org/wp-content/uploads/sites/7/2022/06/Tech-Talk5-How_does_SONiC_Operate_on_a_Programmable_Switch_Edgecore_Howard-Hsu.pdf</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.supermicro.com/manuals/network/Supermicro_Datacenter_SONiC_Configuration_Guide.pdf">https://www.supermicro.com/manuals/network/Supermicro_Datacenter_SONiC_Configuration_Guide.pdf</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.juniper.net/documentation/en_US/release-independent/nce/topics/concept/sonic-feature-config.html#wred-conf">https://www.juniper.net/documentation/en_US/release-independent/nce/topics/concept/sonic-feature-config.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://netbergtw.com/top-support/netberg-sonic/switching-silicon-shell/">https://netbergtw.com/top-support/netberg-sonic/switching-silicon-shell/</a></li>
+<li><a target="_blank" rel="noopener" href="https://gitlab.tongyuejun.cn/zhangjx/p4_doc/-/blob/0c64dcd7e21a0815ca9da2d10d9659002cbb4590/Wedge100BF_User_Manual.org">https://gitlab.tongyuejun.cn/zhangjx/p4_doc/-/blob/0c64dcd7e21a0815ca9da2d10d9659002cbb4590/Wedge100BF_User_Manual.org</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/kgucyp5s8m7hecl6qiel">https://www.infoq.cn/article/kgucyp5s8m7hecl6qiel</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Author:  </strong>NekoDaemon
+  </li>
+  <li class="post-copyright-link">
+      <strong>Link: </strong>
+      <a href="https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/" title="Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC">https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+  </li>
+</ul>
+</div>
+
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments utterances-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2019 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-bone"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NekoDaemon</span>
+</div>
+
+<div class="copyright-inject">Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>
+</div>
+
+<div class="powered-by-inject">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://github.com/Tonny-Gu/hexo-next-remix" rel="noopener" target="_blank">NexT (NekoDaemon Remix)</a>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="/lib/animejs/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="/lib/@next-theme/pjax/pjax.min.js" integrity="sha256-3NkoLDrmHLTYj7csHIZSr0MHAFTXth7Ua/DDt4MRUAg=" crossorigin="anonymous"></script>
+  <script src="/lib/medium-zoom/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/lib/lozad/dist/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/next-boot.js"></script><script src="/js/pjax.js"></script>
+
+  
+<script src="/lib/hexo-generator-searchdb/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"/lib/mathjax/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+<script class="next-config" data-name="utterances" type="application/json">{"enable":true,"repo":"Tonny-Gu/blog_comments","issue_term":"pathname","theme":"github-light"}</script>
+<script src="/js/third-party/comments/utterances.js"></script>
+
+</body>
+</html>
