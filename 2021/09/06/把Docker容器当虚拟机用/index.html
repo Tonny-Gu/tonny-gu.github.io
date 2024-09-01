@@ -19,11 +19,11 @@
   <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
   <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.mylab.cc","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="滥用Docker容器当作虚拟机的方法">
-<meta property="og:url" content="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/index.html">
+<meta property="og:url" content="https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/index.html">
 <meta property="og:site_name" content="NekoDaemon&#39;s Blog">
 <meta property="og:description" content="把Docker当虚拟机用，虽然真的很不优雅，做出来的镜像又糙又肮脏，但是这真的很方便啊。">
 <meta property="og:locale">
@@ -33,11 +33,11 @@
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
+<link rel="canonical" href="https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/","path":"2021/09/06/把Docker容器当虚拟机用/","title":"滥用Docker容器当作虚拟机的方法"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/","path":"2021/09/06/把Docker容器当虚拟机用/","title":"滥用Docker容器当作虚拟机的方法"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>滥用Docker容器当作虚拟机的方法 | NekoDaemon's Blog</title>
@@ -250,7 +250,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -383,7 +383,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>Link: </strong>
-      <a href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/" title="滥用Docker容器当作虚拟机的方法">https://nekodaemon.com/2021/09/06/把Docker容器当虚拟机用/</a>
+      <a href="https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/" title="滥用Docker容器当作虚拟机的方法">https://blog.mylab.cc/2021/09/06/把Docker容器当虚拟机用/</a>
   </li>
   <li class="post-copyright-license">
     <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>

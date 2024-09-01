@@ -19,35 +19,35 @@
   <link rel="stylesheet" href="/lib/pace-js/themes/orange/pace-theme-minimal.css">
   <script src="/lib/pace-js/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"nekodaemon.com","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"blog.mylab.cc","root":"/","images":"/images","scheme":"Remix","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":20},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":true,"lazyload":true,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":false,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 <meta name="description" content="Updated on 16 May, 2021. The quality of the original version is not satisfying. I&#39;ve rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Easy way to build a virtual cluster with KVM">
-<meta property="og:url" content="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/index.html">
+<meta property="og:url" content="https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/index.html">
 <meta property="og:site_name" content="NekoDaemon&#39;s Blog">
 <meta property="og:description" content="Updated on 16 May, 2021. The quality of the original version is not satisfying. I&#39;ve rearranged this article to make it easier to read, and updated some state-of-art approaches widely used today.">
 <meta property="og:locale">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-74.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-73.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-75.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-76.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-78.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-77.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-79.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-80.png">
-<meta property="og:image" content="https://nekodaemon.com/images/pasted-81.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-74.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-73.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-75.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-76.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-78.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-77.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-79.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-80.png">
+<meta property="og:image" content="https://blog.mylab.cc/images/pasted-81.png">
 <meta property="article:published_time" content="2020-10-24T23:50:31.000Z">
 <meta property="article:modified_time" content="2022-09-04T20:39:48.615Z">
 <meta property="article:author" content="NekoDaemon">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://nekodaemon.com/images/pasted-74.png">
+<meta name="twitter:image" content="https://blog.mylab.cc/images/pasted-74.png">
 
 
-<link rel="canonical" href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
+<link rel="canonical" href="https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","path":"2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","title":"Easy way to build a virtual cluster with KVM"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"neko","comments":true,"permalink":"https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","path":"2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/","title":"Easy way to build a virtual cluster with KVM"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Easy way to build a virtual cluster with KVM | NekoDaemon's Blog</title>
@@ -260,7 +260,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="neko">
-    <link itemprop="mainEntityOfPage" href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
+    <link itemprop="mainEntityOfPage" href="https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -551,7 +551,7 @@
   </li>
   <li class="post-copyright-link">
       <strong>Link: </strong>
-      <a href="https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/" title="Easy way to build a virtual cluster with KVM">https://nekodaemon.com/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</a>
+      <a href="https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/" title="Easy way to build a virtual cluster with KVM">https://blog.mylab.cc/2020/10/25/Easy-way-to-build-a-virtual-cluster-with-KVM/</a>
   </li>
   <li class="post-copyright-license">
     <strong>Copyright:  </strong>Original content on this site is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-SA</a>

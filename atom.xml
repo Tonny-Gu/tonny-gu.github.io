@@ -3,11 +3,11 @@
   <title>NekoDaemon&#39;s Blog</title>
   
   
-  <link href="https://nekodaemon.com/atom.xml" rel="self"/>
+  <link href="https://blog.mylab.cc/atom.xml" rel="self"/>
   
-  <link href="https://nekodaemon.com/"/>
+  <link href="https://blog.mylab.cc/"/>
   <updated>2024-04-01T14:59:47.916Z</updated>
-  <id>https://nekodaemon.com/</id>
+  <id>https://blog.mylab.cc/</id>
   
   <author>
     <name>NekoDaemon</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>Enable L3 PFC + DCQCN for RoCE on Edgecore SONiC</title>
-    <link href="https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/"/>
-    <id>https://nekodaemon.com/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/</id>
+    <link href="https://blog.mylab.cc/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/"/>
+    <id>https://blog.mylab.cc/2024/04/01/Enable-L3-PFC-DCQCN-for-RoCE-on-Edgecore-SONiC/</id>
     <published>2024-04-01T14:59:46.000Z</published>
     <updated>2024-04-01T14:59:47.916Z</updated>
     
@@ -35,8 +35,8 @@
   
   <entry>
     <title>Fastest way to Install WireGuard-Go on Ubuntu 22.04</title>
-    <link href="https://nekodaemon.com/2024/02/10/Fastest-way-to-Install-WireGuard-Go-on-Ubuntu-22-04/"/>
-    <id>https://nekodaemon.com/2024/02/10/Fastest-way-to-Install-WireGuard-Go-on-Ubuntu-22-04/</id>
+    <link href="https://blog.mylab.cc/2024/02/10/Fastest-way-to-Install-WireGuard-Go-on-Ubuntu-22-04/"/>
+    <id>https://blog.mylab.cc/2024/02/10/Fastest-way-to-Install-WireGuard-Go-on-Ubuntu-22-04/</id>
     <published>2024-02-10T15:35:04.000Z</published>
     <updated>2024-02-10T15:35:39.241Z</updated>
     
@@ -52,8 +52,8 @@
   
   <entry>
     <title>Fix corrupted NVIDIA Driver after Upgrading / Downgrading Ubuntu Kernel</title>
-    <link href="https://nekodaemon.com/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/"/>
-    <id>https://nekodaemon.com/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/</id>
+    <link href="https://blog.mylab.cc/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/"/>
+    <id>https://blog.mylab.cc/2023/09/19/Fix-corrupted-NVIDIA-Driver-after-Upgrading-Downgrading-Ubuntu-Kernel/</id>
     <published>2023-09-19T15:28:54.000Z</published>
     <updated>2023-09-19T17:19:20.463Z</updated>
     
@@ -69,8 +69,8 @@
   
   <entry>
     <title>Enable L3 PFC + DCQCN for RoCE on Mellanox ConnectX NICs</title>
-    <link href="https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/"/>
-    <id>https://nekodaemon.com/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/</id>
+    <link href="https://blog.mylab.cc/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/"/>
+    <id>https://blog.mylab.cc/2023/07/24/Enable-L3-PFC-DCQCN-for-RoCE-on-Mellanox-ConnectX-NICs/</id>
     <published>2023-07-23T18:02:17.000Z</published>
     <updated>2024-03-31T17:04:39.362Z</updated>
     
@@ -86,8 +86,8 @@
   
   <entry>
     <title>Quick way to fix wrong font size and location exported by PowerPoint Save as Picture on Mac</title>
-    <link href="https://nekodaemon.com/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/"/>
-    <id>https://nekodaemon.com/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/</id>
+    <link href="https://blog.mylab.cc/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/"/>
+    <id>https://blog.mylab.cc/2023/05/07/Quick-way-to-fix-wrong-font-size-exported-by-PowerPoint-Save-as-Picture-on-Mac/</id>
     <published>2023-05-06T21:19:04.000Z</published>
     <updated>2023-05-06T21:49:28.587Z</updated>
     
@@ -103,8 +103,8 @@
   
   <entry>
     <title>How to properly setup GPUDirect RDMA</title>
-    <link href="https://nekodaemon.com/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/"/>
-    <id>https://nekodaemon.com/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</id>
+    <link href="https://blog.mylab.cc/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/"/>
+    <id>https://blog.mylab.cc/2023/03/29/How-to-properly-setup-GPUDirect-RDMA/</id>
     <published>2023-03-29T15:05:35.000Z</published>
     <updated>2023-06-09T12:51:45.688Z</updated>
     
@@ -120,8 +120,8 @@
   
   <entry>
     <title>快速理解并行 Makefile</title>
-    <link href="https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/"/>
-    <id>https://nekodaemon.com/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/</id>
+    <link href="https://blog.mylab.cc/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/"/>
+    <id>https://blog.mylab.cc/2023/01/31/%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%E5%B9%B6%E8%A1%8C-Makefile/</id>
     <published>2023-01-30T21:24:47.000Z</published>
     <updated>2023-01-30T21:27:09.676Z</updated>
     
@@ -137,8 +137,8 @@
   
   <entry>
     <title>Easy ways to setup Reverse Proxy for NAT-Passthrough</title>
-    <link href="https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/"/>
-    <id>https://nekodaemon.com/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</id>
+    <link href="https://blog.mylab.cc/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/"/>
+    <id>https://blog.mylab.cc/2022/10/03/Easy-ways-to-setup-Reverse-Proxy-for-NAT-Passthrough/</id>
     <published>2022-10-03T11:12:20.000Z</published>
     <updated>2022-10-03T19:20:47.395Z</updated>
     
@@ -154,8 +154,8 @@
   
   <entry>
     <title>Slurm Quick Installation for Cluster on Ubuntu 20.04</title>
-    <link href="https://nekodaemon.com/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/"/>
-    <id>https://nekodaemon.com/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</id>
+    <link href="https://blog.mylab.cc/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/"/>
+    <id>https://blog.mylab.cc/2022/09/02/Slurm-Quick-Installation-for-Cluster-on-Ubuntu-20-04/</id>
     <published>2022-09-02T04:17:16.000Z</published>
     <updated>2022-09-04T20:24:41.591Z</updated>
     
@@ -171,8 +171,8 @@
   
   <entry>
     <title>Tips of configuring InfiniBand adapters</title>
-    <link href="https://nekodaemon.com/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/"/>
-    <id>https://nekodaemon.com/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</id>
+    <link href="https://blog.mylab.cc/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/"/>
+    <id>https://blog.mylab.cc/2022/08/31/Tips-of-configuring-InfiniBand-Adapters/</id>
     <published>2022-08-30T16:35:51.000Z</published>
     <updated>2022-08-31T11:33:36.107Z</updated>
     
@@ -188,8 +188,8 @@
   
   <entry>
     <title>Building OpenWrt from Scratch for ARM64 UEFI ACPI VM</title>
-    <link href="https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/"/>
-    <id>https://nekodaemon.com/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</id>
+    <link href="https://blog.mylab.cc/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/"/>
+    <id>https://blog.mylab.cc/2022/02/26/Building-OpenWrt-from-Scratch-for-ARM64-UEFI-ACPI-VM/</id>
     <published>2022-02-26T09:34:48.000Z</published>
     <updated>2022-02-26T18:16:15.842Z</updated>
     
@@ -205,8 +205,8 @@
   
   <entry>
     <title>How to resize the root LVM partition of Ubuntu</title>
-    <link href="https://nekodaemon.com/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/"/>
-    <id>https://nekodaemon.com/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</id>
+    <link href="https://blog.mylab.cc/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/"/>
+    <id>https://blog.mylab.cc/2022/02/26/How-to-resize-the-root-LVM-partition-of-Ubuntu/</id>
     <published>2022-02-26T09:32:57.000Z</published>
     <updated>2022-02-26T09:36:05.312Z</updated>
     
@@ -222,8 +222,8 @@
   
   <entry>
     <title>博客年度总结既 Hexo 第三次魔改记录</title>
-    <link href="https://nekodaemon.com/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/"/>
-    <id>https://nekodaemon.com/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</id>
+    <link href="https://blog.mylab.cc/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/"/>
+    <id>https://blog.mylab.cc/2022/01/31/%E5%8D%9A%E5%AE%A2%E5%B9%B4%E5%BA%A6%E6%80%BB%E7%BB%93%E6%97%A2-Hexo-%E7%AC%AC%E4%B8%89%E6%AC%A1%E9%AD%94%E6%94%B9%E8%AE%B0%E5%BD%95/</id>
     <published>2022-01-30T18:18:52.000Z</published>
     <updated>2022-01-30T18:29:15.000Z</updated>
     
@@ -239,8 +239,8 @@
   
   <entry>
     <title>Unattended Ubuntu 20.04 Server Offline Installation</title>
-    <link href="https://nekodaemon.com/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/"/>
-    <id>https://nekodaemon.com/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/</id>
+    <link href="https://blog.mylab.cc/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/"/>
+    <id>https://blog.mylab.cc/2022/01/16/Unattended-Ubuntu-20-04-Server-Offline-Installation/</id>
     <published>2022-01-15T16:45:11.000Z</published>
     <updated>2022-09-03T11:22:28.638Z</updated>
     
@@ -256,8 +256,8 @@
   
   <entry>
     <title>SC21回顾 - 赢了，但只赢了一点点</title>
-    <link href="https://nekodaemon.com/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/"/>
-    <id>https://nekodaemon.com/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</id>
+    <link href="https://blog.mylab.cc/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/"/>
+    <id>https://blog.mylab.cc/2022/01/01/SC21%E5%9B%9E%E9%A1%BE-%E8%B5%A2%E4%BA%86%EF%BC%8C%E4%BD%86%E5%8F%AA%E8%B5%A2%E4%BA%86%E4%B8%80%E7%82%B9%E7%82%B9/</id>
     <published>2021-12-31T19:55:10.000Z</published>
     <updated>2021-12-31T19:56:08.000Z</updated>
     
@@ -273,8 +273,8 @@
   
   <entry>
     <title>Everything you need to know about Splitting NCCL Communicators</title>
-    <link href="https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/"/>
-    <id>https://nekodaemon.com/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/</id>
+    <link href="https://blog.mylab.cc/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/"/>
+    <id>https://blog.mylab.cc/2021/12/15/Everything-you-need-to-know-about-Splitting-NCCL-Communicators/</id>
     <published>2021-12-14T18:47:00.000Z</published>
     <updated>2021-12-17T10:57:24.000Z</updated>
     
@@ -290,8 +290,8 @@
   
   <entry>
     <title>滥用Docker容器当作虚拟机的方法</title>
-    <link href="https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/"/>
-    <id>https://nekodaemon.com/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</id>
+    <link href="https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/"/>
+    <id>https://blog.mylab.cc/2021/09/06/%E6%8A%8ADocker%E5%AE%B9%E5%99%A8%E5%BD%93%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%94%A8/</id>
     <published>2021-09-06T07:01:43.000Z</published>
     <updated>2021-10-14T16:04:39.000Z</updated>
     
@@ -307,8 +307,8 @@
   
   <entry>
     <title>个人博客CDN选型和进阶玩法指北</title>
-    <link href="https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/"/>
-    <id>https://nekodaemon.com/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/</id>
+    <link href="https://blog.mylab.cc/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/"/>
+    <id>https://blog.mylab.cc/2021/08/12/%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2CDN%E9%80%89%E5%9E%8B%E5%92%8C%E8%BF%9B%E9%98%B6%E7%8E%A9%E6%B3%95%E6%8C%87%E5%8C%97/</id>
     <published>2021-08-11T18:49:03.000Z</published>
     <updated>2021-08-11T18:50:44.000Z</updated>
     
@@ -324,8 +324,8 @@
   
   <entry>
     <title>Design of TensorFlow XLA Sharding System</title>
-    <link href="https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/"/>
-    <id>https://nekodaemon.com/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/</id>
+    <link href="https://blog.mylab.cc/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/"/>
+    <id>https://blog.mylab.cc/2021/08/04/Design-of-TensorFlow-XLA-Sharding-System/</id>
     <published>2021-08-04T13:47:59.000Z</published>
     <updated>2021-08-05T01:38:56.000Z</updated>
     
@@ -341,8 +341,8 @@
   
   <entry>
     <title>Easy way to debug TensorFlow XLA Compiler using VSCode</title>
-    <link href="https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/"/>
-    <id>https://nekodaemon.com/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</id>
+    <link href="https://blog.mylab.cc/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/"/>
+    <id>https://blog.mylab.cc/2021/08/04/Easy-way-to-debug-TensorFlow-XLA-Compiler-using-VSCode/</id>
     <published>2021-08-04T13:26:12.000Z</published>
     <updated>2021-08-04T13:29:06.000Z</updated>
     
