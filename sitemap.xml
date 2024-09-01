@@ -578,20 +578,6 @@
 
   
   <url>
-    <loc>https://blog.mylab.cc/tags/GPU/</loc>
-    <lastmod>2024-09-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://blog.mylab.cc/tags/HPC/</loc>
-    <lastmod>2024-09-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://blog.mylab.cc/tags/Docker/</loc>
     <lastmod>2024-09-01</lastmod>
     <changefreq>weekly</changefreq>
@@ -600,6 +586,20 @@
   
   <url>
     <loc>https://blog.mylab.cc/tags/ESXi/</loc>
+    <lastmod>2024-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.mylab.cc/tags/GPU/</loc>
+    <lastmod>2024-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://blog.mylab.cc/tags/HPC/</loc>
     <lastmod>2024-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
